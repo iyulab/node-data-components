@@ -1,1 +1,1 @@
-# node-enterprise
+# @iyulab/enterprise
