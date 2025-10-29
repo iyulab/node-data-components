@@ -1,5 +1,5 @@
 {
-  "name": "@iyulab/enterprise",
+  "name": "@iyulab/data-components",
   "description": "iyulab enterprise features",
   "version": "0.0.1",
   "author": {
@@ -12,30 +12,35 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "dev": "vite",
-    "build": "iyulab build -d dist -b vite",
-    "deploy": "iyulab publish",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "start": "vite",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "@iyulab/components": "0.0.2",
+    "@lit/react": "^1.0.8",
     "devextreme": "^25.1.6",
-    "devextreme-react": "^25.1.6"
+    "devextreme-react": "^25.1.6",
+    "lit": "^3.3.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
+    "@types/node": "^24.9.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^9.38.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "glob": "^7.2.3",
     "globals": "^16.4.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.2",
-    "vite": "^7.1.12"
+    "vite": "^7.1.12",
+    "vite-plugin-dts": "^4.5.4"
   }
 }

@@ -245,5 +245,3 @@ export function UDataGrid({
         </div>
     );
 }
-
-export default UDataGrid;
