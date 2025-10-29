@@ -3,15 +3,23 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import { resolve } from 'path'
 
-export default tseslint.config(
-  { ignores: ['dist'] },
+export default [
+  { 
+    ignores: ['dist/**', 'node_modules/**'] 
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'vite.config.ts'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: resolve(__dirname),
+      }
     },
     plugins: {
       'react-hooks': reactHooks,
@@ -23,6 +31,12 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { 
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_'
+      }],
+      'no-console': 'warn'
     },
   },
-)
+];
