@@ -19,7 +19,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@iyulab/components": "0.0.2",
+    "@iyulab/components": "0.0.3",
     "@lit/react": "^1.0.8",
     "devextreme": "^25.1.6",
     "devextreme-react": "^25.1.6",
