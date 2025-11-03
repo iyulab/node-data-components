@@ -1,6 +1,9 @@
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import { property, state } from "lit/decorators.js";
 import { styleMap } from 'lit/directives/style-map.js';
+
+import { UElement } from '@iyulab/components/internals/UElement.js';
+import { styles } from './DataView.styles.js';
 
 // 이미지 사이즈 변수 정의
 const IMAGE_SIZE_LIST = 128;
@@ -12,13 +15,12 @@ interface DataViewColumnDefinition {
   display?: string;
 }
 
-import { styles } from './DataView.styles.js';
-
 /**
  * Data View Component
  */
-export class DataView extends LitElement {
+export class DataView extends UElement {
   static styles = [ styles ];
+  static dependencies: Record<string, typeof UElement> = {};
 
   /** 표시할 데이터 배열을 지정합니다. */
   @property({ type: Array }) data: any[] = [];

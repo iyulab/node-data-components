@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import 'devextreme/data/odata/store';
 import DataGrid, {
     Column,
@@ -15,60 +15,7 @@ import DataGrid, {
     Item,
     LoadPanel
 } from 'devextreme-react/data-grid';
-
-// 컬럼 정의 인터페이스
-export interface GridColumn {
-    dataField?: string;
-    caption: string;
-    width?: number;
-    minWidth?: number;
-    dataType?: 'string' | 'number' | 'date' | 'datetime' | 'boolean';
-    format?: string;
-    alignment?: 'left' | 'center' | 'right';
-    fixed?: boolean;
-    fixedPosition?: 'left' | 'right';
-    allowHiding?: boolean;
-    allowSorting?: boolean;
-    allowFiltering?: boolean;
-    allowGrouping?: boolean;
-    sortOrder?: 'asc' | 'desc';
-    cellRender?: (cellData: any) => React.ReactNode;
-    visible?: boolean;
-}
-
-// DataGrid 옵션 인터페이스
-export interface UDataGridProps {
-    // 데이터 소스 옵션
-    dataSourceUrl: string;
-    keyField: string;
-    selectFields?: string[];
-
-    // 컬럼 정의
-    columns: GridColumn[];
-
-    // UI 옵션
-    pageSize?: number;
-    showBorders?: boolean;
-    allowColumnReordering?: boolean;
-    allowColumnResizing?: boolean;
-    showGroupPanel?: boolean;
-    showSearchPanel?: boolean;
-    showFilterRow?: boolean;
-    showHeaderFilter?: boolean;
-    allowExport?: boolean;
-    exportFileName?: string;
-
-    // 환경 설정
-    isDevelopment?: boolean;
-
-    // 이벤트 핸들러
-    onDataLoaded?: (data: any) => void;
-    onDataLoadError?: (error: any) => void;
-    onExporting?: (e: any) => void;
-
-    // CORS 및 헤더 설정
-    beforeSend?: (operation: string, ajaxOptions: any) => void;
-}
+import { UDataGridColumn, UDataGridProps } from './UDataGrid.types';
 
 export function UDataGrid({
     dataSourceUrl,
@@ -220,7 +167,7 @@ export function UDataGrid({
                     {showSearchPanel && <Item name="searchPanel" />}
                 </Toolbar>
 
-                {columns.map((col: GridColumn, index: number) => (
+                {columns.map((col: UDataGridColumn, index: number) => (
                     <Column
                         key={col.dataField || `column-${index}`}
                         dataField={col.dataField}

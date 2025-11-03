@@ -1,2 +1,2 @@
 export { UDataGrid } from './UDataGrid';
-export type { GridColumn, UDataGridProps } from './UDataGrid';
+export type { UDataGridColumn, UDataGridProps } from './UDataGrid.types';
