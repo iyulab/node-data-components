@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { property, state } from "lit/decorators.js";
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { UElement } from '@iyulab/components/internals/UElement.js';
+import { UElement } from '@iyulab/components/dist/internals/UElement.js';
 import { styles } from './DataView.styles.js';
 
 // 이미지 사이즈 변수 정의
@@ -229,21 +229,21 @@ export class DataView extends UElement {
     return html`
       <div class="u-data-view-container">
         <div class="layout-selector">
-            <u-icon-button type="system" name="grid" size="24px"
-              @click=${() => this.setLayout('grid')}
-              color=${this.currentLayout === 'grid' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
-            >
-            </u-icon-button>
-            <u-icon-button type="system" name="list-ul" size="24px"
-              @click=${() => this.setLayout('list')}
-              color=${this.currentLayout === 'list' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
-            >
-            </u-icon-button>
-            <u-icon-button type="system" name="table" size="24px"
-              @click=${() => this.setLayout('table')}
-              color=${this.currentLayout === 'table' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
-            >
-            </u-icon-button>
+          <u-icon-button type="system" name="grid" size="24px"
+            @click=${() => this.setLayout('grid')}
+            color=${this.currentLayout === 'grid' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
+          >
+          </u-icon-button>
+          <u-icon-button type="system" name="list-ul" size="24px"
+            @click=${() => this.setLayout('list')}
+            color=${this.currentLayout === 'list' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
+          >
+          </u-icon-button>
+          <u-icon-button type="system" name="table" size="24px"
+            @click=${() => this.setLayout('table')}
+            color=${this.currentLayout === 'table' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
+          >
+          </u-icon-button>
         </div>
         <div class="u-data-view ${this.currentLayout}" style="--item-margin: ${this.itemMargin}; --min-item-width: ${this.minItemWidth};">
           ${this.currentLayout === 'table' ? this.renderTable() : this.renderItems()}

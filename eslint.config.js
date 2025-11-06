@@ -1,24 +1,23 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { resolve } from 'path'
+import { defineConfig } from 'eslint/config';
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import globals from 'globals';
 
-export default [
+export default defineConfig([
   { 
     ignores: ['dist/**', 'node_modules/**'] 
   },
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
   {
-    files: ['src/**/*.{ts,tsx}', 'vite.config.ts'],
+    ...eslint.configs.recommended,
+    ...tseslint.configs.recommended,
+    files: [ 'src/**/*', 'tests/**/*' ],
     languageOptions: {
-      ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: './tsconfig.json',
-        tsconfigRootDir: resolve(__dirname),
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname
       }
     },
     plugins: {
@@ -39,4 +38,4 @@ export default [
       'no-console': 'warn'
     },
   },
-];
+]);

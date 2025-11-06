@@ -8,15 +8,16 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.umd.cjs",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
     "start": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "eslint src && vite build"
   },
   "dependencies": {
     "@iyulab/components": "0.0.3",
@@ -28,19 +29,18 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.0",
+    "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
-    "eslint": "^9.39.0",
+    "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
-    "glob": "^11.0.3",
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.2",
-    "vite": "^7.1.12",
+    "typescript-eslint": "^8.46.3",
+    "vite": "^7.2.1",
     "vite-plugin-dts": "^4.5.4"
   }
 }
