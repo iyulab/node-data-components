@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "vite",
-    "build": "eslint src && vite build"
+    "build": "eslint && vite build"
   },
   "dependencies": {
     "@iyulab/components": "0.0.3",

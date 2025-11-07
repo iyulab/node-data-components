@@ -28,7 +28,6 @@ export default defineConfig({
         /^@lit.*/,
         /^react.*/,
         /^devextreme.*/,
-        'mobx',
         'reflect-metadata',
       ],
       output: {
