@@ -2,7 +2,7 @@ import { html } from 'lit';
 import { property, state } from "lit/decorators.js";
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { UElement } from '@iyulab/components/dist/internals/UElement.js';
+import { BaseElement } from '@iyulab/components/dist/components/BaseElement.js';
 import { styles } from './DataView.styles.js';
 
 // 이미지 사이즈 변수 정의
@@ -18,9 +18,9 @@ interface DataViewColumnDefinition {
 /**
  * Data View Component
  */
-export class DataView extends UElement {
+export class DataView extends BaseElement {
   static styles = [ styles ];
-  static dependencies: Record<string, typeof UElement> = {};
+  static dependencies: Record<string, typeof BaseElement> = {};
 
   /** 표시할 데이터 배열을 지정합니다. */
   @property({ type: Array }) data: any[] = [];
