@@ -1,18 +1,31 @@
 {
   "name": "@iyulab/data-components",
-  "description": "iyulab enterprise features",
+  "description": "iyulab data visualization components",
   "version": "0.0.1",
-  "author": {
-    "name": "iyulab",
-    "url": "https://www.iyulab.com"
-  },
+  "keywords": [
+    "iyulab",
+    "web-components",
+    "lit-element"
+  ],
   "license": "MIT",
+  "author": "iyulab",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iyulab/node-data-components.git"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
   "type": "module",
-  "types": "./dist/index.d.ts",
+  "types": "./src/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
     }
   },
   "scripts": {
@@ -20,8 +33,7 @@
     "build": "eslint && vite build"
   },
   "dependencies": {
-    "@iyulab/components": "0.0.3",
-    "@lit/react": "^1.0.8",
+    "@iyulab/components": "0.1.0",
     "devextreme": "^25.1.6",
     "devextreme-react": "^25.1.6",
     "lit": "^3.3.1",
@@ -29,11 +41,12 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@lit/react": "^1.0.8",
     "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.0",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "@vitejs/plugin-react": "^5.1.0",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.3",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
