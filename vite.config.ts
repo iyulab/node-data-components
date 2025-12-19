@@ -6,8 +6,9 @@ import { resolve } from 'path';
 export default defineConfig({
   server: {
     open: "tests/index.html",
-    port: 5174,
+    port: 5176,
   },
+
   build: {
     target: 'esnext',
     outDir: 'dist',

@@ -3,14 +3,16 @@ import { property, state } from "lit/decorators.js";
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { BaseElement } from '@iyulab/components/dist/components/BaseElement.js';
-import { styles } from './DataView.styles.js';
+import { UIconButton } from '@iyulab/components/dist/components/icon-button/UIconButton.component.js';
+import { USkeleton } from '@iyulab/components/dist/components/skeleton/USkeleton.component.js';
+import { styles } from './UDataView.styles.js';
 
 // 이미지 사이즈 변수 정의
 const IMAGE_SIZE_LIST = 128;
 const IMAGE_SIZE_TABLE = 64;
 const IMAGE_SIZE_GRID = 128;
 
-interface DataViewColumnDefinition {
+export interface DataViewColumnDefinition {
   name: string;
   display?: string;
 }
@@ -18,9 +20,12 @@ interface DataViewColumnDefinition {
 /**
  * Data View Component
  */
-export class DataView extends BaseElement {
-  static styles = [ styles ];
-  static dependencies: Record<string, typeof BaseElement> = {};
+export class UDataView extends BaseElement {
+  static styles = [ super.styles, styles ];
+  static dependencies: Record<string, typeof BaseElement> = {
+    'u-icon-button': UIconButton,
+    'u-skeleton': USkeleton
+  };
 
   /** 표시할 데이터 배열을 지정합니다. */
   @property({ type: Array }) data: any[] = [];
@@ -82,9 +87,9 @@ export class DataView extends BaseElement {
           ${this.loading 
             ? Array(5).fill(0).map(() => html`
                 <tr>
-                  <td><u-skeleton effect="sheen" width="64px" height="64px"></u-skeleton></td>
+                  <td><u-skeleton effect="shimmer" width="64px" height="64px"></u-skeleton></td>
                   ${columns.map(() => html`
-                    <td><u-skeleton effect="sheen" width="80%" height="1em"></u-skeleton></td>
+                    <td><u-skeleton effect="shimmer" width="80%" height="1em"></u-skeleton></td>
                   `)}
                 </tr>
               `)
@@ -141,8 +146,8 @@ export class DataView extends BaseElement {
           <div class="field">
             ${this.loading 
               ? html`
-                  <u-skeleton effect="sheen" width="30%" height="1em" class="field-title"></u-skeleton>
-                  <u-skeleton effect="sheen" width="60%" height="1em" class="field-value"></u-skeleton>
+                  <u-skeleton effect="shimmer" width="30%" height="1em" class="field-title"></u-skeleton>
+                  <u-skeleton effect="shimmer" width="60%" height="1em" class="field-value"></u-skeleton>
                 `
               : html`
                   <span class="field-title">${this.getDisplayName(column)}:</span>
@@ -170,7 +175,7 @@ export class DataView extends BaseElement {
       const skeletonSize = viewType === 'table' ? `${IMAGE_SIZE_TABLE}px` : 
                            viewType === 'list' ? `${IMAGE_SIZE_LIST}px` : 
                            `${IMAGE_SIZE_GRID}px`;
-      return html`<u-skeleton effect="sheen" width=${skeletonSize} height=${skeletonSize} style="margin-bottom: 1em;"></u-skeleton>`;
+      return html`<u-skeleton effect="shimmer" width=${skeletonSize} height=${skeletonSize} style="margin-bottom: 1em;"></u-skeleton>`;
     }
   
     const imageSrc = item[this.imageField];
@@ -229,21 +234,15 @@ export class DataView extends BaseElement {
     return html`
       <div class="u-data-view-container">
         <div class="layout-selector">
-          <u-icon-button type="system" name="grid" size="24px"
+          <u-icon-button lib="internal" name="grid"
             @click=${() => this.setLayout('grid')}
-            color=${this.currentLayout === 'grid' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
-          >
-          </u-icon-button>
-          <u-icon-button type="system" name="list-ul" size="24px"
+          ></u-icon-button>
+          <u-icon-button lib="internal" name="list-ul"
             @click=${() => this.setLayout('list')}
-            color=${this.currentLayout === 'list' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
-          >
-          </u-icon-button>
-          <u-icon-button type="system" name="table" size="24px"
+          ></u-icon-button>
+          <u-icon-button lib="internal" name="table"
             @click=${() => this.setLayout('table')}
-            color=${this.currentLayout === 'table' ? `var(--sl-color-primary-600)` : `var(--sl-color-neutral-600)`}
-          >
-          </u-icon-button>
+          ></u-icon-button>
         </div>
         <div class="u-data-view ${this.currentLayout}" style="--item-margin: ${this.itemMargin}; --min-item-width: ${this.minItemWidth};">
           ${this.currentLayout === 'table' ? this.renderTable() : this.renderItems()}
@@ -256,12 +255,12 @@ export class DataView extends BaseElement {
     if (this.loading) {
       return Array(5).fill(0).map(() => html`
         <div class="default-item" style="padding: 1em; border: 1px solid #eee; border-radius: 4px;">
-          <u-skeleton effect="sheen" width="100%" height="${IMAGE_SIZE_GRID}px" style="margin-bottom: 1em;"></u-skeleton>
+          <u-skeleton effect="shimmer" width="100%" height="${IMAGE_SIZE_GRID}px" style="margin-bottom: 1em;"></u-skeleton>
           <div class="default-fields">
             ${Array(3).fill(0).map(() => html`
               <div class="field" style="margin-bottom: 0.5em;">
-                <u-skeleton effect="sheen" width="30%" height="1em" style="margin-right: 0.5em;"></u-skeleton>
-                <u-skeleton effect="sheen" width="60%" height="1em"></u-skeleton>
+                <u-skeleton effect="shimmer" width="30%" height="1em" style="margin-right: 0.5em;"></u-skeleton>
+                <u-skeleton effect="shimmer" width="60%" height="1em"></u-skeleton>
               </div>
             `)}
           </div>

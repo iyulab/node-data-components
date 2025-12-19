@@ -19,7 +19,7 @@ export const styles = css`
       margin-left: 0.5rem;
 
       &[current] {
-        color: var(--sl-color-primary-600);
+        color: var(--u-blue-600);
       }
     }
   }
@@ -110,7 +110,7 @@ export const styles = css`
       align-items: center;
 
       .field-title {
-        color: var(--sl-color-neutral-500);
+        color: var(--u-neutral-600);
         margin-right: 0.5rem;
         flex: 0 0 30%;
       }
