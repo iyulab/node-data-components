@@ -13,9 +13,7 @@
  */
 
 // Import DevExtreme CSS as text for Shadow DOM injection
-// @ts-expect-error - Vite ?inline query returns string
 import devExtremeCssText from 'devextreme/dist/css/dx.light.css?inline';
-// @ts-expect-error - Vite ?inline query returns string
 import devExtremeOverridesCssText from '../styles/devextreme-overrides.css?inline';
 import { registerProtectedStylesheet } from './shadowDomProtection';
 
