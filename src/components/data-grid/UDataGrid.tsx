@@ -131,7 +131,14 @@ export function UDataGrid({
   };
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div style={{
+      width: '100%',
+      height: '100%',
+      position: 'relative',
+      contain: 'layout style',
+      isolation: 'isolate',
+      overflow: 'hidden'
+    }}>
       <DataGrid
         dataSource={dataSource as any}
         showBorders={showBorders}

@@ -30,6 +30,10 @@
     "./dist/*": {
       "types": "./src/*.d.ts",
       "import": "./src/*"
+    },
+    "./init": {
+      "types": "./src/init.d.ts",
+      "import": "./src/init.js"
     }
   },
   "scripts": {
