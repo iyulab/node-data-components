@@ -15,7 +15,7 @@ import DataGrid, {
   Item,
   LoadPanel
 } from 'devextreme-react/data-grid';
-import { UDataGridColumn, UDataGridProps } from './UDataGrid.types';
+import { UDataGridColumn, UDataGridProps } from './UDataGrid.types.js';
 
 export function UDataGrid({
   dataSourceUrl,
