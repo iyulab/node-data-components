@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 import 'devextreme/data/odata/store';
 import DataGrid, {
   Column,
@@ -36,6 +36,7 @@ export function UDataGrid({
   onDataLoaded,
   onDataLoadError,
   onExporting,
+  onRowClick,
   beforeSend
 }: UDataGridProps) {
 
@@ -61,7 +62,7 @@ export function UDataGrid({
       }
 
 			// eslint-disable-next-line no-console
-      console.log(`U DataGrid ${operation} 요청:`, {
+      console.log(`U-DataGrid ${operation} 요청:`, {
         url: ajaxOptions.url,
         headers: ajaxOptions.headers,
         method: ajaxOptions.type || 'GET'
@@ -73,7 +74,7 @@ export function UDataGrid({
 
   // 기본 오류 처리
   const defaultOnLoadError = (error: any) => {
-    console.error('U DataGrid 데이터 로딩 오류:', error); // eslint-disable-line no-console
+    console.error('U-DataGrid 데이터 로딩 오류:', error); // eslint-disable-line no-console
 
     let errorMessage = '데이터를 불러오는 중 오류가 발생했습니다.';
 
@@ -108,10 +109,10 @@ export function UDataGrid({
         key: keyField,
         beforeSend: beforeSend || defaultBeforeSend,
         onLoading: () => {
-          console.log('U DataGrid 데이터 로딩 시작...'); // eslint-disable-line no-console
+          console.log('U-DataGrid 데이터 로딩 시작...'); // eslint-disable-line no-console
         },
         onLoaded: (data: any) => {
-          console.log('U DataGrid 데이터 로딩 완료:', data); // eslint-disable-line no-console
+          console.log('U-DataGrid 데이터 로딩 완료:', data); // eslint-disable-line no-console
           onDataLoaded?.(data);
         },
         onLoadError: onDataLoadError || defaultOnLoadError
@@ -155,6 +156,7 @@ export function UDataGrid({
         columnResizingMode="widget"
         remoteOperations={true}
         onExporting={handleExporting}
+        onRowClick={onRowClick}
       >
         <LoadPanel enabled={true} />
 

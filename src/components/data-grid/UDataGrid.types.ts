@@ -47,6 +47,7 @@ export interface UDataGridProps {
   onDataLoaded?: (data: any) => void;
   onDataLoadError?: (error: any) => void;
   onExporting?: (e: any) => void;
+  onRowClick?: (e: { data: Record<string, unknown> }) => void;
 
   // CORS 및 헤더 설정
   beforeSend?: (operation: string, ajaxOptions: any) => void;
