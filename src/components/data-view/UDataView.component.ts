@@ -3,7 +3,8 @@ import { property, state } from "lit/decorators.js";
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { BaseElement } from '@iyulab/components/dist/components/BaseElement.js';
-import { UIconButton } from '@iyulab/components/dist/components/icon-button/UIconButton.component.js';
+import { UIcon } from '@iyulab/components/dist/components/icon/UIcon.component.js';
+import { UButton } from '@iyulab/components/dist/components/button/UButton.component.js';
 import { USkeleton } from '@iyulab/components/dist/components/skeleton/USkeleton.component.js';
 import { styles } from './UDataView.styles.js';
 
@@ -23,7 +24,8 @@ export interface DataViewColumnDefinition {
 export class UDataView extends BaseElement {
   static styles = [ super.styles, styles ];
   static dependencies: Record<string, typeof BaseElement> = {
-    'u-icon-button': UIconButton,
+    'u-icon': UIcon,
+    'u-button': UButton,
     'u-skeleton': USkeleton
   };
 
@@ -234,15 +236,15 @@ export class UDataView extends BaseElement {
     return html`
       <div class="u-data-view-container">
         <div class="layout-selector">
-          <u-icon-button lib="internal" name="grid"
-            @click=${() => this.setLayout('grid')}
-          ></u-icon-button>
-          <u-icon-button lib="internal" name="list-ul"
-            @click=${() => this.setLayout('list')}
-          ></u-icon-button>
-          <u-icon-button lib="internal" name="table"
-            @click=${() => this.setLayout('table')}
-          ></u-icon-button>
+          <u-button @click=${() => this.setLayout('grid')}>
+            <u-icon lib="internal" name="grid"></u-icon>
+          </u-button>
+          <u-button @click=${() => this.setLayout('list')}>
+            <u-icon lib="internal" name="list-ul"></u-icon>
+          </u-button>
+          <u-button @click=${() => this.setLayout('table')}>
+            <u-icon lib="internal" name="table"></u-icon>
+          </u-button>
         </div>
         <div class="u-data-view ${this.currentLayout}" style="--item-margin: ${this.itemMargin}; --min-item-width: ${this.minItemWidth};">
           ${this.currentLayout === 'table' ? this.renderTable() : this.renderItems()}

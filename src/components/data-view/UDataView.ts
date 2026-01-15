@@ -1,6 +1,6 @@
 import { UDataView } from './UDataView.component.js';
 
-customElements.define("u-data-view", UDataView);
+UDataView.define("u-data-view");
 
 declare global {
   interface HTMLElementTagNameMap {
