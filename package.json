@@ -42,26 +42,27 @@
   },
   "dependencies": {
     "@iyulab/components": "0.2.0",
-    "devextreme": "^25.2.3",
-    "devextreme-react": "^25.2.3",
+    "devextreme": "^25.2.4",
+    "devextreme-react": "^25.2.4",
     "lit": "^3.3.2",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "quill": "2.0.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@lit/react": "^1.0.8",
-    "@types/node": "^25.0.9",
-    "@types/react": "^19.2.9",
+    "@types/node": "^25.3.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.2",
-    "eslint": "^9.39.2",
+    "@vitejs/plugin-react": "^5.1.4",
+    "eslint": "^10.0.2",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.26",
-    "globals": "^17.0.0",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.3.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.53.1",
+    "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
-    "vite-plugin-dts": "^4.5.4"
+    "vite-plugin-dts": "^2.3.0"
   }
 }
