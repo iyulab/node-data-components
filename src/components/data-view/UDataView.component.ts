@@ -1,8 +1,8 @@
-import { html } from 'lit';
+﻿import { html } from 'lit';
 import { property, state } from "lit/decorators.js";
 import { styleMap } from 'lit/directives/style-map.js';
 
-import { BaseElement } from '@iyulab/components/dist/components/BaseElement.js';
+import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { UIcon } from '@iyulab/components/dist/components/icon/UIcon.component.js';
 import { UButton } from '@iyulab/components/dist/components/button/UButton.component.js';
 import { USkeleton } from '@iyulab/components/dist/components/skeleton/USkeleton.component.js';
@@ -21,9 +21,9 @@ export interface DataViewColumnDefinition {
 /**
  * Data View Component
  */
-export class UDataView extends BaseElement {
+export class UDataView extends UElement {
   static styles = [ super.styles, styles ];
-  static dependencies: Record<string, typeof BaseElement> = {
+  static dependencies: Record<string, typeof UElement> = {
     'u-icon': UIcon,
     'u-button': UButton,
     'u-skeleton': USkeleton
