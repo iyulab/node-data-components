@@ -1,305 +1,236 @@
-﻿import { html } from 'lit';
-import { property, state } from "lit/decorators.js";
-import { styleMap } from 'lit/directives/style-map.js';
-
+﻿import { html, type TemplateResult } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { UIcon } from '@iyulab/components/dist/components/icon/UIcon.component.js';
 import { UButton } from '@iyulab/components/dist/components/button/UButton.component.js';
-import { USkeleton } from '@iyulab/components/dist/components/skeleton/USkeleton.component.js';
-import { styles } from './UDataView.styles.js';
+import { styles } from './UDataView.styles';
 
-// 이미지 사이즈 변수 정의
-const IMAGE_SIZE_LIST = 128;
-const IMAGE_SIZE_TABLE = 64;
-const IMAGE_SIZE_GRID = 128;
+export type ViewMode = 'grid' | 'list' | 'table';
 
-export interface DataViewColumnDefinition {
-  name: string;
-  display?: string;
+export interface Column {
+  key: string;
+  label?: string;
+  width?: string;
 }
 
 /**
  * Data View Component
+ * 데이터를 3가지 레이아웃(grid, list, table)으로 표시하는 컴포넌트
  */
 export class UDataView extends UElement {
-  static styles = [ super.styles, styles ];
+  static styles = [super.styles, styles];
   static dependencies: Record<string, typeof UElement> = {
     'u-icon': UIcon,
-    'u-button': UButton,
-    'u-skeleton': USkeleton
+    'u-button': UButton
   };
 
-  /** 표시할 데이터 배열을 지정합니다. */
-  @property({ type: Array }) data: any[] = [];
-  /** 데이터 뷰의 레이아웃을 지정합니다. ('list', 'grid' 또는 'table') */
-  @property({ type: String }) layout: "list" | "grid" | "table" = "grid";
-  /** 각 아이템을 렌더링하는 함수를 지정합니다. */
-  @property({ type: Object }) renderItem?: (item: any) => HTMLElement;
-  /** 각 아이템의 이미지를 렌더링하는 함수를 지정합니다. */
-  @property({ type: Object }) renderImage?: (item: any) => HTMLElement;
-  /** 각 아이템의 필드를 렌더링하는 함수를 지정합니다. */
-  @property({ type: Object }) renderFields?: (item: any) => HTMLElement;
-  /** 페이지당 표시할 아이템 수를 지정합니다. */
-  @property({ type: Number }) itemsPerPage?: number;
-  /** 아이템의 이미지 필드 이름을 지정합니다. */
-  @property({ type: String }) imageField: string = 'image';
-  /** 아이템 간 마진을 지정합니다. */
-  @property({ type: String }) itemMargin: string = '1rem';
-  /** 그리드 레이아웃에서 아이템의 최소 너비를 지정합니다. */
-  @property({ type: String }) minItemWidth: string = '250px';
-  /** 표시할 열 정보를 지정합니다. 지정하지 않으면 이미지를 제외한 모든 필드가 표시됩니다. */
-  @property({ type: Array }) columns?: DataViewColumnDefinition[];
+  /** 표시할 데이터 배열 */
+  @property({ type: Array }) items: any[] = [];
+  /** 현재 뷰 모드 */
+  @property({ type: String }) mode: ViewMode = 'grid';
+  /** 표시할 컬럼 설정 (미지정시 자동 감지) */
+  @property({ type: Array }) columns?: Column[];
+  /** 그리드 모드 최소 폭 */
+  @property({ type: String }) gridMinWidth = '200px';
+  /** 아이템 간격 */
+  @property({ type: String }) gap = '1rem';
+  /** 커스텀 렌더 함수 (grid/list 카드용) */
+  @property({ attribute: false }) renderCard?: (item: any, index: number) => TemplateResult;
+  /** 커스텀 셀 렌더 함수 (table용) */
+  @property({ attribute: false }) renderCell?: (item: any, column: Column, index: number) => TemplateResult | string;
 
-  /** 아이템 선택 시 호출되는 콜백 함수를 지정합니다. */
-  @property({ type: Object }) onItemSelect?: (item: any) => void;
-  /** 아이템 더블 클릭 시 호출되는 콜백 함수를 지정합니다. */
-  @property({ type: Object }) onItemDoubleClick?: (item: any) => void;
+  @state() private selectedIndex: number | null = null;
 
-  @state() private selectedItem: any = null;
-  @state() private currentLayout: "list" | "grid" | "table" = "grid";
-  @state() private loading: boolean = true;
-  @state() private imageLoadErrors: Set<string> = new Set();
-  @state() private randomColors: Map<string, string> = new Map();
-  
-  connectedCallback() {
-    super.connectedCallback();
-    // 데이터 로딩 시뮬레이션
-    setTimeout(() => {
-      this.loading = false;
-      this.requestUpdate();
-    }, 2000); // 2초 후 로딩 완료
+  render() {
+    return html`
+      <div class="data-view">
+        ${this.renderToolbar()}
+        ${this.renderContent()}
+      </div>
+    `;
   }
 
-  private handleImageError(item: any) {
-    this.imageLoadErrors.add(item[this.imageField]);
-    this.requestUpdate();
+  private renderToolbar() {
+    return html`
+      <div class="toolbar">
+        <div class="view-toggles">
+          ${this.renderViewButton('grid', 'grid-3x3-gap', 'Grid')}
+          ${this.renderViewButton('list', 'list-ul', 'List')}
+          ${this.renderViewButton('table', 'table', 'Table')}
+        </div>
+        <div class="info">
+          ${this.items.length} items
+        </div>
+      </div>
+    `;
+  }
+
+  private renderViewButton(mode: ViewMode, icon: string, label: string) {
+    return html`
+      <u-button
+        ?active=${this.mode === mode}
+        @click=${() => this.switchMode(mode)}
+        title=${label}
+      >
+        <u-icon lib="bootstrap" name=${icon}></u-icon>
+      </u-button>
+    `;
+  }
+
+  private renderContent() {
+    if (!this.items?.length) {
+      return html`<div class="empty">No data available</div>`;
+    }
+
+    switch (this.mode) {
+      case 'grid': return this.renderGrid();
+      case 'list': return this.renderList();
+      case 'table': return this.renderTable();
+    }
+  }
+
+  private renderGrid() {
+    return html`
+      <div class="grid" style="--min-width: ${this.gridMinWidth}; --gap: ${this.gap};">
+        ${this.items.map((item, index) => this.renderGridItem(item, index))}
+      </div>
+    `;
+  }
+
+  private renderList() {
+    return html`
+      <div class="list" style="--gap: ${this.gap};">
+        ${this.items.map((item, index) => this.renderListItem(item, index))}
+      </div>
+    `;
   }
 
   private renderTable() {
-    const columns = this.columns || this.getDefaultColumns();
+    const cols = this.getColumns();
+    
     return html`
-      <table class="default-table">
-        <thead>
-          <tr>
-            <th>Image</th>
-            ${columns.map(column => html`<th>${this.getDisplayName(column)}</th>`)}
-          </tr>
-        </thead>
-        <tbody>
-          ${this.loading 
-            ? Array(5).fill(0).map(() => html`
-                <tr>
-                  <td><u-skeleton effect="shimmer" width="64px" height="64px"></u-skeleton></td>
-                  ${columns.map(() => html`
-                    <td><u-skeleton effect="shimmer" width="80%" height="1em"></u-skeleton></td>
-                  `)}
-                </tr>
-              `)
-            : this.data?.map(item => html`
-                <tr class="default-item ${this.selectedItem === item ? 'selected' : ''}"
-                    @click=${() => this.handleItemClick(item)}
-                    @dblclick=${() => this.handleItemDoubleClick(item)}>
-                  <td class="image-cell">
-                    ${this.defaultRenderImage(item, 'table')}
-                  </td>
-                  ${columns.map(column => html`<td>${this.formatValue(item[column.name])}</td>`)}
-                </tr>
-              `)
-          }
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              ${cols.map(col => html`
+                <th style=${col.width ? `width: ${col.width}` : ''}>
+                  ${col.label || this.formatLabel(col.key)}
+                </th>
+              `)}
+            </tr>
+          </thead>
+          <tbody>
+            ${this.items.map((item, index) => html`
+              <tr 
+                class=${this.selectedIndex === index ? 'selected' : ''}
+                @click=${() => this.selectItem(index)}
+              >
+                ${cols.map(col => html`
+                  <td>${this.getCellContent(item, col, index)}</td>
+                `)}
+              </tr>
+            `)}
+          </tbody>
+        </table>
+      </div>
     `;
   }
 
-  private getDefaultColumns(): DataViewColumnDefinition[] {
-    if (this.data && this.data.length > 0) {
-      return Object.keys(this.data[0])
-        .filter(key => key !== this.imageField)
-        .map(key => ({ name: key }));
+  private renderGridItem(item: any, index: number) {
+    const content = this.renderCard 
+      ? this.renderCard(item, index)
+      : this.renderDefaultCard(item);
+
+    return html`
+      <div 
+        class="card ${this.selectedIndex === index ? 'selected' : ''}"
+        @click=${() => this.selectItem(index)}
+      >
+        ${content}
+      </div>
+    `;
+  }
+
+  private renderListItem(item: any, index: number) {
+    const content = this.renderCard
+      ? this.renderCard(item, index)
+      : this.renderDefaultCard(item);
+
+    return html`
+      <div 
+        class="card list-card ${this.selectedIndex === index ? 'selected' : ''}"
+        @click=${() => this.selectItem(index)}
+      >
+        ${content}
+      </div>
+    `;
+  }
+
+  private renderDefaultCard(item: any) {
+    const cols = this.getColumns();
+    
+    return html`
+      <div class="card-content">
+        ${cols.slice(0, 5).map(col => {
+          const value = item[col.key];
+          return html`
+            <div class="card-field">
+              <span class="label">${col.label || this.formatLabel(col.key)}:</span>
+              <span class="value">${this.formatValue(value)}</span>
+            </div>
+          `;
+        })}
+      </div>
+    `;
+  }
+
+  private getCellContent(item: any, column: Column, index: number): TemplateResult | string {
+    if (this.renderCell) {
+      return this.renderCell(item, column, index);
     }
+    return this.formatValue(item[column.key]);
+  }
+
+  private getColumns(): Column[] {
+    if (this.columns?.length) {
+      return this.columns;
+    }
+
+    // 자동 감지
+    if (this.items.length > 0) {
+      const firstItem = this.items[0];
+      return Object.keys(firstItem).map(key => ({ key }));
+    }
+
     return [];
   }
 
-  private getDisplayName(column: DataViewColumnDefinition): string {
-    return column.display || this.toPascalCase(column.name);
-  }
-
-  private toPascalCase(str: string): string {
-    const words = str.split(/(?=[A-Z])|\s+|[-_]+/);
-    
-    return words
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join('');
+  private formatLabel(key: string): string {
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
   }
 
   private formatValue(value: any): string {
-    if (value instanceof Date) {
-      const pad = (num: number) => num.toString().padStart(2, '0');
-      return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())} ${pad(value.getHours())}:${pad(value.getMinutes())}`;
-    }
-    return value;
+    if (value == null) return '—';
+    if (typeof value === 'boolean') return value ? '✓' : '✗';
+    if (value instanceof Date) return value.toLocaleString();
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
   }
 
-  private defaultRenderFields(item: any) {
-    const columns = this.columns || this.getDefaultColumns();
-    return html`
-      <div class="default-fields">
-        ${columns.map(column => html`
-          <div class="field">
-            ${this.loading 
-              ? html`
-                  <u-skeleton effect="shimmer" width="30%" height="1em" class="field-title"></u-skeleton>
-                  <u-skeleton effect="shimmer" width="60%" height="1em" class="field-value"></u-skeleton>
-                `
-              : html`
-                  <span class="field-title">${this.getDisplayName(column)}:</span>
-                  <span class="field-value">${this.formatValue(item[column.name])}</span>
-                `
-            }
-          </div>
-        `)}
-      </div>
-    `;
-  }
-  
-  private getRandomColor(key: string): string {
-    if (!this.randomColors.has(key)) {
-      const hue = Math.floor(Math.random() * 360);
-      const saturation = 70 + Math.floor(Math.random() * 30);
-      const lightness = 60 + Math.floor(Math.random() * 20);
-      this.randomColors.set(key, `hsl(${hue}, ${saturation}%, ${lightness}%)`);
-    }
-    return this.randomColors.get(key)!;
+  private switchMode(mode: ViewMode) {
+    this.mode = mode;
+    this.emit('mode-change', { mode });
   }
 
-  private defaultRenderImage(item: any, viewType: 'grid' | 'list' | 'table' = 'grid') {
-    if (this.loading) {
-      const skeletonSize = viewType === 'table' ? `${IMAGE_SIZE_TABLE}px` : 
-                           viewType === 'list' ? `${IMAGE_SIZE_LIST}px` : 
-                           `${IMAGE_SIZE_GRID}px`;
-      return html`<u-skeleton effect="shimmer" width=${skeletonSize} height=${skeletonSize} style="margin-bottom: 1em;"></u-skeleton>`;
-    }
-  
-    const imageSrc = item[this.imageField];
-    const imageClass = `default-image ${viewType}-image`;
-    if (imageSrc && !this.imageLoadErrors.has(imageSrc)) {
-      return html`
-        <img 
-          src=${imageSrc} 
-          alt="Item image" 
-          class=${imageClass}
-          @error=${() => this.handleImageError(item)}
-          style=${viewType !== 'grid' ? "" : "margin-bottom: 1em;"}
-        />
-      `;
-    } else {
-      const backgroundColor = this.getRandomColor(item.id || JSON.stringify(item));
-      const textColor = this.getContrastColor(backgroundColor);
-      const styles = {
-        backgroundColor,
-        color: textColor,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: viewType === 'table' ? '1.5rem' : '2rem',
-        fontWeight: 'bold',
-        width: viewType === 'table' ? `${IMAGE_SIZE_TABLE}px` : 
-               viewType === 'list' ? `${IMAGE_SIZE_LIST}px` : '100%',
-        height: viewType === 'table' ? `${IMAGE_SIZE_TABLE}px` : 
-                viewType === 'list' ? `${IMAGE_SIZE_LIST}px` : `${IMAGE_SIZE_GRID}px`,
-      };
-      
-      return html`
-        <div class=${`${imageClass} placeholder-image`} style=${styleMap(styles)}>
-          ${item.name ? item.name.charAt(0).toUpperCase() : 'N/A'}
-        </div>
-      `;
-    }
-  }
-
-  private getContrastColor(backgroundColor: string): string {
-    const rgb = this.hexToRgb(backgroundColor);
-    const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
-    return brightness > 128 ? '#000000' : '#FFFFFF';
-  }
-
-  private hexToRgb(hex: string): { r: number, g: number, b: number } {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 0, g: 0, b: 0 };
-  }
-
-  protected render() {
-    return html`
-      <div class="u-data-view-container">
-        <div class="layout-selector">
-          <u-button @click=${() => this.setLayout('grid')}>
-            <u-icon lib="internal" name="grid"></u-icon>
-          </u-button>
-          <u-button @click=${() => this.setLayout('list')}>
-            <u-icon lib="internal" name="list-ul"></u-icon>
-          </u-button>
-          <u-button @click=${() => this.setLayout('table')}>
-            <u-icon lib="internal" name="table"></u-icon>
-          </u-button>
-        </div>
-        <div class="u-data-view ${this.currentLayout}" style="--item-margin: ${this.itemMargin}; --min-item-width: ${this.minItemWidth};">
-          ${this.currentLayout === 'table' ? this.renderTable() : this.renderItems()}
-        </div>
-      </div>
-    `;
-  }
-
-  private renderItems() {
-    if (this.loading) {
-      return Array(5).fill(0).map(() => html`
-        <div class="default-item" style="padding: 1em; border: 1px solid #eee; border-radius: 4px;">
-          <u-skeleton effect="shimmer" width="100%" height="${IMAGE_SIZE_GRID}px" style="margin-bottom: 1em;"></u-skeleton>
-          <div class="default-fields">
-            ${Array(3).fill(0).map(() => html`
-              <div class="field" style="margin-bottom: 0.5em;">
-                <u-skeleton effect="shimmer" width="30%" height="1em" style="margin-right: 0.5em;"></u-skeleton>
-                <u-skeleton effect="shimmer" width="60%" height="1em"></u-skeleton>
-              </div>
-            `)}
-          </div>
-        </div>
-      `);
-    }
-
-    return this.data?.map((item) =>
-      this.renderItem
-        ? this.renderItem(item)
-        : html`
-            <div class="default-item ${this.selectedItem === item ? 'selected' : ''}"
-                 @click=${() => this.handleItemClick(item)}
-                 @dblclick=${() => this.handleItemDoubleClick(item)}>
-              ${this.renderImage ? this.renderImage(item) : this.defaultRenderImage(item, this.currentLayout as 'grid' | 'list' | 'table')}
-              ${this.renderFields ? this.renderFields(item) : this.defaultRenderFields(item)}
-            </div>
-          `
-    );
-  }
-
-  protected setLayout(newLayout: "list" | "grid" | "table") {
-    this.currentLayout = newLayout;
-    this.requestUpdate();
-  }
-
-  private handleItemClick(item: any) {
-    this.selectedItem = item;
-    if (this.onItemSelect) {
-      this.onItemSelect(item);
-    }
-    this.requestUpdate();
-  }
-
-  private handleItemDoubleClick(item: any) {
-    if (this.onItemDoubleClick) {
-      this.onItemDoubleClick(item);
-    }
+  private selectItem(index: number) {
+    this.selectedIndex = index;
+    this.emit('select', { 
+      item: this.items[index], 
+      index 
+    });
   }
 }

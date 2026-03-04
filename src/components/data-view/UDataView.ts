@@ -9,4 +9,4 @@ declare global {
 }
 
 export { UDataView };
-export type { DataViewColumnDefinition } from './UDataView.component.js';
+export type { Column, ViewMode } from './UDataView.component.js';
