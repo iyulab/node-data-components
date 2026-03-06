@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "keywords": [
     "iyulab",
     "web-components",
@@ -36,6 +36,14 @@
       "import": "./src/init.js"
     }
   },
+  "sideEffects": [
+    "./dist/utilities/shadowDomProtection.js",
+    "./dist/utilities/devExtremeCssInjection.js",
+    "./dist/components/data-grid/UDataGrid.js",
+    "./dist/components/data-view/UDataView.js",
+    "./dist/components/simple-sheet/USimpleSheet.js",
+    "./dist/init.js"
+  ],
   "scripts": {
     "start": "vite",
     "build": "eslint && vite build"

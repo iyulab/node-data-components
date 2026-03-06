@@ -1,4 +1,5 @@
 ﻿import { useMemo } from 'react';
+import '../../utilities/devExtremeCssInjection.js';
 import 'devextreme/data/odata/store';
 import DataGrid, {
   Column,

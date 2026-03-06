@@ -85,8 +85,11 @@
   <body>
     <div class="tabs">
       <div class="tab-buttons">
-        <button class="tab-button active" data-tab="lit">
-          Lit Components
+        <button class="tab-button active" data-tab="data-view">
+          UDataView
+        </button>
+        <button class="tab-button" data-tab="simple-sheet">
+          USimpleSheet
         </button>
         <button class="tab-button" data-tab="react">
           React Components
@@ -97,8 +100,12 @@
       </button>
     </div>
 
-    <div id="lit-tab" class="tab-content active">
-      <preview-lit-app></preview-lit-app>
+    <div id="data-view-tab" class="tab-content active">
+      <preview-data-view></preview-data-view>
+    </div>
+
+    <div id="simple-sheet-tab" class="tab-content">
+      <preview-simple-sheet></preview-simple-sheet>
     </div>
 
     <div id="react-tab" class="tab-content">
@@ -141,9 +148,10 @@
       });
     </script>
 
-    <!-- Lit Preview -->
-    <script type="module" src="preview-lit.ts"></script>
-    
+    <!-- Component Previews -->
+    <script type="module" src="preview-data-view.ts"></script>
+    <script type="module" src="preview-simple-sheet.ts"></script>
+
     <!-- React Preview -->
     <script type="module" src="preview-react.tsx"></script>
   </body>

@@ -1,90 +1,21 @@
 import { LitElement, css, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { customElement } from "lit/decorators.js";
 
 import '../src';
-import "@iyulab/components/dist/components/button/UButton.js";
 
-interface SampleItem {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  image?: string;
-  createdAt: Date;
-}
-
-@customElement('preview-lit-app')
-export class PreviewLitApp extends LitElement {
-
-  @state() private sampleData: SampleItem[] = [];
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.generateSampleData();
-  }
-
-  private generateSampleData() {
-    const categories = ['전자제품', '의류', '식품', '도서', '가구'];
-    const names = ['프리미엄', '베이직', '스탠다드', '디럭스', '에센셜'];
-    
-    this.sampleData = Array.from({ length: 20 }, (_, i) => ({
-      id: i + 1,
-      name: `${names[i % names.length]} ${categories[i % categories.length]} ${i + 1}`,
-      category: categories[i % categories.length],
-      price: Math.floor(Math.random() * 100000) + 10000,
-      stock: Math.floor(Math.random() * 100),
-      createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
-      // 일부 아이템에만 이미지 추가 (없는 경우 플레이스홀더 표시)
-      image: i % 3 === 0 ? undefined : `https://picsum.photos/seed/${i}/200/200`
-    }));
-  }
+@customElement('preview-simple-sheet')
+export class PreviewSimpleSheet extends LitElement {
 
   render() {
     return html`
       <div class="header">
-        <h1>📊 Data Components - Lit Preview</h1>
+        <h1>USimpleSheet Component</h1>
       </div>
 
       <section class="section">
-        <h2>UDataView Component</h2>
+        <h2>자동 헤더 (A, B, C...)</h2>
         <p class="description">
-          데이터를 Grid, List, Table 레이아웃으로 표시할 수 있는 컴포넌트입니다.
-        </p>
-        
-        <u-data-view
-          .items=${this.sampleData}
-          mode="grid"
-          gridMinWidth="250px"
-          gap="1rem"
-          @select=${(e: CustomEvent) => {
-            console.log('선택된 아이템:', e.detail);
-          }}
-        ></u-data-view>
-      </section>
-
-      <section class="section">
-        <h2>Custom Columns Example</h2>
-        <p class="description">
-          컬럼을 커스터마이즈하여 특정 필드만 표시할 수 있습니다.
-        </p>
-
-        <u-data-view
-          mode="table"
-          .items=${this.sampleData}
-          .columns=${[
-            { key: 'name', label: '상품명' },
-            { key: 'category', label: '카테고리' },
-            { key: 'price', label: '가격' },
-            { key: 'stock', label: '재고' }
-          ]}
-        ></u-data-view>
-      </section>
-
-      <section class="section">
-        <h2>USimpleSheet - 자동 헤더 (A, B, C...)</h2>
-        <p class="description">
-          columns 미설정시 엑셀처럼 A, B, C... 헤더가 자동으로 생성됩니다.<br>
+          columns 미설정 시 엑셀처럼 A, B, C... 헤더가 자동으로 생성됩니다.<br>
           클릭 선택, Shift+클릭 범위 선택, 드래그 선택, Ctrl+C/V (엑셀 호환), Delete 키 지원.
         </p>
         <u-simple-sheet
@@ -96,9 +27,9 @@ export class PreviewLitApp extends LitElement {
       </section>
 
       <section class="section">
-        <h2>USimpleSheet - 컬럼 정의</h2>
+        <h2>컬럼 정의 + 초기 데이터</h2>
         <p class="description">
-          columns 설정시 해당 열까지만 표시하고, label로 헤더를 지정합니다.<br>
+          columns 설정 시 해당 열까지만 표시하고, label로 헤더를 지정합니다.<br>
           초기 데이터도 함께 설정할 수 있습니다.
         </p>
         <u-simple-sheet
@@ -121,7 +52,7 @@ export class PreviewLitApp extends LitElement {
       </section>
 
       <section class="section">
-        <h2>USimpleSheet - 읽기 전용</h2>
+        <h2>읽기 전용</h2>
         <p class="description">
           readonly 속성으로 편집을 비활성화합니다.
         </p>

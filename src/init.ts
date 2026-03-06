@@ -16,4 +16,4 @@
  */
 
 // Only import Shadow DOM protection (no DevExtreme dependencies)
-import './utils/shadowDomProtection';
+import './utilities/shadowDomProtection';
