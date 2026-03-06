@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "keywords": [
     "iyulab",
     "web-components",
@@ -34,6 +34,18 @@
     "./init": {
       "types": "./src/init.d.ts",
       "import": "./src/init.js"
+    },
+    "./simple-sheet": {
+      "types": "./src/components/simple-sheet/USimpleSheet.d.ts",
+      "import": "./src/components/simple-sheet/USimpleSheet.js"
+    },
+    "./data-view": {
+      "types": "./src/components/data-view/UDataView.d.ts",
+      "import": "./src/components/data-view/UDataView.js"
+    },
+    "./data-grid": {
+      "types": "./src/components/data-grid/UDataGrid.d.ts",
+      "import": "./src/components/data-grid/UDataGrid.js"
     }
   },
   "sideEffects": [
