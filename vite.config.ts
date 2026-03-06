@@ -18,6 +18,9 @@ export default defineConfig({
     lib: {
       entry: [
         resolve(__dirname, 'src/index.ts'),
+        resolve(__dirname, 'src/components/simple-sheet/USimpleSheet.ts'),
+        resolve(__dirname, 'src/components/data-view/UDataView.ts'),
+        resolve(__dirname, 'src/components/data-grid/UDataGrid.tsx'),
       ],
       formats: ['es'],
       fileName: (format, entry) => {
