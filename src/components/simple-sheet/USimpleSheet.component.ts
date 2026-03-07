@@ -78,6 +78,10 @@ export class USimpleSheet extends UElement {
   @state() private _editing: CellPos | null = null;
   @state() private _editVal = '';
   @state() private _replaceOnEdit = false;
+  @state() private _dropdownItems: string[] = [];
+  @state() private _dropdownIndex = -1;
+
+  private _isDropdownClick = false;
 
   // @state() 없음 — 직접 requestUpdate() 호출
   private _data: string[][] = [];
@@ -305,6 +309,11 @@ export class USimpleSheet extends UElement {
       isEditing ? 'editing' : '',
     ].filter(Boolean).join(' ');
 
+    const hasOptions = isEditing && this._getColOptions(r, c) !== null;
+    const showDropdown = isEditing && this._dropdownItems.length > 0;
+    const isStrict = this.columns?.[c]?.strict ?? false;
+    const noMatch = isEditing && hasOptions && this._dropdownItems.length === 0 && this._editVal !== '';
+
     return html`
       <td
         class=${classes}
@@ -319,6 +328,20 @@ export class USimpleSheet extends UElement {
             @keydown=${this._onInputKeyDown}
             @blur=${this._onInputBlur}
           />
+          ${showDropdown ? html`
+            <div class="cell-dropdown">
+              ${this._dropdownItems.map((item, i) => html`
+                <div
+                  class="dropdown-item ${i === this._dropdownIndex ? 'highlighted' : ''}"
+                  @mousedown=${(e: MouseEvent) => this._onDropdownItemMouseDown(e, item)}
+                >${item}</div>
+              `)}
+            </div>
+          ` : noMatch && isStrict ? html`
+            <div class="cell-dropdown">
+              <div class="dropdown-empty">일치하는 항목 없음</div>
+            </div>
+          ` : ''}
         ` : value}
       </td>
     `;
@@ -504,10 +527,19 @@ export class USimpleSheet extends UElement {
 
   private _onInputChange = (e: Event) => {
     this._editVal = (e.target as HTMLInputElement).value;
+    if (this._editing) {
+      const options = this._getColOptions(this._editing.row, this._editing.col);
+      if (options) {
+        const filtered = this._filterOptions(options, this._editVal);
+        this._dropdownItems = filtered;
+        this._dropdownIndex = filtered.length > 0 ? 0 : -1;
+      }
+    }
   };
 
   private _onInputKeyDown = (e: KeyboardEvent) => {
     e.stopPropagation();
+    const hasDropdown = this._dropdownItems.length > 0;
 
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -515,18 +547,38 @@ export class USimpleSheet extends UElement {
       return;
     }
 
+    // 드롭다운 탐색
+    if (hasDropdown && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      const len = this._dropdownItems.length;
+      if (e.key === 'ArrowDown') {
+        this._dropdownIndex = (this._dropdownIndex + 1) % len;
+      } else {
+        this._dropdownIndex = (this._dropdownIndex - 1 + len) % len;
+      }
+      // 하이라이트 항목 스크롤
+      this.updateComplete.then(() => {
+        const highlighted = this.renderRoot.querySelector('.dropdown-item.highlighted');
+        highlighted?.scrollIntoView({ block: 'nearest' });
+      });
+      return;
+    }
+
+    // Enter/Tab 시 하이라이트 항목 반영
+    if (hasDropdown && this._dropdownIndex >= 0
+        && (e.key === 'Enter' || e.key === 'Tab')) {
+      this._editVal = this._dropdownItems[this._dropdownIndex];
+    }
+
     if (e.key === 'Enter') {
       e.preventDefault();
       const pos = this._editing!;
       this._commitEdit();
       if (e.ctrlKey) {
-        // Ctrl+Enter: 현재 셀 유지
         this._select(pos.row, pos.col);
       } else if (e.shiftKey) {
-        // Shift+Enter: 위로 이동
         this._select(Math.max(0, pos.row - 1), pos.col);
       } else {
-        // Enter: 아래 이동
         this._select(Math.min(this._rowCount - 1, pos.row + 1), pos.col);
       }
       return;
@@ -556,6 +608,7 @@ export class USimpleSheet extends UElement {
       return;
     }
 
+    // ArrowUp/Down (드롭다운 없을 때): 기존 동작
     if (e.key === 'ArrowUp') {
       e.preventDefault();
       const pos = this._editing!;
@@ -574,9 +627,20 @@ export class USimpleSheet extends UElement {
   };
 
   private _onInputBlur = () => {
+    if (this._isDropdownClick) {
+      this._isDropdownClick = false;
+      return;
+    }
     if (this._editing) {
       this._commitEdit();
     }
+  };
+
+  private _onDropdownItemMouseDown = (e: MouseEvent, value: string) => {
+    e.preventDefault();
+    this._isDropdownClick = true;
+    this._editVal = value;
+    this._commitEdit();
   };
 
   // ──────────────────────────────────────────
@@ -844,6 +908,18 @@ export class USimpleSheet extends UElement {
     this._editVal = typedChar !== undefined ? typedChar : (this._data[row]?.[col] ?? '');
     this._editing = { row, col };
     this._select(row, col);
+
+    // 드롭다운 초기화
+    const options = this._getColOptions(row, col);
+    if (options) {
+      const filtered = this._filterOptions(options, this._editVal);
+      this._dropdownItems = filtered;
+      this._dropdownIndex = filtered.length > 0 ? 0 : -1;
+    } else {
+      this._dropdownItems = [];
+      this._dropdownIndex = -1;
+    }
+
     // 렌더 완료 후 input에 포커스 (shadow DOM 내 비동기 렌더링 대응)
     this.updateComplete.then(() => {
       const input = this.renderRoot.querySelector('.cell-input') as HTMLInputElement | null;
@@ -862,12 +938,28 @@ export class USimpleSheet extends UElement {
   private _commitEdit() {
     if (!this._editing) return;
     const { row, col } = this._editing;
+
+    // strict 모드 검증: 옵션 목록에 없고 빈 문자열이 아니면 커밋 무시
+    const colDef = this.columns?.[col];
+    if (colDef?.strict && colDef?.options && this._editVal !== '') {
+      const allOptions = this._getColOptions(row, col) ?? [];
+      if (!allOptions.includes(this._editVal)) {
+        this._editing = null;
+        this._dropdownItems = [];
+        this._dropdownIndex = -1;
+        this.requestUpdate();
+        this._containerEl?.focus();
+        return;
+      }
+    }
+
     const prevVal = this._data[row]?.[col] ?? '';
     const newData = this._data.map(r => [...r]);
     newData[row][col] = this._editVal;
     this._data = newData;
     this._editing = null;
-    // 값이 변경된 경우에만 히스토리 기록
+    this._dropdownItems = [];
+    this._dropdownIndex = -1;
     if (this._editVal !== prevVal) {
       this._pushHistory();
       this._emitChange();
@@ -878,6 +970,8 @@ export class USimpleSheet extends UElement {
 
   private _cancelEdit() {
     this._editing = null;
+    this._dropdownItems = [];
+    this._dropdownIndex = -1;
     this.requestUpdate();
     this._containerEl?.focus();
   }
