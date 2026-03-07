@@ -13,6 +13,10 @@ export interface SheetColumn {
   width?: number;
   /** 읽기 전용 열 */
   readonly?: boolean;
+  /** 선택 가능한 옵션 목록 (정적 배열 또는 동적 콜백) */
+  options?: string[] | ((row: number, col: number) => string[]);
+  /** true이면 목록에 있는 값만 입력 가능 (기본: false = 자유 입력 허용) */
+  strict?: boolean;
 }
 
 interface CellPos {
@@ -923,6 +927,20 @@ export class USimpleSheet extends UElement {
 
   private _isColReadonly(col: number): boolean {
     return this.columns?.[col]?.readonly ?? false;
+  }
+
+  private _getColOptions(row: number, col: number): string[] | null {
+    const colDef = this.columns?.[col];
+    if (!colDef?.options) return null;
+    return typeof colDef.options === 'function'
+      ? colDef.options(row, col)
+      : colDef.options;
+  }
+
+  private _filterOptions(options: string[], query: string): string[] {
+    if (!query) return options;
+    const lower = query.toLowerCase();
+    return options.filter(o => o.toLowerCase().includes(lower));
   }
 
   private _emitChange() {
