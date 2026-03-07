@@ -2,6 +2,8 @@
 
 데이터 표시 및 입력을 위한 웹 컴포넌트 라이브러리.
 
+**[Live Demo](https://iyulab.github.io/node-data-components/)**
+
 - **USimpleSheet** — 엑셀 호환 스프레드시트 입력 컴포넌트 (Lit)
 - **UDataView** — Grid / List / Table 뷰 전환 컴포넌트 (Lit)
 - **UDataGrid** — OData 기반 서버 사이드 데이터 그리드 (React + DevExtreme)

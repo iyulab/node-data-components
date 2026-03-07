@@ -517,6 +517,7 @@ export class USimpleSheet extends UElement {
     // ── 일반 문자 입력 → 편집 시작 ──
     if (!this.readonly && !this._isColReadonly(anchor.col)
         && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
       this._startEdit(anchor.row, anchor.col, e.key);
     }
   };
