@@ -309,6 +309,7 @@ export class USimpleSheet extends UElement {
 
     const isColReadonly = this._isColReadonly(c);
     const isComputed = this._isColComputed(c);
+    const isNumeric = this._isNumeric(value);
     const classes = [
       'cell',
       isSelected ? 'selected' : '',
@@ -316,6 +317,7 @@ export class USimpleSheet extends UElement {
       isEditing ? 'editing' : '',
       isColReadonly ? 'cell-readonly' : '',
       isComputed ? 'cell-computed' : '',
+      isNumeric ? 'cell-numeric' : '',
     ].filter(Boolean).join(' ');
 
     const hasOptions = isEditing && this._getColOptions(r, c) !== null;
@@ -1047,6 +1049,11 @@ export class USimpleSheet extends UElement {
 
   private _isColComputed(col: number): boolean {
     return typeof this.columns?.[col]?.compute === 'function';
+  }
+
+  private _isNumeric(value: string): boolean {
+    if (!value || !value.trim()) return false;
+    return !isNaN(Number(value.replace(/,/g, '')));
   }
 
   /** compute 열을 재계산 (열 순서 좌→우, 행 순서 위→아래) */

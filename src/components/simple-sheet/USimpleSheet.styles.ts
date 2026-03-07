@@ -240,6 +240,11 @@ export const styles = css`
     font-style: italic;
   }
 
+  /* Numeric cell (right-aligned like Excel) */
+  .cell.cell-numeric {
+    text-align: right;
+  }
+
   /* Readonly column/cell */
   .cell.cell-readonly {
     background: var(--u-neutral-50, #f8fafc);
