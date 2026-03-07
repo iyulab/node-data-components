@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.8] - 2026-03-08
+### Added
+- USimpleSheet: `format` 속성 — Intl.NumberFormatOptions(통화, 퍼센트 등) 또는 콜백 함수로 표시 포맷 지정
+- USimpleSheet: 셀 값 기반 자동 텍스트 정렬 (숫자 우측, 문자 좌측)
+
 ## [0.1.7] - 2026-03-08
 ### Added
 - USimpleSheet: `compute` 콜백을 통한 열 단위 자동 계산 기능

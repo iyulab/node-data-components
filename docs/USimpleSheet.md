@@ -110,6 +110,7 @@ interface SheetColumn {
   options?:  string[] | ((row: number, col: number) => string[]);  // 드롭다운 옵션 목록
   strict?:   boolean;  // 목록 값만 입력 허용 (기본: false)
   compute?:  (rowIndex: number, data: string[][]) => string;  // 자동 계산 함수
+  format?:   Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);  // 표시 포맷
 }
 ```
 
@@ -361,3 +362,50 @@ const columns: SheetColumn[] = [
 - **클립보드**: 복사 시 계산값 포함, 붙여넣기 시 compute 열은 건너뜁니다
 - **Fill Down/Right**: compute 열은 건너뜁니다
 - **getData()**: 계산된 값이 포함되어 반환됩니다
+
+## 표시 포맷 (format)
+
+열에 `format`을 설정하면 셀 값이 포맷되어 표시됩니다.
+내부 데이터(`getData()`, `change` 이벤트)는 원본 값을 유지합니다.
+
+### Intl.NumberFormatOptions (선언적)
+
+JavaScript 내장 `Intl.NumberFormat`을 직접 활용합니다.
+
+```typescript
+// 통화
+{ key: 'price', label: '가격', format: { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 } }
+// 1500000 → ₩1,500,000
+
+// 천단위 구분
+{ key: 'qty', label: '수량', format: {} }
+// 1234 → 1,234
+
+// 소수점 고정
+{ key: 'rate', label: '이율', format: { minimumFractionDigits: 2, maximumFractionDigits: 2 } }
+// 3.5 → 3.50
+
+// 퍼센트
+{ key: 'ratio', label: '비율', format: { style: 'percent' } }
+// 0.15 → 15%
+```
+
+### 콜백 함수 (자유 포맷)
+
+```typescript
+// 단위 붙이기
+{ key: 'weight', label: '무게', format: (v) => v ? `${v}kg` : '' }
+
+// 날짜 포맷
+{ key: 'date', label: '날짜', format: (v) => {
+  if (!v) return '';
+  return new Intl.DateTimeFormat('ko', { dateStyle: 'medium' }).format(new Date(v));
+}}
+```
+
+### 동작 규칙
+
+- **표시만 변경**: 편집 진입 시 원본 값 표시, 편집 종료 시 포맷 적용
+- **원본 유지**: `getData()`, `change` 이벤트, 복사(Ctrl+C) 모두 원본 값
+- **자동 우측 정렬**: `Intl.NumberFormatOptions` 사용 시 숫자로 간주되어 우측 정렬
+- **에러 안전**: 포맷 중 예외 발생 시 원본 값 그대로 표시

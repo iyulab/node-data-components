@@ -169,6 +169,41 @@ export class PreviewSimpleSheet extends LitElement {
           ]}
         ></u-simple-sheet>
       </section>
+
+      <!-- 7. 표시 포맷 (format) -->
+      <section class="section">
+        <h2>표시 포맷 (format)</h2>
+        <p class="description">
+          <strong>Intl.NumberFormatOptions</strong>로 통화, 퍼센트, 소수점 등을 선언적으로 설정하거나,
+          <strong>콜백 함수</strong>로 자유롭게 포맷할 수 있습니다.<br>
+          편집 시에는 원본 값이 표시되고, 편집 종료 후 포맷이 적용됩니다.
+        </p>
+        <u-simple-sheet
+          style="height: 300px;"
+          .columns=${[
+            { key: 'item',   label: '품목',   width: 150 },
+            { key: 'price',  label: '가격',   width: 130,
+              format: { style: 'currency', currency: 'KRW', maximumFractionDigits: 0 } },
+            { key: 'qty',    label: '수량',   width: 80,
+              format: {} },
+            { key: 'rate',   label: '할인율', width: 100,
+              format: { style: 'percent' } },
+            { key: 'weight', label: '무게',   width: 100,
+              format: (v: string) => v ? `${v}kg` : '' },
+            { key: 'date',   label: '입고일', width: 130,
+              format: (v: string) => {
+                if (!v) return '';
+                return new Intl.DateTimeFormat('ko', { dateStyle: 'medium' }).format(new Date(v));
+              }
+            },
+          ] satisfies SheetColumn[]}
+          .data=${[
+            ['노트북',   '1500000', '2',  '0.1',  '1.8', '2026-01-15'],
+            ['모니터',   '450000',  '4',  '0.05', '5.2', '2026-02-20'],
+            ['키보드',   '85000',   '10', '0.15', '0.4', '2025-12-01'],
+          ]}
+        ></u-simple-sheet>
+      </section>
     `;
   }
 

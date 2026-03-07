@@ -19,6 +19,8 @@ export interface SheetColumn {
   strict?: boolean;
   /** 자동 계산 함수. 설정 시 해당 열은 자동 readonly. 열 순서(좌→우), 행 순서(위→아래)로 계산. */
   compute?: (rowIndex: number, data: string[][]) => string;
+  /** 표시 포맷. Intl.NumberFormatOptions(숫자) 또는 커스텀 콜백. 원본 데이터는 유지. */
+  format?: Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);
 }
 
 interface CellPos {
@@ -309,7 +311,8 @@ export class USimpleSheet extends UElement {
 
     const isColReadonly = this._isColReadonly(c);
     const isComputed = this._isColComputed(c);
-    const isNumeric = this._isNumeric(value);
+    const hasIntlFormat = this.columns?.[c]?.format && typeof this.columns[c].format !== 'function';
+    const isNumeric = hasIntlFormat || this._isNumeric(value);
     const classes = [
       'cell',
       isSelected ? 'selected' : '',
@@ -353,7 +356,7 @@ export class USimpleSheet extends UElement {
               <div class="dropdown-empty">일치하는 항목 없음</div>
             </div>
           ` : ''}
-        ` : value}
+        ` : this._formatValue(value, c, r)}
       </td>
     `;
   }
@@ -1054,6 +1057,23 @@ export class USimpleSheet extends UElement {
   private _isNumeric(value: string): boolean {
     if (!value || !value.trim()) return false;
     return !isNaN(Number(value.replace(/,/g, '')));
+  }
+
+  /** 열의 format 설정에 따라 표시값을 반환. format 미설정 시 원본 반환. */
+  private _formatValue(value: string, col: number, row: number): string {
+    const fmt = this.columns?.[col]?.format;
+    if (!fmt || !value) return value;
+    try {
+      if (typeof fmt === 'function') {
+        return fmt(value, row);
+      }
+      // Intl.NumberFormatOptions
+      const num = Number(value.replace(/,/g, ''));
+      if (isNaN(num)) return value;
+      return new Intl.NumberFormat('ko-KR', fmt).format(num);
+    } catch {
+      return value;
+    }
   }
 
   /** compute 열을 재계산 (열 순서 좌→우, 행 순서 위→아래) */
