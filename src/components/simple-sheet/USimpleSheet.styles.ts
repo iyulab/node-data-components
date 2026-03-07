@@ -203,12 +203,32 @@ export const styles = css`
   }
 
   /* ── Dark mode ──
-     헤더/셀 배경·텍스트는 CSS 변수(--u-neutral-*, --u-txt-color 등)가
-     테마에 따라 자동 처리되므로 선택 상태와 포커스 효과만 재정의한다. */
+     외부에서 --u-* CSS 변수가 제공되면 그 값을 사용하고,
+     제공되지 않으면 자체 dark fallback 값을 적용한다. */
+
+  :host-context([theme="dark"]) .sheet-container {
+    background: var(--u-bg-color, #121212);
+    border-color: var(--u-border-color, #3D3D3D);
+  }
 
   :host-context([theme="dark"]) .sheet-container:focus-within {
     border-color: var(--u-blue-500, #6ba3e3);
     box-shadow: 0 0 0 2px var(--u-blue-100, #1e3a5f);
+  }
+
+  :host-context([theme="dark"]) .corner {
+    background: var(--u-neutral-100, #121212);
+    border-color: var(--u-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .corner:hover {
+    background: var(--u-neutral-200, #1E1E1E);
+  }
+
+  :host-context([theme="dark"]) .col-header {
+    background: var(--u-neutral-100, #121212);
+    color: var(--u-txt-color-weak, #8A8A8A);
+    border-color: var(--u-border-color, #3D3D3D);
   }
 
   :host-context([theme="dark"]) .col-header.col-selected {
@@ -216,9 +236,22 @@ export const styles = css`
     color: var(--u-blue-800, #c2deff);
   }
 
+  :host-context([theme="dark"]) .row-num {
+    background: var(--u-neutral-50, #0A0A0A);
+    color: var(--u-txt-color-weak, #8A8A8A);
+    border-right-color: var(--u-border-color, #3D3D3D);
+    border-bottom-color: var(--u-border-color-weak, #2A2A2A);
+  }
+
   :host-context([theme="dark"]) .row-num.row-selected {
     background: var(--u-blue-100, #1e3a5f);
     color: var(--u-blue-800, #c2deff);
+  }
+
+  :host-context([theme="dark"]) .cell {
+    color: var(--u-txt-color, #D4D4D4);
+    border-right-color: var(--u-border-color-weak, #2A2A2A);
+    border-bottom-color: var(--u-border-color-weak, #2A2A2A);
   }
 
   :host-context([theme="dark"]) .cell.selected {
@@ -226,7 +259,7 @@ export const styles = css`
   }
 
   :host-context([theme="dark"]) .cell.anchor {
-    background: var(--u-bg-color);
+    background: var(--u-bg-color, #121212);
     outline-color: var(--u-blue-500, #6ba3e3);
   }
 
@@ -235,8 +268,8 @@ export const styles = css`
   }
 
   :host-context([theme="dark"]) .cell-input {
-    background: var(--u-bg-color);
-    color: var(--u-txt-color);
+    background: var(--u-bg-color, #121212);
+    color: var(--u-txt-color, #D4D4D4);
     outline-color: var(--u-blue-500, #6ba3e3);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   }
