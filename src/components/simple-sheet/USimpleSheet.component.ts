@@ -556,10 +556,16 @@ export class USimpleSheet extends UElement {
       } else {
         this._dropdownIndex = (this._dropdownIndex - 1 + len) % len;
       }
-      // 하이라이트 항목 스크롤
+      // 하이라이트 항목 스크롤 (상위 요소 스크롤 방지)
       this.updateComplete.then(() => {
+        const dropdown = this.renderRoot.querySelector('.cell-dropdown');
         const highlighted = this.renderRoot.querySelector('.dropdown-item.highlighted');
-        highlighted?.scrollIntoView({ block: 'nearest' });
+        if (dropdown && highlighted) {
+          const dRect = dropdown.getBoundingClientRect();
+          const hRect = highlighted.getBoundingClientRect();
+          if (hRect.bottom > dRect.bottom) dropdown.scrollTop += hRect.bottom - dRect.bottom;
+          else if (hRect.top < dRect.top) dropdown.scrollTop -= dRect.top - hRect.top;
+        }
       });
       return;
     }
@@ -947,6 +953,7 @@ export class USimpleSheet extends UElement {
         this._editing = null;
         this._dropdownItems = [];
         this._dropdownIndex = -1;
+        this._isDropdownClick = false;
         this.requestUpdate();
         this._containerEl?.focus();
         return;
