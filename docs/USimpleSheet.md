@@ -96,6 +96,8 @@ columns = [
 | `rows` | `number` | `20` | 초기 행 수 |
 | `cols` | `number` | `10` | 초기 열 수 (columns 미설정 시 사용) |
 | `readonly` | `boolean` | `false` | 전체 읽기 전용 모드 |
+| `options` | `string[] \| ((row, col) => string[])` | `undefined` | 드롭다운 옵션 목록 (정적 배열 또는 동적 콜백) |
+| `strict` | `boolean` | `false` | `options` 설정 시, 목록 값만 입력 허용 |
 
 ## SheetColumn
 
@@ -105,6 +107,8 @@ interface SheetColumn {
   label?:    string;   // 헤더 표시 텍스트
   width?:    number;   // 열 초기 너비 (px)
   readonly?: boolean;  // 해당 열만 읽기 전용
+  options?:  string[] | ((row: number, col: number) => string[]);  // 드롭다운 옵션 목록
+  strict?:   boolean;  // 목록 값만 입력 허용 (기본: false)
 }
 ```
 
@@ -144,6 +148,59 @@ sheet.getSelection(): { minRow, maxRow, minCol, maxCol } | null
 sheet.canUndo: boolean
 sheet.canRedo: boolean
 ```
+
+## 드롭다운 셀렉터
+
+열에 `options`를 설정하면 셀 편집 시 드롭다운 목록이 표시됩니다.
+
+### 기본 사용 (자유 입력 + 자동완성)
+
+```html
+<u-simple-sheet
+  .columns=${[
+    { key: 'name', label: '이름', width: 150 },
+    { key: 'level', label: '직급', width: 100,
+      options: ['사원', '대리', '과장', '부장'] },
+  ]}
+></u-simple-sheet>
+```
+
+목록에 없는 값도 자유롭게 입력할 수 있습니다.
+
+### strict 모드 (목록 값만 허용)
+
+```html
+<u-simple-sheet
+  .columns=${[
+    { key: 'dept', label: '부서', width: 120,
+      options: ['개발팀', '기획팀', '디자인팀'], strict: true },
+  ]}
+></u-simple-sheet>
+```
+
+`strict: true`이면 목록에 있는 값만 입력(선택)할 수 있습니다. 빈 값은 항상 허용됩니다.
+Ctrl+V 붙여넣기는 strict 제한 없이 허용됩니다.
+
+### 동적 옵션
+
+```typescript
+columns = [
+  { key: 'level', label: '직급', width: 100,
+    options: (row, col) => getOptionsForRow(row) },
+]
+```
+
+콜백 함수를 사용하면 행/열에 따라 다른 옵션 목록을 제공할 수 있습니다.
+
+### 드롭다운 조작
+
+| 동작 | 키보드 | 마우스 |
+|------|--------|--------|
+| 목록 열기 | 셀 편집 진입 시 자동 | 셀 더블클릭 |
+| 항목 이동 | `↑` / `↓` | — |
+| 항목 선택 | `Enter` / `Tab` | 클릭 |
+| 취소 | `Escape` | — |
+| 필터링 | 타이핑 | — |
 
 ## 키보드 단축키
 
