@@ -8,6 +8,9 @@ export default defineConfig({
     target: 'esnext',
     outDir: '../demo-dist',
     emptyOutDir: true,
+    rollupOptions: {
+      treeshake: false,
+    },
   },
   plugins: [
     react(),
