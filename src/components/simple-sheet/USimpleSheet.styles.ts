@@ -240,7 +240,38 @@ export const styles = css`
     font-style: italic;
   }
 
-  /* Readonly mode */
+  /* Readonly column/cell */
+  .cell.cell-readonly {
+    background: var(--u-neutral-50, #f8fafc);
+    color: var(--u-txt-color-weak, #64748b);
+    cursor: default;
+  }
+
+  .cell.cell-readonly.selected {
+    background: var(--u-neutral-100, #f1f5f9);
+  }
+
+  .cell.cell-readonly.anchor {
+    background: var(--u-neutral-50, #f8fafc);
+  }
+
+  /* Computed column/cell */
+  .cell.cell-computed {
+    background: var(--u-blue-50, #eff6ff);
+    color: var(--u-txt-color, #0f172a);
+    font-style: italic;
+    cursor: default;
+  }
+
+  .cell.cell-computed.selected {
+    background: var(--u-blue-100, #dbeafe);
+  }
+
+  .cell.cell-computed.anchor {
+    background: var(--u-blue-50, #eff6ff);
+  }
+
+  /* Readonly mode (whole sheet) */
   :host([readonly]) .cell {
     cursor: default;
   }
@@ -295,6 +326,32 @@ export const styles = css`
     color: var(--u-txt-color, #D4D4D4);
     border-right-color: var(--u-border-color-weak, #2A2A2A);
     border-bottom-color: var(--u-border-color-weak, #2A2A2A);
+  }
+
+  :host-context([theme="dark"]) .cell.cell-readonly {
+    background: var(--u-neutral-100, #1E1E1E);
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .cell.cell-readonly.selected {
+    background: var(--u-neutral-200, #2A2A2A);
+  }
+
+  :host-context([theme="dark"]) .cell.cell-readonly.anchor {
+    background: var(--u-neutral-100, #1E1E1E);
+  }
+
+  :host-context([theme="dark"]) .cell.cell-computed {
+    background: var(--u-blue-100, #1e3a5f);
+    color: var(--u-txt-color, #D4D4D4);
+  }
+
+  :host-context([theme="dark"]) .cell.cell-computed.selected {
+    background: var(--u-blue-200, #2a4a6f);
+  }
+
+  :host-context([theme="dark"]) .cell.cell-computed.anchor {
+    background: var(--u-blue-100, #1e3a5f);
   }
 
   :host-context([theme="dark"]) .cell.selected {

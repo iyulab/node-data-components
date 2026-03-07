@@ -17,6 +17,8 @@ export interface SheetColumn {
   options?: string[] | ((row: number, col: number) => string[]);
   /** true이면 목록에 있는 값만 입력 가능 (기본: false = 자유 입력 허용) */
   strict?: boolean;
+  /** 자동 계산 함수. 설정 시 해당 열은 자동 readonly. 열 순서(좌→우), 행 순서(위→아래)로 계산. */
+  compute?: (rowIndex: number, data: string[][]) => string;
 }
 
 interface CellPos {
@@ -139,6 +141,7 @@ export class USimpleSheet extends UElement {
       newData.push(row);
     }
     this._data = newData;
+    this._recompute();
     // 외부 데이터 변경 시 히스토리 초기화
     this._history = [this._data.map(r => [...r])];
     this._historyIndex = 0;
@@ -180,6 +183,7 @@ export class USimpleSheet extends UElement {
     if (this._historyIndex <= 0) return;
     this._historyIndex--;
     this._data = this._history[this._historyIndex].map(r => [...r]);
+    this._recompute();
     this._emitChange();
     this.requestUpdate();
   }
@@ -188,6 +192,7 @@ export class USimpleSheet extends UElement {
     if (this._historyIndex >= this._history.length - 1) return;
     this._historyIndex++;
     this._data = this._history[this._historyIndex].map(r => [...r]);
+    this._recompute();
     this._emitChange();
     this.requestUpdate();
   }
@@ -302,11 +307,15 @@ export class USimpleSheet extends UElement {
     const isAnchor = this._isAnchor(r, c);
     const value = this._data[r]?.[c] ?? '';
 
+    const isColReadonly = this._isColReadonly(c);
+    const isComputed = this._isColComputed(c);
     const classes = [
       'cell',
       isSelected ? 'selected' : '',
       isAnchor ? 'anchor' : '',
       isEditing ? 'editing' : '',
+      isColReadonly ? 'cell-readonly' : '',
+      isComputed ? 'cell-computed' : '',
     ].filter(Boolean).join(' ');
 
     const hasOptions = isEditing && this._getColOptions(r, c) !== null;
@@ -847,13 +856,14 @@ export class USimpleSheet extends UElement {
       for (let ci = 0; ci < pasteRows[ri].length; ci++) {
         const r = anchor.row + ri;
         const c = anchor.col + ci;
-        if (r < newData.length && c < (newData[r]?.length ?? 0)) {
+        if (r < newData.length && c < (newData[r]?.length ?? 0) && !this._isColComputed(c)) {
           newData[r][c] = pasteRows[ri][ci];
         }
       }
     }
 
     this._data = newData;
+    this._recompute();
     this._pushHistory();
     this._emitChange();
     this.requestUpdate();
@@ -878,6 +888,7 @@ export class USimpleSheet extends UElement {
       }
     }
     this._data = newData;
+    this._recompute();
     this._pushHistory();
     this._emitChange();
     this.requestUpdate();
@@ -898,6 +909,7 @@ export class USimpleSheet extends UElement {
       }
     }
     this._data = newData;
+    this._recompute();
     this._pushHistory();
     this._emitChange();
     this.requestUpdate();
@@ -969,6 +981,7 @@ export class USimpleSheet extends UElement {
     this._dropdownItems = [];
     this._dropdownIndex = -1;
     if (this._editVal !== prevVal) {
+      this._recompute();
       this._pushHistory();
       this._emitChange();
     }
@@ -994,6 +1007,7 @@ export class USimpleSheet extends UElement {
       }
     }
     this._data = newData;
+    this._recompute();
     this._pushHistory();
     this._emitChange();
     this.requestUpdate();
@@ -1028,7 +1042,27 @@ export class USimpleSheet extends UElement {
   }
 
   private _isColReadonly(col: number): boolean {
-    return this.columns?.[col]?.readonly ?? false;
+    return (this.columns?.[col]?.readonly ?? false) || this._isColComputed(col);
+  }
+
+  private _isColComputed(col: number): boolean {
+    return typeof this.columns?.[col]?.compute === 'function';
+  }
+
+  /** compute 열을 재계산 (열 순서 좌→우, 행 순서 위→아래) */
+  private _recompute() {
+    if (!this.columns?.some(c => c.compute)) return;
+    for (let c = 0; c < this._colCount; c++) {
+      const fn = this.columns?.[c]?.compute;
+      if (!fn) continue;
+      for (let r = 0; r < this._rowCount; r++) {
+        try {
+          this._data[r][c] = fn(r, this._data);
+        } catch {
+          this._data[r][c] = '';
+        }
+      }
+    }
   }
 
   private _getColOptions(row: number, col: number): string[] | null {
@@ -1088,6 +1122,7 @@ export class USimpleSheet extends UElement {
       const newData = this._data.map(r => [...r]);
       newData[row][col] = value;
       this._data = newData;
+      this._recompute();
       this._pushHistory();
       this._emitChange();
       this.requestUpdate();

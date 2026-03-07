@@ -4,7 +4,7 @@
 
 **[Live Demo](https://iyulab.github.io/node-data-components/)**
 
-- **USimpleSheet** — 엑셀 호환 스프레드시트 입력 컴포넌트 (Lit)
+- **USimpleSheet** — 엑셀 호환 스프레드시트 입력 컴포넌트 (Lit, compute 자동 계산 지원)
 - **UDataView** — Grid / List / Table 뷰 전환 컴포넌트 (Lit)
 - **UDataGrid** — OData 기반 서버 사이드 데이터 그리드 (React + DevExtreme)
 
@@ -41,6 +41,25 @@ npm install @iyulab/data-components
     ['김철수', 'kim@example.com'],
   ]}
   @change=${(e) => console.log(e.target.getDataAsObjects())}
+></u-simple-sheet>
+```
+
+자동 계산 열 (compute):
+
+```html
+<u-simple-sheet
+  .columns=${[
+    { key: 'item',  label: '품목', width: 150 },
+    { key: 'qty',   label: '수량', width: 80 },
+    { key: 'price', label: '단가', width: 100 },
+    { key: 'total', label: '합계', width: 100,
+      compute: (r, data) => {
+        const qty = Number(data[r][1]) || 0;
+        const price = Number(data[r][2]) || 0;
+        return String(qty * price);
+      }
+    },
+  ]}
 ></u-simple-sheet>
 ```
 

@@ -1,7 +1,7 @@
 # USimpleSheet
 
 엑셀과 호환되는 심플 스프레드시트 입력 컴포넌트.
-무거운 계산/수식 기능은 제외하고 **데이터 입력 편의성**에 집중합니다.
+수식 엔진 없이 **데이터 입력 편의성**에 집중하며, `compute` 콜백으로 열 단위 자동 계산을 지원합니다.
 
 ## 특징
 
@@ -13,6 +13,7 @@
 - Fill Down (Ctrl+D) / Fill Right (Ctrl+R)
 - `columns` 미설정 시 A, B, C... 자동 헤더
 - 드롭다운 셀렉터 (열별 옵션 목록, strict/freeform 모드)
+- `compute` 콜백을 통한 열 단위 자동 계산
 - 라이트/다크 모드 지원
 
 ## 설치 및 등록
@@ -108,6 +109,7 @@ interface SheetColumn {
   readonly?: boolean;  // 해당 열만 읽기 전용
   options?:  string[] | ((row: number, col: number) => string[]);  // 드롭다운 옵션 목록
   strict?:   boolean;  // 목록 값만 입력 허용 (기본: false)
+  compute?:  (rowIndex: number, data: string[][]) => string;  // 자동 계산 함수
 }
 ```
 
@@ -298,3 +300,64 @@ const columns = [
   { key: 'name', label: '이름', width: 150 },
 ] satisfies SheetColumn[];
 ```
+
+## 자동 계산 (compute)
+
+열에 `compute`를 설정하면 데이터 변경 시 해당 열이 자동으로 재계산됩니다.
+수식 엔진 없이 프로그래밍 방식으로 셀 간 연동을 구현할 수 있습니다.
+
+### 같은 행 내 계산 (가로)
+
+```typescript
+const columns: SheetColumn[] = [
+  { key: 'item',  label: '품목',  width: 150 },
+  { key: 'qty',   label: '수량',  width: 80 },
+  { key: 'price', label: '단가',  width: 100 },
+  { key: 'total', label: '합계',  width: 100,
+    compute: (r, data) => {
+      const qty = Number(data[r][1]) || 0;
+      const price = Number(data[r][2]) || 0;
+      return String(qty * price);
+    }
+  },
+];
+```
+
+### 행 간 계산 (세로)
+
+```typescript
+const columns: SheetColumn[] = [
+  { key: 'desc',    label: '내역',  width: 150 },
+  { key: 'expense', label: '집행',  width: 100 },
+  { key: 'balance', label: '잔액',  width: 100,
+    compute: (r, data) => {
+      const expense = Number(data[r][1]) || 0;
+      if (r === 0) return String(10000000 - expense);
+      const prevBalance = Number(data[r - 1][2]) || 0;
+      return String(prevBalance - expense);
+    }
+  },
+];
+```
+
+### 누적 합계
+
+```typescript
+{ key: 'cumulative', label: '누적', width: 100,
+  compute: (r, data) => {
+    let sum = 0;
+    for (let i = 0; i <= r; i++) sum += Number(data[i][3]) || 0;
+    return String(sum);
+  }
+}
+```
+
+### 동작 규칙
+
+- **자동 readonly**: compute 열은 사용자가 직접 편집할 수 없습니다
+- **시각적 구분**: compute 셀은 이탤릭체 + 파란 배경으로 표시됩니다
+- **계산 순서**: 열 순서(좌→우), 행 순서(위→아래)로 계산. 열 정의 순서가 곧 의존성 순서입니다
+- **에러 처리**: compute 함수에서 예외 발생 시 빈 문자열로 표시됩니다
+- **클립보드**: 복사 시 계산값 포함, 붙여넣기 시 compute 열은 건너뜁니다
+- **Fill Down/Right**: compute 열은 건너뜁니다
+- **getData()**: 계산된 값이 포함되어 반환됩니다
