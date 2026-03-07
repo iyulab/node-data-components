@@ -12,6 +12,7 @@
 - 행/열 헤더 클릭으로 전체 행/열 선택
 - Fill Down (Ctrl+D) / Fill Right (Ctrl+R)
 - `columns` 미설정 시 A, B, C... 자동 헤더
+- 드롭다운 셀렉터 (열별 옵션 목록, strict/freeform 모드)
 - 라이트/다크 모드 지원
 
 ## 설치 및 등록
@@ -96,8 +97,6 @@ columns = [
 | `rows` | `number` | `20` | 초기 행 수 |
 | `cols` | `number` | `10` | 초기 열 수 (columns 미설정 시 사용) |
 | `readonly` | `boolean` | `false` | 전체 읽기 전용 모드 |
-| `options` | `string[] \| ((row, col) => string[])` | `undefined` | 드롭다운 옵션 목록 (정적 배열 또는 동적 콜백) |
-| `strict` | `boolean` | `false` | `options` 설정 시, 목록 값만 입력 허용 |
 
 ## SheetColumn
 
