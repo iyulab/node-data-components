@@ -46,6 +46,10 @@
     "./data-grid": {
       "types": "./src/components/data-grid/UDataGrid.d.ts",
       "import": "./src/components/data-grid/UDataGrid.js"
+    },
+    "./u-rich-table": {
+      "types": "./src/components/u-rich-table/URichTable.d.ts",
+      "import": "./src/components/u-rich-table/URichTable.js"
     }
   },
   "sideEffects": [
@@ -54,6 +58,7 @@
     "./dist/components/data-grid/UDataGrid.js",
     "./dist/components/data-view/UDataView.js",
     "./dist/components/simple-sheet/USimpleSheet.js",
+    "./dist/components/u-rich-table/URichTable.js",
     "./dist/init.js"
   ],
   "scripts": {

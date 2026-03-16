@@ -16,3 +16,4 @@ export { UDataGrid } from './components/data-grid/UDataGrid';
 export type { UDataGridColumn, UDataGridProps } from './components/data-grid/UDataGrid.types';
 export * from './components/data-view/UDataView';
 export * from './components/simple-sheet/USimpleSheet';
+export * from './components/u-rich-table/URichTable';
