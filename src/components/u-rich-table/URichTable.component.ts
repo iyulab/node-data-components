@@ -3,6 +3,7 @@ import { html, LitElement, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortState, FilterState } from './types.js';
+import { parseTSV, toTSV } from './utils/clipboard.js';
 
 export class URichTable extends LitElement {
   static styles = richTableStyles;
@@ -559,6 +560,87 @@ export class URichTable extends LitElement {
       detail: { selectedRows: this.getSelectedRows() },
       bubbles: true, composed: true
     }));
+  }
+
+  // --- Lifecycle ---
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.addEventListener('keydown', this._onGlobalKeyDown);
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.removeEventListener('keydown', this._onGlobalKeyDown);
+  }
+
+  // --- Clipboard & Keyboard ---
+  private _onGlobalKeyDown = (e: KeyboardEvent): void => {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'c') this._handleCopy();
+      else if (e.key === 'v') this._handlePaste();
+      else if (e.key === 'a' && !this.editingCell) {
+        e.preventDefault();
+        this._selectAll();
+      }
+    }
+    // Arrow key navigation (비편집 모드)
+    if (!this.editingCell && this.focusedCell) {
+      if (e.key === 'ArrowUp') { e.preventDefault(); this._moveFocus(0, -1); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); this._moveFocus(0, 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); this._moveFocus(-1, 0); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); this._moveFocus(1, 0); }
+      if (e.key === 'Enter') {
+        const col = this.columns[this.focusedCell.colIndex];
+        if (col?.editable) {
+          const value = this.data[this.focusedCell.rowIndex]?.[col.key];
+          this._onCellDblClick(this.focusedCell.rowIndex, this.focusedCell.colIndex, value);
+        }
+      }
+      if (e.key === ' ' && this.selectable) {
+        e.preventDefault();
+        const rowId = this.data[this.focusedCell.rowIndex]?._id as string;
+        if (rowId) this._onRowSelect(rowId);
+      }
+      if (e.key === 'Delete' && this.selectedIds.size > 0) {
+        // 선택된 행 삭제 (개별 이벤트)
+        for (const row of this.getSelectedRows()) {
+          this.dispatchEvent(new CustomEvent('row-delete', { detail: { row }, bubbles: true, composed: true }));
+        }
+      }
+    }
+  };
+
+  private async _handleCopy(): Promise<void> {
+    const rows = this.getSelectedRows();
+    if (rows.length === 0) return;
+    const tsv = toTSV(rows, this.columns);
+    await navigator.clipboard.writeText(tsv);
+  }
+
+  private async _handlePaste(): Promise<void> {
+    if (this.editingCell) return; // 편집 중이면 브라우저 기본 동작
+    const text = await navigator.clipboard.readText();
+    if (!text.trim()) return;
+    const parsedRows = parseTSV(text, this.columns);
+
+    if (parsedRows.length === 0) return;
+
+    this.dispatchEvent(new CustomEvent('paste', {
+      detail: { rows: parsedRows },
+      bubbles: true, composed: true
+    }));
+  }
+
+  private _moveFocus(dx: number, dy: number): void {
+    if (!this.focusedCell) return;
+    const newCol = Math.max(0, Math.min(this.columns.length - 1, this.focusedCell.colIndex + dx));
+    const newRow = Math.max(0, Math.min(this.data.length - 1, this.focusedCell.rowIndex + dy));
+    this.focusedCell = { rowIndex: newRow, colIndex: newCol };
+  }
+
+  private _selectAll(): void {
+    this.selectedIds = new Set(this.data.map(r => r._id as string));
+    this._fireSelectionChange();
   }
 
   // define helper (follows existing pattern)
