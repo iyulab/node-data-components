@@ -1162,6 +1162,28 @@ export class USimpleSheet extends UElement {
     return normalizeRange(this._sel);
   }
 
+  /** 선택 영역을 프로그래밍 방식으로 설정 */
+  setSelection(range: { minRow: number; maxRow: number; minCol: number; maxCol: number }) {
+    const minRow = Math.max(0, Math.min(range.minRow, this._rowCount - 1));
+    const maxRow = Math.max(0, Math.min(range.maxRow, this._rowCount - 1));
+    const minCol = Math.max(0, Math.min(range.minCol, this._colCount - 1));
+    const maxCol = Math.max(0, Math.min(range.maxCol, this._colCount - 1));
+    this._sel = {
+      anchor: { row: minRow, col: minCol },
+      focus: { row: maxRow, col: maxCol },
+    };
+    this.requestUpdate();
+  }
+
+  /** 전체 셀 선택 */
+  selectAll() {
+    this._sel = {
+      anchor: { row: 0, col: 0 },
+      focus: { row: this._rowCount - 1, col: this._colCount - 1 },
+    };
+    this.requestUpdate();
+  }
+
   /** Undo 가능 여부 */
   get canUndo(): boolean { return this._historyIndex > 0; }
 

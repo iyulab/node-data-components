@@ -21,6 +21,7 @@ export default defineConfig({
         resolve(__dirname, 'src/components/simple-sheet/USimpleSheet.ts'),
         resolve(__dirname, 'src/components/data-view/UDataView.ts'),
         resolve(__dirname, 'src/components/data-grid/UDataGrid.tsx'),
+        resolve(__dirname, 'src/components/u-rich-table/URichTable.ts'),
       ],
       formats: ['es'],
       fileName: (format, entry) => {
