@@ -259,4 +259,174 @@ export const richTableStyles = css`
     padding: 40px;
     color: #9ca3af;
   }
+
+  /* ── Dark mode ──
+     외부에서 --u-* CSS 변수가 제공되면 그 값을 사용하고,
+     제공되지 않으면 자체 dark fallback 값을 적용한다. */
+
+  :host-context([theme="dark"]) {
+    border-color: var(--u-border-color, #3D3D3D);
+    color: var(--u-txt-color, #D4D4D4);
+  }
+
+  :host-context([theme="dark"]) .toolbar {
+    background: var(--u-neutral-200, #1E1E1E);
+    border-bottom-color: var(--u-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .toolbar .selection-info {
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .toolbar .search-input {
+    background: var(--u-input-bg-color, #1E1E1E);
+    color: var(--u-txt-color, #D4D4D4);
+    border-color: var(--u-input-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .toolbar .search-input:focus {
+    border-color: var(--u-blue-500, #6ba3e3);
+    box-shadow: 0 0 0 2px rgba(107, 163, 227, 0.2);
+  }
+
+  :host-context([theme="dark"]) .toolbar .btn-primary {
+    background: var(--u-blue-500, #6ba3e3);
+  }
+
+  :host-context([theme="dark"]) .toolbar .btn-primary:hover {
+    background: var(--u-blue-600, #87B8F5);
+  }
+
+  :host-context([theme="dark"]) .toolbar .btn-success {
+    background: var(--u-green-500, #66B584);
+  }
+
+  :host-context([theme="dark"]) .toolbar .btn-success:hover {
+    background: var(--u-green-600, #81D19D);
+  }
+
+  :host-context([theme="dark"]) thead th {
+    background: var(--u-neutral-200, #1E1E1E);
+    color: var(--u-txt-color, #D4D4D4);
+    border-bottom-color: var(--u-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) thead th.sortable:hover {
+    background: var(--u-neutral-300, #2A2A2A);
+  }
+
+  :host-context([theme="dark"]) .sort-indicator {
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .filter-row td {
+    background: var(--u-yellow-0, #2E2200);
+    border-bottom-color: var(--u-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .filter-row input,
+  :host-context([theme="dark"]) .filter-row select {
+    background: var(--u-input-bg-color, #1E1E1E);
+    color: var(--u-txt-color, #D4D4D4);
+    border-color: var(--u-input-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) tbody tr {
+    border-bottom-color: var(--u-border-color-weak, #2A2A2A);
+  }
+
+  :host-context([theme="dark"]) tbody tr:hover {
+    background: var(--u-neutral-200, #1E1E1E);
+  }
+
+  :host-context([theme="dark"]) tbody tr.selected {
+    background: var(--u-blue-0, #0a1e3d);
+  }
+
+  :host-context([theme="dark"]) tbody tr.focused td.focused-cell {
+    outline-color: var(--u-blue-500, #6ba3e3);
+  }
+
+  :host-context([theme="dark"]) tbody tr.editing {
+    background: var(--u-yellow-0, #2E2200);
+    outline-color: var(--u-yellow-500, #D4A712);
+  }
+
+  :host-context([theme="dark"]) tbody tr.error {
+    background: var(--u-red-0, #2E0A0A);
+  }
+
+  :host-context([theme="dark"]) tbody td .cell-edit-input {
+    background: var(--u-input-bg-color, #1E1E1E);
+    color: var(--u-txt-color, #D4D4D4);
+    border-color: var(--u-blue-500, #6ba3e3);
+  }
+
+  :host-context([theme="dark"]) tbody td .cell-edit-input.invalid {
+    border-color: var(--u-red-500, #D66060);
+  }
+
+  :host-context([theme="dark"]) .validation-error {
+    color: var(--u-red-500, #D66060);
+  }
+
+  :host-context([theme="dark"]) .expand-cell {
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .expand-cell:hover {
+    color: var(--u-blue-500, #6ba3e3);
+  }
+
+  :host-context([theme="dark"]) .new-row td {
+    background: var(--u-green-0, #0D2818);
+  }
+
+  :host-context([theme="dark"]) .new-row input {
+    border-color: var(--u-green-500, #66B584);
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .new-row input:focus {
+    border-color: var(--u-green-600, #81D19D);
+    background: var(--u-input-bg-color, #1E1E1E);
+    color: var(--u-txt-color, #D4D4D4);
+  }
+
+  :host-context([theme="dark"]) .detail-row td {
+    background: var(--u-neutral-200, #1E1E1E);
+    border-bottom-color: var(--u-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .pagination {
+    background: var(--u-neutral-200, #1E1E1E);
+    border-top-color: var(--u-border-color, #3D3D3D);
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .pagination button {
+    background: var(--u-neutral-300, #2A2A2A);
+    color: var(--u-txt-color, #D4D4D4);
+    border-color: var(--u-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .pagination button.active {
+    background: var(--u-blue-500, #6ba3e3);
+    color: var(--u-neutral-1000, #FFFFFF);
+    border-color: var(--u-blue-500, #6ba3e3);
+  }
+
+  :host-context([theme="dark"]) .pagination select {
+    background: var(--u-input-bg-color, #1E1E1E);
+    color: var(--u-txt-color, #D4D4D4);
+    border-color: var(--u-input-border-color, #3D3D3D);
+  }
+
+  :host-context([theme="dark"]) .loading-overlay {
+    color: var(--u-txt-color-weak, #8A8A8A);
+  }
+
+  :host-context([theme="dark"]) .empty-message {
+    color: var(--u-txt-color-disabled, #525252);
+  }
 `;
