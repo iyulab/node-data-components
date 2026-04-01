@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "keywords": [
     "iyulab",
     "web-components",
@@ -27,30 +27,12 @@
       "types": "./src/index.d.ts",
       "import": "./src/index.js"
     },
-    "./dist/*": {
-      "types": "./src/*.d.ts",
-      "import": "./src/*"
-    },
-    "./init": {
-      "types": "./src/init.d.ts",
-      "import": "./src/init.js"
-    },
-    "./simple-sheet": {
-      "types": "./src/components/simple-sheet/USimpleSheet.d.ts",
-      "import": "./src/components/simple-sheet/USimpleSheet.js"
-    },
-    "./data-view": {
-      "types": "./src/components/data-view/UDataView.d.ts",
-      "import": "./src/components/data-view/UDataView.js"
-    },
-    "./data-grid": {
-      "types": "./src/components/data-grid/UDataGrid.d.ts",
-      "import": "./src/components/data-grid/UDataGrid.js"
-    },
-    "./u-rich-table": {
-      "types": "./src/components/u-rich-table/URichTable.d.ts",
-      "import": "./src/components/u-rich-table/URichTable.js"
-    }
+    "./dist/*": "./src/*",
+    "./init": "./src/init.js",
+    "./simple-sheet": "./src/components/simple-sheet/USimpleSheet.js",
+    "./data-view": "./src/components/data-view/UDataView.js",
+    "./data-grid": "./src/components/data-grid/UDataGrid.js",
+    "./u-rich-table": "./src/components/u-rich-table/URichTable.js"
   },
   "sideEffects": [
     "./dist/utilities/shadowDomProtection.js",
@@ -66,7 +48,7 @@
     "build": "eslint && vite build"
   },
   "dependencies": {
-    "@iyulab/components": "^0.4.0",
+    "@iyulab/components": "^1.0.0",
     "devextreme": "^25.2.5",
     "devextreme-react": "^25.2.5",
     "lit": "^3.3.2",
@@ -75,7 +57,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
-    "@lit/react": "^1.0.8",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -83,6 +64,7 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "glob": "^13.0.6",
     "globals": "^17.4.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.2",
