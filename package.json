@@ -48,7 +48,7 @@
     "build": "eslint && vite build"
   },
   "dependencies": {
-    "@iyulab/components": "^1.0.2",
+    "@iyulab/components": "^1.0.3",
     "devextreme": "^25.2.5",
     "devextreme-react": "^25.2.5",
     "lit": "^3.3.2",
