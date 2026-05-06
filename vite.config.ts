@@ -1,6 +1,5 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
@@ -20,7 +19,6 @@ export default defineConfig({
         resolve(__dirname, 'src/index.ts'),
         resolve(__dirname, 'src/components/simple-sheet/USimpleSheet.ts'),
         resolve(__dirname, 'src/components/data-view/UDataView.ts'),
-        resolve(__dirname, 'src/components/data-grid/UDataGrid.tsx'),
         resolve(__dirname, 'src/components/u-rich-table/URichTable.ts'),
       ],
       formats: ['es'],
@@ -32,8 +30,6 @@ export default defineConfig({
       external: [
         /^@iyulab.*/,
         /^lit.*/,
-        /^react.*/,
-        /^devextreme.*/,
       ],
       output: {
         preserveModules: true,
@@ -42,7 +38,6 @@ export default defineConfig({
     }
   },
   plugins: [
-    react(),
     dts({
       include: ["src/**/*"]
     })

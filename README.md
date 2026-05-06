@@ -6,7 +6,11 @@
 
 - **USimpleSheet** — 엑셀 호환 스프레드시트 입력 컴포넌트 (Lit, compute 자동 계산 지원)
 - **UDataView** — Grid / List / Table 뷰 전환 컴포넌트 (Lit)
-- **UDataGrid** — OData 기반 서버 사이드 데이터 그리드 (React + DevExtreme)
+- **URichTable** — 정렬/필터/편집/페이지네이션 지원 테이블 (Lit)
+
+> **UDataGrid (DevExtreme)는 v0.4.0에서 제거되었습니다.**
+> OData 서버 사이드 그리드가 필요하면 `@iyulab/flex-table`을 사용하세요.
+> → [마이그레이션 가이드](./docs/migrating-from-datagrid.md)
 
 ## Installation
 
@@ -73,32 +77,12 @@ npm install @iyulab/data-components
 ></u-data-view>
 ```
 
-### UDataGrid (React)
-
-```tsx
-import { UDataGrid } from '@iyulab/data-components';
-
-<UDataGrid
-  dataSourceUrl="https://api.example.com/odata/products"
-  keyField="id"
-  columns={[
-    { dataField: 'name',  caption: '상품명' },
-    { dataField: 'price', caption: '가격', dataType: 'number' },
-  ]}
-/>
-```
-
 ## Documentation
 
 - [USimpleSheet](./docs/USimpleSheet.md)
 - [UDataView](./docs/UDataView.md)
-- [UDataGrid](./docs/UDataGrid.md)
-
-## UDataGrid 대안
-
-UDataGrid는 DevExtreme 상용 라이선스가 필요합니다. DevExtreme 없이 서버 사이드 데이터 그리드가 필요한 경우 `@iyulab/flex-table`로 전환할 수 있습니다.
-
-→ [UDataGrid에서 flex-table로 마이그레이션](./docs/migrating-from-datagrid.md)
+- [URichTable](./docs/URichTable.md)
+- [UDataGrid 마이그레이션 가이드](./docs/migrating-from-datagrid.md)
 
 ## Theming
 

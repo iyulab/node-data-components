@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "keywords": [
     "iyulab",
     "web-components",
@@ -31,13 +31,10 @@
     "./init": "./src/init.js",
     "./simple-sheet": "./src/components/simple-sheet/USimpleSheet.js",
     "./data-view": "./src/components/data-view/UDataView.js",
-    "./data-grid": "./src/components/data-grid/UDataGrid.js",
     "./u-rich-table": "./src/components/u-rich-table/URichTable.js"
   },
   "sideEffects": [
     "./dist/utilities/shadowDomProtection.js",
-    "./dist/utilities/devExtremeCssInjection.js",
-    "./dist/components/data-grid/UDataGrid.js",
     "./dist/components/data-view/UDataView.js",
     "./dist/components/simple-sheet/USimpleSheet.js",
     "./dist/components/u-rich-table/URichTable.js",
@@ -49,21 +46,12 @@
   },
   "dependencies": {
     "@iyulab/components": "^1.0.4",
-    "devextreme": "^25.2.6",
-    "devextreme-react": "^25.2.6",
-    "lit": "^3.3.2",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "lit": "^3.3.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/node": "^25.6.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.4",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
     "glob": "^13.0.6",
     "globals": "^17.5.0",
     "typescript": "^5.9.3",

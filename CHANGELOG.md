@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0] - 2026-05-07
+
+### BREAKING CHANGES
+- `UDataGrid` 컴포넌트 제거 — DevExtreme 상용 라이선스 의존성 해소
+  - `src/components/data-grid/UDataGrid.tsx`, `UDataGrid.types.ts` 삭제
+  - `src/utilities/devExtremeCssInjection.ts`, `src/styles/devextreme-overrides.css` 삭제
+  - `exports['./data-grid']` 제거
+  - `dependencies`에서 `devextreme`, `devextreme-react`, `react`, `react-dom` 제거
+
+### Migration
+UDataGrid 대체: `@iyulab/flex-table` + `@iyulab/flex-table/odata` 조합 사용
+→ [마이그레이션 가이드](./docs/migrating-from-datagrid.md)
+
 ## [0.3.2] - 2026-05-07
 
 ### Added
