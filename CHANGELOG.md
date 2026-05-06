@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2] - 2026-05-07
+
+### Added
+- `docs/migrating-from-datagrid.md`: UDataGrid(DevExtreme)에서 `@iyulab/flex-table`로 전환하는 마이그레이션 가이드 추가 (yesung-oms 9개 페이지 실증 기반)
+- README에 UDataGrid 대안 섹션 및 마이그레이션 가이드 링크 추가
+- `docs/UDataGrid.md` 상단에 마이그레이션 가이드 링크 추가
+
 ## [0.3.1] - 2026-04-01
 ### Changed
 - 컴포넌트 파일 구조 리팩토링: `.component.ts` 파일을 기존 `.ts`로 병합 (UDataView, USimpleSheet, URichTable)

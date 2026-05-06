@@ -94,6 +94,12 @@ import { UDataGrid } from '@iyulab/data-components';
 - [UDataView](./docs/UDataView.md)
 - [UDataGrid](./docs/UDataGrid.md)
 
+## UDataGrid 대안
+
+UDataGrid는 DevExtreme 상용 라이선스가 필요합니다. DevExtreme 없이 서버 사이드 데이터 그리드가 필요한 경우 `@iyulab/flex-table`로 전환할 수 있습니다.
+
+→ [UDataGrid에서 flex-table로 마이그레이션](./docs/migrating-from-datagrid.md)
+
 ## Theming
 
 `@iyulab/components`의 테마 시스템을 사용합니다. 라이트/다크 모드 자동 지원.

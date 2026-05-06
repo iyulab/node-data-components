@@ -1,5 +1,7 @@
 # UDataGrid
 
+> **DevExtreme 라이선스 없이 서버 사이드 그리드가 필요하다면** → [flex-table 마이그레이션 가이드](./migrating-from-datagrid.md)를 참고하세요.
+
 DevExtreme 기반의 서버 사이드 데이터 그리드 (React 컴포넌트).
 OData v4 프로토콜을 통해 서버 사이드 페이징/필터링/정렬/그룹을 지원합니다.
 
