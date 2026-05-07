@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - 2026-05-07
+
+### Fixed
+- eslint.config.js에서 제거된 React 플러그인 참조 삭제 (eslint-plugin-react-hooks, eslint-plugin-react-refresh)
+
 ## [0.4.0] - 2026-05-07
 
 ### BREAKING CHANGES
