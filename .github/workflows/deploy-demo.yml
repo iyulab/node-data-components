@@ -30,7 +30,7 @@ jobs:
       - name: Build demo
         run: npx vite build --config vite.config.demo.ts
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: demo-dist
           retention-days: 1
