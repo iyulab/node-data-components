@@ -7,4 +7,4 @@ on:
 
 jobs:
   cleanup:
-    uses: iyulab/shared/.github/workflows/cleanup-expired-artifacts.yml@main
+    uses: iyulab/shared/.github/workflows/cleanup-expired-artifacts.yml@1802449344d6384c28bfe8706e28a822e8a3fd9c
