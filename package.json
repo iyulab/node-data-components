@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "keywords": [
     "iyulab",
     "web-components",
@@ -29,11 +29,20 @@
     },
     "./dist/*": "./src/*",
     "./init": "./src/init.js",
+    "./react": {
+      "types": "./src/react.d.ts",
+      "import": "./src/react.js"
+    },
     "./simple-sheet": "./src/components/simple-sheet/USimpleSheet.js",
     "./data-view": "./src/components/data-view/UDataView.js",
     "./u-rich-table": "./src/components/u-rich-table/URichTable.js"
   },
   "sideEffects": [
+    "./src/utilities/shadowDomProtection.ts",
+    "./src/components/data-view/UDataView.ts",
+    "./src/components/simple-sheet/USimpleSheet.ts",
+    "./src/components/u-rich-table/URichTable.ts",
+    "./src/init.ts",
     "./dist/utilities/shadowDomProtection.js",
     "./dist/components/data-view/UDataView.js",
     "./dist/components/simple-sheet/USimpleSheet.js",
@@ -48,12 +57,27 @@
     "@iyulab/components": "^1.0.6",
     "lit": "^3.3.3"
   },
+  "peerDependencies": {
+    "@lit/react": "^1.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@lit/react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@lit/react": "^1.0.8",
+    "@types/react": "^19.2.14",
     "@types/node": "^25.8.0",
     "eslint": "^9.39.4",
     "glob": "^13.0.6",
     "globals": "^17.6.0",
+    "react": "^19.2.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.3",
     "vite": "^8.0.13",

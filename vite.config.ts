@@ -17,6 +17,7 @@ export default defineConfig({
     lib: {
       entry: [
         resolve(__dirname, 'src/index.ts'),
+        resolve(__dirname, 'src/react.ts'),
         resolve(__dirname, 'src/components/simple-sheet/USimpleSheet.ts'),
         resolve(__dirname, 'src/components/data-view/UDataView.ts'),
         resolve(__dirname, 'src/components/u-rich-table/URichTable.ts'),
@@ -30,6 +31,8 @@ export default defineConfig({
       external: [
         /^@iyulab.*/,
         /^lit.*/,
+        /^@lit\/react/,
+        /^react(\/|$)/,
       ],
       output: {
         preserveModules: true,

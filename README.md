@@ -77,6 +77,49 @@ npm install @iyulab/data-components
 ></u-data-view>
 ```
 
+## React
+
+`@lit/react` 기반 일급 래퍼를 `/react` 서브패스로 제공합니다. rich property(`data`, `columns` 등)를
+JSX props로 직접 전달할 수 있고, 커스텀 이벤트는 `onXxx` props로 받습니다 — ref + `useEffect`
+브리지가 필요 없습니다.
+
+```bash
+npm install @iyulab/data-components @lit/react react
+```
+
+```tsx
+import { USimpleSheetReact, type SheetColumn } from '@iyulab/data-components/react';
+
+const columns: SheetColumn[] = [
+  { key: 'name',  label: '이름',   width: 150 },
+  { key: 'email', label: '이메일', width: 220 },
+];
+
+export function MySheet() {
+  return (
+    <USimpleSheetReact
+      style={{ height: 400 }}
+      columns={columns}
+      data={[['홍길동', 'hong@example.com']]}
+      rows={25}
+      onChange={(e) => console.log(e.detail.data)}
+    />
+  );
+}
+```
+
+`URichTableReact`는 `RichTableEventMap`의 모든 이벤트(`onRowUpdate`, `onSortChange`,
+`onSelectionChange` 등)를 타입드 props로 노출합니다. `UDataViewReact`도 동일하게 제공됩니다.
+
+타입스크립트만 필요하다면 래퍼 없이도 엘리먼트 클래스와 `HTMLElementTagNameMap` 증강이
+메인 엔트리에서 제공됩니다:
+
+```typescript
+import type { USimpleSheet } from '@iyulab/data-components';
+
+const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null 로 추론
+```
+
 ## Documentation
 
 - [USimpleSheet](./docs/USimpleSheet.md)

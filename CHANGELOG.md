@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0] - 2026-06-10
+
+### Added
+- React 일급 래퍼 서브패스 `@iyulab/data-components/react` (`@lit/react` createComponent 기반)
+  - `USimpleSheetReact` / `UDataViewReact` / `URichTableReact`
+  - rich property를 JSX props로 직접 전달, 커스텀 이벤트는 타입드 `onXxx` props로 노출
+    (USimpleSheet `onChange`, URichTable은 `RichTableEventMap` 9종 전부)
+  - `@lit/react`, `react`는 optional peerDependency — React 미사용 소비자에 영향 없음
+- README에 React 사용법 및 TypeScript 직접 사용(HTMLElementTagNameMap) 안내 추가
+
+### Fixed
+- `sideEffects`가 dist 경로만 나열해 빌드 시 `shadowDomProtection` 자동 초기화 import가
+  번들에서 제거되던 문제 수정 (src 경로 추가) — 0.4.x 배포본에서 Shadow DOM 스타일 보호가
+  실제로 동작하지 않던 잠재 결함
+
 ## [0.4.1] - 2026-05-07
 
 ### Fixed
