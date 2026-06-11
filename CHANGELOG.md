@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0] - 2026-06-11
+
+### Added
+- `USimpleSheet`: `theme` 속성 1급 지원 (`'light' | 'dark'`, attribute 리플렉트) — per-element 테마 지정 가능, `:host-context` 미지원 브라우저(Firefox/Safari)에서도 동작 (ISSUE-20260610-usimplesheet-darkmode-inconsistent)
+- `USimpleSheet`: 조상 `data-theme="dark"` 컨텍스트에서도 다크 모드 적용 — Theme 유틸 없이 `data-theme`만 설정하는 앱에서 도구별 다크 적용이 비일관하던 문제 해소
+
+### Changed
+- 다크 모드 CSS를 단일 소스에서 3가지 컨텍스트(`:host([theme="dark"])` / `:host-context([theme="dark"])` / `:host-context([data-theme="dark"])`) 개별 규칙으로 생성 — 셀렉터 리스트 결합 시 `:host-context` 미지원 브라우저가 리스트 전체를 무효화하는 문제 회피
+
 ## [0.5.0] - 2026-06-10
 
 ### Added

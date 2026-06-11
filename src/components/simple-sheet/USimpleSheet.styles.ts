@@ -1,6 +1,6 @@
-import { css } from 'lit';
+import { css, unsafeCSS } from 'lit';
 
-export const styles = css`
+const baseStyles = css`
   :host {
     display: block;
     width: 100%;
@@ -281,124 +281,145 @@ export const styles = css`
     cursor: default;
   }
 
-  /* ── Dark mode ──
-     외부에서 --u-* CSS 변수가 제공되면 그 값을 사용하고,
-     제공되지 않으면 자체 dark fallback 값을 적용한다. */
+`;
 
-  :host-context([theme="dark"]) .sheet-container {
+/* ── Dark mode ──
+   외부에서 --u-* CSS 변수가 제공되면 그 값을 사용하고,
+   제공되지 않으면 자체 dark fallback 값을 적용한다.
+
+   다크 규칙은 아래 3가지 컨텍스트에서 동일하게 적용된다:
+   - :host([theme="dark"])              — 1급 theme 속성 (전 브라우저)
+   - :host-context([theme="dark"])      — 조상 theme 속성, Theme 유틸 호환 (Chromium)
+   - :host-context([data-theme="dark"]) — 조상 data-theme 속성만 쓰는 앱 (Chromium)
+
+   셀렉터 리스트로 결합하면 :host-context 미지원 브라우저(Firefox/Safari)가
+   리스트 전체를 무효화하므로, 프리픽스별 개별 규칙으로 생성한다. */
+const DARK_PREFIXES = [
+  ':host([theme="dark"])',
+  ':host-context([theme="dark"])',
+  ':host-context([data-theme="dark"])',
+];
+
+const darkRules = (host: string) => `
+  ${host} .sheet-container {
     background: var(--u-bg-color, #121212);
     border-color: var(--u-border-color, #3D3D3D);
   }
 
-  :host-context([theme="dark"]) .sheet-container:focus-within {
+  ${host} .sheet-container:focus-within {
     border-color: var(--u-blue-500, #6ba3e3);
     box-shadow: 0 0 0 2px var(--u-blue-100, #1e3a5f);
   }
 
-  :host-context([theme="dark"]) .corner {
+  ${host} .corner {
     background: var(--u-neutral-100, #121212);
     border-color: var(--u-border-color, #3D3D3D);
   }
 
-  :host-context([theme="dark"]) .corner:hover {
+  ${host} .corner:hover {
     background: var(--u-neutral-200, #1E1E1E);
   }
 
-  :host-context([theme="dark"]) .col-header {
+  ${host} .col-header {
     background: var(--u-neutral-100, #121212);
     color: var(--u-txt-color-weak, #8A8A8A);
     border-color: var(--u-border-color, #3D3D3D);
   }
 
-  :host-context([theme="dark"]) .col-header.col-selected {
+  ${host} .col-header.col-selected {
     background: var(--u-blue-100, #1e3a5f);
     color: var(--u-blue-800, #c2deff);
   }
 
-  :host-context([theme="dark"]) .row-num {
+  ${host} .row-num {
     background: var(--u-neutral-50, #0A0A0A);
     color: var(--u-txt-color-weak, #8A8A8A);
     border-right-color: var(--u-border-color, #3D3D3D);
     border-bottom-color: var(--u-border-color-weak, #2A2A2A);
   }
 
-  :host-context([theme="dark"]) .row-num.row-selected {
+  ${host} .row-num.row-selected {
     background: var(--u-blue-100, #1e3a5f);
     color: var(--u-blue-800, #c2deff);
   }
 
-  :host-context([theme="dark"]) .cell {
+  ${host} .cell {
     color: var(--u-txt-color, #D4D4D4);
     border-right-color: var(--u-border-color-weak, #2A2A2A);
     border-bottom-color: var(--u-border-color-weak, #2A2A2A);
   }
 
-  :host-context([theme="dark"]) .cell.cell-readonly {
+  ${host} .cell.cell-readonly {
     background: var(--u-neutral-100, #1E1E1E);
     color: var(--u-txt-color-weak, #8A8A8A);
   }
 
-  :host-context([theme="dark"]) .cell.cell-readonly.selected {
+  ${host} .cell.cell-readonly.selected {
     background: var(--u-neutral-200, #2A2A2A);
   }
 
-  :host-context([theme="dark"]) .cell.cell-readonly.anchor {
+  ${host} .cell.cell-readonly.anchor {
     background: var(--u-neutral-100, #1E1E1E);
   }
 
-  :host-context([theme="dark"]) .cell.cell-computed {
+  ${host} .cell.cell-computed {
     background: var(--u-blue-100, #1e3a5f);
     color: var(--u-txt-color, #D4D4D4);
   }
 
-  :host-context([theme="dark"]) .cell.cell-computed.selected {
+  ${host} .cell.cell-computed.selected {
     background: var(--u-blue-200, #2a4a6f);
   }
 
-  :host-context([theme="dark"]) .cell.cell-computed.anchor {
+  ${host} .cell.cell-computed.anchor {
     background: var(--u-blue-100, #1e3a5f);
   }
 
-  :host-context([theme="dark"]) .cell.selected {
+  ${host} .cell.selected {
     background: var(--u-blue-0, #0a1e3d);
   }
 
-  :host-context([theme="dark"]) .cell.anchor {
+  ${host} .cell.anchor {
     background: var(--u-bg-color, #121212);
     outline-color: var(--u-blue-500, #6ba3e3);
   }
 
-  :host-context([theme="dark"]) .resize-handle:hover::after {
+  ${host} .resize-handle:hover::after {
     background: var(--u-blue-500, #6ba3e3);
   }
 
-  :host-context([theme="dark"]) .cell-input {
+  ${host} .cell-input {
     background: var(--u-bg-color, #121212);
     color: var(--u-txt-color, #D4D4D4);
     outline-color: var(--u-blue-500, #6ba3e3);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   }
 
-  :host-context([theme="dark"]) .cell-dropdown {
+  ${host} .cell-dropdown {
     background: var(--u-bg-color, #121212);
     border-color: var(--u-border-color, #3D3D3D);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
-  :host-context([theme="dark"]) .dropdown-item {
+  ${host} .dropdown-item {
     color: var(--u-txt-color, #D4D4D4);
   }
 
-  :host-context([theme="dark"]) .dropdown-item:hover {
+  ${host} .dropdown-item:hover {
     background: var(--u-neutral-100, #1E1E1E);
   }
 
-  :host-context([theme="dark"]) .dropdown-item.highlighted {
+  ${host} .dropdown-item.highlighted {
     background: var(--u-blue-100, #1e3a5f);
     color: var(--u-blue-800, #c2deff);
   }
 
-  :host-context([theme="dark"]) .dropdown-empty {
+  ${host} .dropdown-empty {
     color: var(--u-txt-color-weak, #8A8A8A);
   }
 `;
+
+export const styles = [
+  baseStyles,
+  unsafeCSS(DARK_PREFIXES.map(darkRules).join('\n')),
+];

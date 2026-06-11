@@ -80,6 +80,12 @@ export class USimpleSheet extends UElement {
   /** 읽기 전용 모드 */
   @property({ type: Boolean }) readonly = false;
 
+  /**
+   * 명시 테마. 'dark'이면 다크 스타일을 적용합니다.
+   * 미설정 시 조상 컨텍스트의 theme/data-theme 속성에 따릅니다 (:host-context, Chromium 한정).
+   */
+  @property({ type: String, reflect: true }) theme?: 'light' | 'dark';
+
   @state() private _sel: SelectionRange | null = null;
   @state() private _editing: CellPos | null = null;
   @state() private _editVal = '';

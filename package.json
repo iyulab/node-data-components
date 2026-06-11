@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "keywords": [
     "iyulab",
     "web-components",
@@ -51,7 +51,9 @@
   ],
   "scripts": {
     "start": "vite",
-    "build": "eslint && vite build"
+    "build": "eslint && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@iyulab/components": "^1.0.6",
@@ -72,15 +74,17 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@lit/react": "^1.0.8",
-    "@types/react": "^19.2.14",
     "@types/node": "^25.8.0",
+    "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
     "glob": "^13.0.6",
     "globals": "^17.6.0",
+    "happy-dom": "^20.10.2",
     "react": "^19.2.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.3",
     "vite": "^8.0.13",
-    "vite-plugin-dts": "^5.0.0"
+    "vite-plugin-dts": "^5.0.0",
+    "vitest": "^4.1.8"
   }
 }
