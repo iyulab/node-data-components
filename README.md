@@ -124,7 +124,7 @@ const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null �
 
 - [USimpleSheet](./docs/USimpleSheet.md)
 - [UDataView](./docs/UDataView.md)
-- [URichTable](./docs/URichTable.md)
+- URichTable — 문서 작성 예정([types.ts](./src/components/u-rich-table/types.ts) 참고)
 - [UDataGrid 마이그레이션 가이드](./docs/migrating-from-datagrid.md)
 
 ## Theming
