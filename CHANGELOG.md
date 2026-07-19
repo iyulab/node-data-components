@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0] - 2026-07-19
+
+### Changed
+- **이 패키지의 eslint 가 실제로 동작하기 시작했다.** `eslint.config.js` 의 두 결함 — (1) `files: ['src/**/*']` 가 ESLint 9 에서 universal 패턴이라 `.ts` 를 opt-in 하지 못함, (2) 배열 프리셋(`tseslint.configs.recommended`)을 객체 스프레드해 프리셋이 무력화됨 — 을 수정했다. `build` 스크립트의 `eslint &&` 게이트는 매칭 파일이 0개라 항상 통과하고 있었다. 복구 후 실측 결과 **error 0건** — 이 패키지의 소스는 이미 깨끗했다.
+- `npm run lint` / `npm run lint:fix` 스크립트 추가.
+- **`UDataView` 의 열린 타입 의도를 명시** — `items`/`renderCard`/`renderCell` 등에 흩어져 있던 `any` 8곳을 새 `DataItem`(`Record<string, any>`) 타입 한 곳으로 격리했다. 이 컴포넌트는 소비자 도메인 타입을 제한하지 않는 범용 뷰어이므로 열린 타입이 설계 의도이며, 이제 그 의도가 코드에 표현된다. `formatValue` 는 `unknown` 으로 좁혔다. 원시값 배열(`[1, 2, 3]`)을 `items` 로 넘기던 코드는 이제 타입 오류가 날 수 있다.
+
+## [0.6.1] - 2026-07-08
+
+### Fixed
+- `UDataView`: fallback 이 없던 `var(--u-*)` 참조 24개에 컨텍스트별 fallback 을 부여 — `@iyulab/components` 테마 토큰이 정의되지 않은 환경에서 색상이 비어 렌더되던 문제.
+
 ## [0.6.0] - 2026-06-11
 
 ### Added
