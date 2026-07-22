@@ -58,7 +58,7 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-    "@iyulab/components": "^1.5.1",
+    "@iyulab/components": "^1.8.0",
     "lit": "^3.3.3"
   },
   "peerDependencies": {
