@@ -15,7 +15,7 @@
 ## [0.6.0] - 2026-06-11
 
 ### Added
-- `USimpleSheet`: `theme` 속성 1급 지원 (`'light' | 'dark'`, attribute 리플렉트) — per-element 테마 지정 가능, `:host-context` 미지원 브라우저(Firefox/Safari)에서도 동작 (ISSUE-20260610-usimplesheet-darkmode-inconsistent)
+- `USimpleSheet`: `theme` 속성 1급 지원 (`'light' | 'dark'`, attribute 리플렉트) — per-element 테마 지정 가능, `:host-context` 미지원 브라우저(Firefox/Safari)에서도 동작
 - `USimpleSheet`: 조상 `data-theme="dark"` 컨텍스트에서도 다크 모드 적용 — Theme 유틸 없이 `data-theme`만 설정하는 앱에서 도구별 다크 적용이 비일관하던 문제 해소
 
 ### Changed
@@ -57,7 +57,7 @@ UDataGrid 대체: `@iyulab/flex-table` + `@iyulab/flex-table/odata` 조합 사�
 ## [0.3.2] - 2026-05-07
 
 ### Added
-- `docs/migrating-from-datagrid.md`: UDataGrid(DevExtreme)에서 `@iyulab/flex-table`로 전환하는 마이그레이션 가이드 추가 (yesung-oms 9개 페이지 실증 기반)
+- `docs/migrating-from-datagrid.md`: UDataGrid(DevExtreme)에서 `@iyulab/flex-table`로 전환하는 마이그레이션 가이드 추가 (리스트 페이지 9개 전환 실증 기반)
 - README에 UDataGrid 대안 섹션 및 마이그레이션 가이드 링크 추가
 - `docs/UDataGrid.md` 상단에 마이그레이션 가이드 링크 추가
 
