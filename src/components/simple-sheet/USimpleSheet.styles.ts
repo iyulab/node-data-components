@@ -162,7 +162,7 @@ const baseStyles = css`
   }
 
   .cell.selected {
-    background: var(--u-blue-0, #E3F2FD);
+    background: var(--u-primary-bg-color, #E3F2FD);
   }
 
   /* The anchor cell (top-left of selection) */
@@ -232,7 +232,7 @@ const baseStyles = css`
   }
 
   .dropdown-item.highlighted {
-    background: var(--u-blue-0, #E3F2FD);
+    background: var(--u-primary-bg-color, #E3F2FD);
     color: var(--u-blue-800, #1e40af);
   }
 
@@ -265,7 +265,7 @@ const baseStyles = css`
 
   /* Computed column/cell */
   .cell.cell-computed {
-    background: var(--u-blue-0, #E3F2FD);
+    background: var(--u-primary-bg-color, #E3F2FD);
     color: var(--u-txt-color, #0f172a);
     font-style: italic;
     cursor: default;
@@ -276,7 +276,7 @@ const baseStyles = css`
   }
 
   .cell.cell-computed.anchor {
-    background: var(--u-blue-0, #E3F2FD);
+    background: var(--u-primary-bg-color, #E3F2FD);
   }
 
   /* Readonly mode (whole sheet) */
@@ -322,9 +322,6 @@ const darkRules = (host: string) => `
     background: var(--u-neutral-200, #2A2A2A);
   }
 
-  ${host} .cell.cell-computed {
-    background: var(--u-blue-100, #1e3a5f);
-  }
 
   ${host} .cell.cell-computed.selected {
     background: var(--u-blue-200, #2a4a6f);
@@ -334,9 +331,6 @@ const darkRules = (host: string) => `
     background: var(--u-blue-100, #1e3a5f);
   }
 
-  ${host} .dropdown-item.highlighted {
-    background: var(--u-blue-100, #1e3a5f);
-  }
 `;
 
 export const styles = [

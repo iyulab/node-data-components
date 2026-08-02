@@ -90,13 +90,13 @@ exports[`USimpleSheet 계산색 회귀망 > 두 테마의 계산색이 고정 �
     "background-color": "rgb(245, 245, 245)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-right-color": "rgb(238, 238, 238)",
-    "color": "rgb(158, 158, 158)",
+    "color": "rgb(117, 117, 117)",
   },
   "light .cell.cell-readonly.selected": {
     "background-color": "rgb(245, 245, 245)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-right-color": "rgb(238, 238, 238)",
-    "color": "rgb(158, 158, 158)",
+    "color": "rgb(117, 117, 117)",
   },
   "light .cell.selected": {
     "background-color": "rgb(255, 255, 255)",

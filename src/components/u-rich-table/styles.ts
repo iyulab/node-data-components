@@ -23,12 +23,7 @@ export const richTableStyles = css`
 
   .toolbar .selection-info {
     font-size: 12px;
-    /* 역할 토큰으로 옮기지 않는다 — --u-txt-color-weak 는 라이트에서
-       neutral-500(#9E9E9E) = 흰 배경 대비 2.68 로 WCAG AA(4.5) 미달이다.
-       이 값(#64748b)은 4.76 로 AA 를 통과한다. 다크 쪽은 역할 토큰이 5.43 으로
-       정상이므로, 아래 다크 규칙에서만 --u-txt-color-weak 를 쓴다.
-       ⇒ 업스트림에서 라이트 매핑이 neutral-600(4.61)으로 고쳐지면 이 예외는 사라진다. */
-    color: #64748b;
+    color: var(--u-txt-color-weak, #757575);
   }
 
   .toolbar .search-input {
@@ -115,7 +110,7 @@ export const richTableStyles = css`
   }
 
   tbody tr.selected {
-    background: var(--u-blue-0, #eff6ff);
+    background: var(--u-primary-bg-color, #E3F2FD);
   }
 
   tbody tr.focused td.focused-cell {
@@ -129,7 +124,7 @@ export const richTableStyles = css`
   }
 
   tbody tr.error {
-    background: var(--u-red-0, #fef2f2);
+    background: var(--u-danger-bg-color, #FFEBEE);
   }
 
   tbody td {
@@ -178,7 +173,7 @@ export const richTableStyles = css`
 
   .new-row td {
     padding: 4px 8px;
-    background: var(--u-green-0, #f0fdf4);
+    background: var(--u-success-bg-color, #E8F5E9);
     opacity: 0.8;
   }
 
@@ -189,12 +184,7 @@ export const richTableStyles = css`
     border-radius: 3px;
     background: transparent;
     font-size: 12px;
-    /* 역할 토큰으로 옮기지 않는다 — --u-txt-color-weak 는 라이트에서
-       neutral-500(#9E9E9E) = 흰 배경 대비 2.68 로 WCAG AA(4.5) 미달이다.
-       이 값(#6b7280)은 4.83 로 AA 를 통과한다. 다크 쪽은 역할 토큰이 5.43 으로
-       정상이므로, 아래 다크 규칙에서만 --u-txt-color-weak 를 쓴다.
-       ⇒ 업스트림에서 라이트 매핑이 neutral-600(4.61)으로 고쳐지면 이 예외는 사라진다. */
-    color: #6b7280;
+    color: var(--u-txt-color-weak, #757575);
     outline: none;
   }
 
@@ -226,12 +216,7 @@ export const richTableStyles = css`
     background: var(--u-neutral-50, #f8fafc);
     border-top: 1px solid var(--u-border-color, #e2e8f0);
     font-size: 12px;
-    /* 역할 토큰으로 옮기지 않는다 — --u-txt-color-weak 는 라이트에서
-       neutral-500(#9E9E9E) = 흰 배경 대비 2.68 로 WCAG AA(4.5) 미달이다.
-       이 값(#64748b)은 4.76 로 AA 를 통과한다. 다크 쪽은 역할 토큰이 5.43 으로
-       정상이므로, 아래 다크 규칙에서만 --u-txt-color-weak 를 쓴다.
-       ⇒ 업스트림에서 라이트 매핑이 neutral-600(4.61)으로 고쳐지면 이 예외는 사라진다. */
-    color: #64748b;
+    color: var(--u-txt-color-weak, #757575);
   }
 
   .pagination .page-buttons {
@@ -268,12 +253,7 @@ export const richTableStyles = css`
     align-items: center;
     justify-content: center;
     padding: 40px;
-    /* 역할 토큰으로 옮기지 않는다 — --u-txt-color-weak 는 라이트에서
-       neutral-500(#9E9E9E) = 흰 배경 대비 2.68 로 WCAG AA(4.5) 미달이다.
-       이 값(#6b7280)은 4.83 로 AA 를 통과한다. 다크 쪽은 역할 토큰이 5.43 으로
-       정상이므로, 아래 다크 규칙에서만 --u-txt-color-weak 를 쓴다.
-       ⇒ 업스트림에서 라이트 매핑이 neutral-600(4.61)으로 고쳐지면 이 예외는 사라진다. */
-    color: #6b7280;
+    color: var(--u-txt-color-weak, #757575);
   }
 
   .empty-message {
@@ -294,7 +274,7 @@ export const richTableStyles = css`
 
   .row-error-cell {
     padding: 2px 8px;
-    background: var(--u-red-0, #fef2f2);
+    background: var(--u-danger-bg-color, #FFEBEE);
     color: var(--u-danger-color, #ef4444);
     font-size: 11px;
   }
@@ -313,18 +293,13 @@ export const richTableStyles = css`
      (Tailwind 계열 hex 하드코딩) 다크를 통째로 재구현할 수밖에 없었다. base 를 역할 토큰으로
      옮기면서 그 대부분이 불필요해졌다.
 
-     남긴 것은 역할 층에 자리가 없는 둘뿐이다:
+     남긴 것은 역할 층에 자리가 없는 하나뿐이다:
 
-     ⑴ **표면 높이 축이 없다.** 배경 역할 토큰은 상호작용 상태 이름(-hover/-active/
+     **표면 높이 축이 없다.** 배경 역할 토큰은 상호작용 상태 이름(-hover/-active/
         -disabled)뿐이라 "바탕보다 한 단 올라온 면"을 뜻하는 토큰이 없다. 라이트에서는
         neutral-50/100 이 흰 바탕 위에서 충분히 읽히지만, 다크에서는 그 단이 각각
         #0A0A0A/#121212 로 거의 검정이라 툴바·헤더·페이지네이션이 배경에 묻힌다.
 
-     ⑵ **--u-txt-color-weak 의 라이트 매핑이 WCAG AA 에 미달한다.** 라이트는
-        neutral-500(#9E9E9E) = 흰 배경 대비 2.68 로 AA(4.5) 미달이고, 다크는
-        neutral-700(#8A8A8A) = 5.43 으로 정상이다. 그래서 base 는 AA 를 통과하는
-        고정값을 유지하고, **다크에서만** 역할 토큰을 쓴다.
-        ⇒ 업스트림 라이트 매핑이 neutral-600(4.61)으로 고쳐지면 이 넷은 사라진다.
 
      ⚠:host-context 는 Firefox/Safari 미지원이다. 그러나 위 base 마이그레이션으로
      **색의 대부분이 이제 토큰 층에서 테마를 따르므로**, 그 브라우저에서도 다크가
@@ -339,12 +314,5 @@ export const richTableStyles = css`
 
   :host-context([theme="dark"]) .pagination button {
     background: var(--u-neutral-300, #2A2A2A);
-  }
-
-  :host-context([theme="dark"]) .toolbar .selection-info,
-  :host-context([theme="dark"]) .pagination,
-  :host-context([theme="dark"]) .loading-overlay,
-  :host-context([theme="dark"]) .new-row input {
-    color: var(--u-txt-color-weak, #8A8A8A);
   }
 `;
