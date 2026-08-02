@@ -73,6 +73,23 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `expandable` | `boolean` | `false` | 행 펼치기 (`detailRenderer` 필요) |
 | `detailRenderer` | `(row) => TemplateResult` | `undefined` | 펼친 행의 내용 |
 
+### UI 문구
+
+| 속성 | 타입 | 기본값 |
+|------|------|--------|
+| `emptyMessage` | `string` | `'데이터가 없습니다'` |
+| `loadingMessage` | `string` | `'로딩 중...'` |
+| `filterPlaceholder` | `string` | `'필터...'` |
+| `filterAllLabel` | `string` | `'전체'` |
+| `addRowLabel` | `string` | `'+ 새 행'` |
+| `pageInfoFormatter` | `(total, start, end) => string` | `전체 N건 중 X-Y 표시` |
+
+`pageInfoFormatter`만 함수입니다 — 언어마다 어순이 달라 템플릿 문자열로는 열 수 없습니다.
+
+```typescript
+table.pageInfoFormatter = (total, start, end) => `${start}–${end} of ${total}`;
+```
+
 ## 메서드
 
 | 메서드 | 반환 | 설명 |

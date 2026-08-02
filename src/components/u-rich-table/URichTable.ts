@@ -17,6 +17,21 @@ export class URichTable extends LitElement {
   @property({ type: Number }) currentPage = 1;
   @property({ type: Boolean }) loading = false;
   @property({ type: String }) emptyMessage = '데이터가 없습니다';
+  /** 로딩 표시 문구 */
+  @property({ type: String }) loadingMessage = '로딩 중...';
+  /** 필터 입력 placeholder */
+  @property({ type: String }) filterPlaceholder = '필터...';
+  /** 필터 select 의 "전체" 항목 문구 */
+  @property({ type: String }) filterAllLabel = '전체';
+  /** 새 행 추가 버튼 문구 */
+  @property({ type: String }) addRowLabel = '+ 새 행';
+  /**
+   * 페이지 정보 문구. (전체, 시작, 끝) 을 받아 문자열을 만든다.
+   * 언어마다 어순이 달라 템플릿 문자열이 아니라 함수로 연다.
+   */
+  @property({ attribute: false })
+  pageInfoFormatter: (total: number, start: number, end: number) => string =
+    (total, start, end) => `전체 ${total.toLocaleString()}건 중 ${start}-${end} 표시`;
   @property({ type: Boolean }) selectable = false;
   @property({ type: Boolean }) editable = false;
   @property({ type: Boolean }) addable = false;
@@ -114,7 +129,7 @@ export class URichTable extends LitElement {
         <div style="flex:1"></div>
         <slot name="toolbar-end"></slot>
         ${this.addable ? html`
-          <button class="btn btn-success" @click=${this._onAddRowClick}>+ 새 행</button>
+          <button class="btn btn-success" @click=${this._onAddRowClick}>${this.addRowLabel}</button>
         ` : ''}
       </div>
     `;
@@ -153,11 +168,11 @@ export class URichTable extends LitElement {
             ${col.filterable !== false ? (
               col.filterType === 'select' && col.options
                 ? html`<select @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
-                    <option value="">전체</option>
+                    <option value="">${this.filterAllLabel}</option>
                     ${col.options.map(o => html`<option value=${o.value}>${o.label}</option>`)}
                   </select>`
                 : html`<input
-                    placeholder="필터..."
+                    placeholder=${this.filterPlaceholder}
                     @input=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLInputElement).value)} />`
             ) : ''}
           </td>
@@ -169,7 +184,7 @@ export class URichTable extends LitElement {
 
   private _renderBody(): TemplateResult | TemplateResult[] {
     if (this.loading) {
-      return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">로딩 중...</div></td></tr>`;
+      return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage}</div></td></tr>`;
     }
     if (this.data.length === 0) {
       return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${this.emptyMessage}</div></td></tr>`;
@@ -310,7 +325,7 @@ export class URichTable extends LitElement {
 
     return html`
       <div class="pagination">
-        <span>전체 ${this.totalCount.toLocaleString()}건 중 ${start}-${end} 표시</span>
+        <span>${this.pageInfoFormatter(this.totalCount, start, end)}</span>
         <div class="page-buttons">
           <button ?disabled=${this.currentPage <= 1} @click=${() => this._onPageChange(this.currentPage - 1)}>◀</button>
           ${this._getPageNumbers(totalPages).map(p => html`

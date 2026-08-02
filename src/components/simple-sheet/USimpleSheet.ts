@@ -79,6 +79,8 @@ export class USimpleSheet extends UElement {
 
   /** 읽기 전용 모드 */
   @property({ type: Boolean }) readonly = false;
+  /** 드롭다운에 일치 항목이 없을 때 문구 */
+  @property({ type: String }) noMatchMessage = '일치하는 항목 없음';
 
   /**
    * 명시 테마. 'dark'이면 다크 스타일을 적용합니다.
@@ -361,7 +363,7 @@ export class USimpleSheet extends UElement {
             </div>
           ` : noMatch && isStrict ? html`
             <div class="cell-dropdown">
-              <div class="dropdown-empty">일치하는 항목 없음</div>
+              <div class="dropdown-empty">${this.noMatchMessage}</div>
             </div>
           ` : ''}
         ` : this._formatValue(value, c, r)}

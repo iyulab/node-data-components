@@ -26,6 +26,18 @@
   매핑(neutral-50 라이트 / neutral-100 다크)이 종전 다크 블록이 손으로 쓴 단과 **정확히
   같다** — 그래서 해당 다크 규칙이 불필요해졌다. 계산색은 두 테마 모두 그대로다.
 
+### Added
+
+- **UI 문구를 프로퍼티로 열었다** — URichTable 의 `loadingMessage`·`filterPlaceholder`·
+  `filterAllLabel`·`addRowLabel`·`pageInfoFormatter`, USimpleSheet 의 `noMatchMessage`.
+  종전에는 `emptyMessage` 하나만 열려 있고 나머지는 한국어로 하드코딩돼 있었다.
+  `pageInfoFormatter` 만 함수인 것은 **언어마다 어순이 달라** 템플릿 문자열로는 열 수
+  없기 때문이다.
+
+  ⚠로케일 레지스트리를 도입하지는 않았다 — 이 패키지에 없는 레이어를 새로 들이는
+  일이고, 현재 수요가 그것을 요구할 만큼 모이지 않았다. 기존 `emptyMessage` 어법을
+  따르는 순수 가산이다.
+
 ### Changed
 
 - **업스트림 토큰 채택 (`@iyulab/components` 1.15.0).** 이 릴리스에서 소비 측 우회 둘이
