@@ -125,6 +125,9 @@ const baseStyles = css`
     padding: 0 6px;
     font-size: 11px;
     color: var(--u-txt-color-weak, #64748b);
+    /* 예외 — 표면 높이 축이 없다. 행번호 여백은 "비활성"이 아니라 시트 바탕보다
+       한 단 내려간 면이다. --u-bg-color-disabled 를 쓰면 다크에서 바탕(neutral-100)과
+       같은 값이 되어 여백 구분이 사라진다 — 스냅샷이 그것을 잡았다. */
     background: var(--u-neutral-50, #f8fafc);
     border-right: 1px solid var(--u-border-color, #e2e8f0);
     border-bottom: 1px solid var(--u-border-color-weak, #f1f5f9);
@@ -159,7 +162,7 @@ const baseStyles = css`
   }
 
   .cell.selected {
-    background: var(--u-blue-50, #eff6ff);
+    background: var(--u-blue-0, #E3F2FD);
   }
 
   /* The anchor cell (top-left of selection) */
@@ -194,7 +197,7 @@ const baseStyles = css`
     background: var(--u-bg-color, #fff);
     box-sizing: border-box;
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px var(--u-shadow-color-strong, rgba(0, 0, 0, 0.16));
   }
 
   /* Dropdown overlay */
@@ -210,7 +213,7 @@ const baseStyles = css`
     border: 1px solid var(--u-border-color, #e2e8f0);
     border-top: none;
     border-radius: 0 0 4px 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 12px var(--u-shadow-color-normal, rgba(0, 0, 0, 0.12));
     z-index: 20;
   }
 
@@ -229,7 +232,7 @@ const baseStyles = css`
   }
 
   .dropdown-item.highlighted {
-    background: var(--u-blue-50, #eff6ff);
+    background: var(--u-blue-0, #E3F2FD);
     color: var(--u-blue-800, #1e40af);
   }
 
@@ -247,7 +250,7 @@ const baseStyles = css`
 
   /* Readonly column/cell */
   .cell.cell-readonly {
-    background: var(--u-neutral-50, #f8fafc);
+    background: var(--u-bg-color-disabled, #FAFAFA);
     color: var(--u-txt-color-weak, #64748b);
     cursor: default;
   }
@@ -257,12 +260,12 @@ const baseStyles = css`
   }
 
   .cell.cell-readonly.anchor {
-    background: var(--u-neutral-50, #f8fafc);
+    background: var(--u-bg-color-disabled, #FAFAFA);
   }
 
   /* Computed column/cell */
   .cell.cell-computed {
-    background: var(--u-blue-50, #eff6ff);
+    background: var(--u-blue-0, #E3F2FD);
     color: var(--u-txt-color, #0f172a);
     font-style: italic;
     cursor: default;
@@ -273,7 +276,7 @@ const baseStyles = css`
   }
 
   .cell.cell-computed.anchor {
-    background: var(--u-blue-50, #eff6ff);
+    background: var(--u-blue-0, #E3F2FD);
   }
 
   /* Readonly mode (whole sheet) */
@@ -283,9 +286,19 @@ const baseStyles = css`
 
 `;
 
-/* ── Dark mode ──
-   외부에서 --u-* CSS 변수가 제공되면 그 값을 사용하고,
-   제공되지 않으면 자체 dark fallback 값을 적용한다.
+/* ── 다크 보정 ──
+   ⚠**여기 남은 규칙은 "다크 테마 구현"이 아니다.** 역할 토큰의 중립 계열은 두 테마에서
+   서로 다른 팔레트 단에 매핑돼 있어(--u-bg-color = neutral-0 라이트 / neutral-100 다크)
+   테마 보정이 토큰 층에 이미 들어 있다. 그래서 중립 색을 쓰는 규칙은 base 하나로 족하고,
+   실제로 이 블록에 있던 24개 선언 중 대부분이 base 와 **같은 토큰**을 가리켜 계산값을
+   전혀 바꾸지 못하고 있었다(브라우저 스냅샷으로 실증 — tests/browser/).
+
+   남은 것은 **유채색 표면**뿐이다. 역할 층에는 유채색 표면 토큰이 없고(0종), 팔레트의
+   유채색 틴트는 다크에서 짓눌린다 — 바탕 대비 델타의 다크/라이트 비가 중립은 1.34~1.62배인
+   반면 청색은 0.38~0.54배다. 즉 같은 단을 두 테마에 그대로 쓰면 다크에서 절반 이하로
+   옅게 읽힌다. 아래 6개는 그 어긋남을 손으로 메운 것이고, 지우면 실제로 색이 달라진다.
+
+   ⇒ 업스트림에 유채색 표면 토큰이 생기면 이 블록은 통째로 사라져야 한다.
 
    다크 규칙은 아래 3가지 컨텍스트에서 동일하게 적용된다:
    - :host([theme="dark"])              — 1급 theme 속성 (전 브라우저)
@@ -301,70 +314,16 @@ const DARK_PREFIXES = [
 ];
 
 const darkRules = (host: string) => `
-  ${host} .sheet-container {
-    background: var(--u-bg-color, #121212);
-    border-color: var(--u-border-color, #3D3D3D);
-  }
-
-  ${host} .sheet-container:focus-within {
-    border-color: var(--u-blue-500, #6ba3e3);
-    box-shadow: 0 0 0 2px var(--u-blue-100, #1e3a5f);
-  }
-
-  ${host} .corner {
-    background: var(--u-neutral-100, #121212);
-    border-color: var(--u-border-color, #3D3D3D);
-  }
-
-  ${host} .corner:hover {
-    background: var(--u-neutral-200, #1E1E1E);
-  }
-
-  ${host} .col-header {
-    background: var(--u-neutral-100, #121212);
-    color: var(--u-txt-color-weak, #8A8A8A);
-    border-color: var(--u-border-color, #3D3D3D);
-  }
-
   ${host} .col-header.col-selected {
     background: var(--u-blue-100, #1e3a5f);
-    color: var(--u-blue-800, #c2deff);
-  }
-
-  ${host} .row-num {
-    background: var(--u-neutral-50, #0A0A0A);
-    color: var(--u-txt-color-weak, #8A8A8A);
-    border-right-color: var(--u-border-color, #3D3D3D);
-    border-bottom-color: var(--u-border-color-weak, #2A2A2A);
-  }
-
-  ${host} .row-num.row-selected {
-    background: var(--u-blue-100, #1e3a5f);
-    color: var(--u-blue-800, #c2deff);
-  }
-
-  ${host} .cell {
-    color: var(--u-txt-color, #D4D4D4);
-    border-right-color: var(--u-border-color-weak, #2A2A2A);
-    border-bottom-color: var(--u-border-color-weak, #2A2A2A);
-  }
-
-  ${host} .cell.cell-readonly {
-    background: var(--u-neutral-100, #1E1E1E);
-    color: var(--u-txt-color-weak, #8A8A8A);
   }
 
   ${host} .cell.cell-readonly.selected {
     background: var(--u-neutral-200, #2A2A2A);
   }
 
-  ${host} .cell.cell-readonly.anchor {
-    background: var(--u-neutral-100, #1E1E1E);
-  }
-
   ${host} .cell.cell-computed {
     background: var(--u-blue-100, #1e3a5f);
-    color: var(--u-txt-color, #D4D4D4);
   }
 
   ${host} .cell.cell-computed.selected {
@@ -375,47 +334,8 @@ const darkRules = (host: string) => `
     background: var(--u-blue-100, #1e3a5f);
   }
 
-  ${host} .cell.selected {
-    background: var(--u-blue-0, #0a1e3d);
-  }
-
-  ${host} .cell.anchor {
-    background: var(--u-bg-color, #121212);
-    outline-color: var(--u-blue-500, #6ba3e3);
-  }
-
-  ${host} .resize-handle:hover::after {
-    background: var(--u-blue-500, #6ba3e3);
-  }
-
-  ${host} .cell-input {
-    background: var(--u-bg-color, #121212);
-    color: var(--u-txt-color, #D4D4D4);
-    outline-color: var(--u-blue-500, #6ba3e3);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  }
-
-  ${host} .cell-dropdown {
-    background: var(--u-bg-color, #121212);
-    border-color: var(--u-border-color, #3D3D3D);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  }
-
-  ${host} .dropdown-item {
-    color: var(--u-txt-color, #D4D4D4);
-  }
-
-  ${host} .dropdown-item:hover {
-    background: var(--u-neutral-100, #1E1E1E);
-  }
-
   ${host} .dropdown-item.highlighted {
     background: var(--u-blue-100, #1e3a5f);
-    color: var(--u-blue-800, #c2deff);
-  }
-
-  ${host} .dropdown-empty {
-    color: var(--u-txt-color-weak, #8A8A8A);
   }
 `;
 

@@ -43,10 +43,15 @@ describe('USimpleSheet 테마 지원', () => {
   describe('다크 모드 CSS 계약', () => {
     const text = cssText(styles);
 
-    it.each(DARK_PREFIXES)('%s 프리픽스로 다크 규칙이 존재한다', (prefix) => {
-      expect(text).toContain(`${prefix} .sheet-container`);
-      expect(text).toContain(`${prefix} .cell`);
-      expect(text).toContain(`${prefix} .dropdown-empty`);
+    // ⚠이 테스트가 확인하는 것은 **생성 메커니즘**이지, 어떤 규칙이 다크 블록에 있어야
+    // 하는지가 아니다. 종전에는 .sheet-container / .cell / .dropdown-empty 의 존재를
+    // 요구했는데, 그 규칙들은 base 와 **같은 토큰**을 가리켜 계산값을 전혀 바꾸지 못하는
+    // 죽은 규칙이었다(브라우저 스냅샷으로 실증 — tests/browser/simple-sheet-colors).
+    // 문자열 검사는 그것을 구분하지 못한다. 그래서 "무엇이 들어 있는가"가 아니라
+    // "세 컨텍스트가 한 소스에서 동일하게 생성되는가"만 확인한다.
+    it.each(DARK_PREFIXES)('%s 프리픽스로 다크 규칙이 생성된다', (prefix) => {
+      // 남은 규칙은 유채색 표면뿐이다 — 역할 층에 유채색 표면 토큰이 없어서 손으로 메운 것.
+      expect(text).toContain(`${prefix} .cell.cell-computed`);
     });
 
     it('세 프리픽스의 규칙 수가 동일하다 (단일 소스에서 생성)', () => {
