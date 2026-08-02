@@ -6,8 +6,8 @@ export const richTableStyles = css`
     display: block;
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 13px;
-    color: var(--u-txt-color, #0f172a);
-    border: 1px solid var(--u-border-color, #e2e8f0);
+    color: var(--u-txt-color, #212121);
+    border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
     overflow: hidden;
   }
@@ -17,8 +17,8 @@ export const richTableStyles = css`
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: var(--u-neutral-50, #f8fafc);
-    border-bottom: 1px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-bg-color-raised, #FAFAFA);
+    border-bottom: 1px solid var(--u-border-color, #E0E0E0);
   }
 
   .toolbar .selection-info {
@@ -28,14 +28,14 @@ export const richTableStyles = css`
 
   .toolbar .search-input {
     padding: 4px 10px;
-    border: 1px solid var(--u-input-border-color, #d1d5db);
+    border: 1px solid var(--u-input-border-color, #E0E0E0);
     border-radius: 4px;
     font-size: 12px;
     outline: none;
   }
 
   .toolbar .search-input:focus {
-    border-color: var(--u-input-border-color-focus, #3b82f6);
+    border-color: var(--u-input-border-color-focus, #1976D2);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
 
@@ -51,10 +51,10 @@ export const richTableStyles = css`
     color: white;
   }
 
-  .toolbar .btn-primary { background: var(--u-primary-color, #3b82f6); }
-  .toolbar .btn-primary:hover { background: var(--u-primary-color-strong, #2563eb); }
-  .toolbar .btn-success { background: var(--u-success-color, #10b981); }
-  .toolbar .btn-success:hover { background: var(--u-success-color-strong, #059669); }
+  .toolbar .btn-primary { background: var(--u-primary-color, #1976D2); }
+  .toolbar .btn-primary:hover { background: var(--u-primary-color-strong, #1565C0); }
+  .toolbar .btn-success { background: var(--u-success-color, #2E7D32); }
+  .toolbar .btn-success:hover { background: var(--u-success-color-strong, #1B5E20); }
 
   table {
     width: 100%;
@@ -63,10 +63,10 @@ export const richTableStyles = css`
 
   thead th {
     padding: 8px;
-    background: var(--u-neutral-100, #f1f5f9);
+    background: var(--u-bg-color-raised, #FAFAFA);
     font-weight: 600;
     text-align: left;
-    border-bottom: 2px solid var(--u-border-color, #e2e8f0);
+    border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     user-select: none;
     position: relative;
   }
@@ -76,37 +76,37 @@ export const richTableStyles = css`
   }
 
   thead th.sortable:hover {
-    background: var(--u-bg-color-active, #e2e8f0);
+    background: var(--u-bg-color-active, #EEEEEE);
   }
 
   .sort-indicator {
     font-size: 10px;
-    color: var(--u-txt-color-weak, #94a3b8);
+    color: var(--u-txt-color-weak, #757575);
     margin-left: 4px;
   }
 
   .filter-row td {
     padding: 4px;
-    background: var(--u-yellow-0, #fefce8);
-    border-bottom: 1px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-yellow-0, #FFFDE7);
+    border-bottom: 1px solid var(--u-border-color, #E0E0E0);
   }
 
   .filter-row input,
   .filter-row select {
     width: 100%;
     padding: 2px 6px;
-    border: 1px solid var(--u-input-border-color, #d1d5db);
+    border: 1px solid var(--u-input-border-color, #E0E0E0);
     border-radius: 3px;
     font-size: 11px;
     outline: none;
   }
 
   tbody tr {
-    border-bottom: 1px solid var(--u-border-color-weak, #e2e8f0);
+    border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
   }
 
   tbody tr:hover {
-    background: var(--u-bg-color-hover, #f8fafc);
+    background: var(--u-bg-color-hover, #F5F5F5);
   }
 
   tbody tr.selected {
@@ -114,13 +114,13 @@ export const richTableStyles = css`
   }
 
   tbody tr.focused td.focused-cell {
-    outline: 2px solid var(--u-primary-color, #3b82f6);
+    outline: 2px solid var(--u-primary-color, #1976D2);
     outline-offset: -2px;
   }
 
   tbody tr.editing {
-    background: var(--u-yellow-0, #fefce8);
-    outline: 2px solid var(--u-warning-color-weak, #eab308);
+    background: var(--u-yellow-0, #FFFDE7);
+    outline: 2px solid var(--u-warning-color-weak, #FFEB3B);
   }
 
   tbody tr.error {
@@ -134,19 +134,19 @@ export const richTableStyles = css`
   tbody td .cell-edit-input {
     width: 100%;
     padding: 4px 6px;
-    border: 1px solid var(--u-primary-color, #3b82f6);
+    border: 1px solid var(--u-primary-color, #1976D2);
     border-radius: 3px;
     font-size: 13px;
     outline: none;
   }
 
   tbody td .cell-edit-input.invalid {
-    border-color: var(--u-danger-color, #ef4444);
+    border-color: var(--u-danger-color, #D32F2F);
   }
 
   .validation-error {
     font-size: 10px;
-    color: var(--u-danger-color, #ef4444);
+    color: var(--u-danger-color, #D32F2F);
     margin-top: 2px;
   }
 
@@ -159,11 +159,11 @@ export const richTableStyles = css`
     width: 30px;
     text-align: center;
     cursor: pointer;
-    color: var(--u-txt-color-weak, #94a3b8);
+    color: var(--u-txt-color-weak, #757575);
   }
 
   .expand-cell:hover {
-    color: var(--u-primary-color, #3b82f6);
+    color: var(--u-primary-color, #1976D2);
   }
 
   .actions-cell {
@@ -180,7 +180,7 @@ export const richTableStyles = css`
   .new-row input {
     width: 100%;
     padding: 4px 6px;
-    border: 1px dashed var(--u-success-color-weaker, #86efac);
+    border: 1px dashed var(--u-success-color-weaker, #81C784);
     border-radius: 3px;
     background: transparent;
     font-size: 12px;
@@ -189,15 +189,15 @@ export const richTableStyles = css`
   }
 
   .new-row input:focus {
-    border-color: var(--u-success-color, #10b981);
-    background: var(--u-bg-color, white);
+    border-color: var(--u-success-color, #2E7D32);
+    background: var(--u-bg-color, #FFFFFF);
     opacity: 1;
   }
 
   .detail-row td {
     padding: 8px 8px 8px 70px;
-    background: var(--u-neutral-50, #f8fafc);
-    border-bottom: 2px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-bg-color-raised, #FAFAFA);
+    border-bottom: 2px solid var(--u-border-color, #E0E0E0);
   }
 
   .badge {
@@ -213,8 +213,8 @@ export const richTableStyles = css`
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background: var(--u-neutral-50, #f8fafc);
-    border-top: 1px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-bg-color-raised, #FAFAFA);
+    border-top: 1px solid var(--u-border-color, #E0E0E0);
     font-size: 12px;
     color: var(--u-txt-color-weak, #757575);
   }
@@ -227,22 +227,24 @@ export const richTableStyles = css`
 
   .pagination button {
     padding: 2px 8px;
-    border: 1px solid var(--u-input-border-color, #d1d5db);
+    border: 1px solid var(--u-input-border-color, #E0E0E0);
     border-radius: 3px;
-    background: var(--u-bg-color, white);
+    /* 크롬 면 위의 컨트롤이다 — 면과 같은 단이면 묻힌다. 입력 계열은 두 테마 모두
+       크롬 면보다 한 단 안쪽이라(라이트 흰색 / 다크 #1E1E1E) 자연히 구분된다. */
+    background: var(--u-input-bg-color, #FFFFFF);
     font-size: 11px;
     cursor: pointer;
   }
 
   .pagination button.active {
-    background: var(--u-primary-color, #3b82f6);
-    color: var(--u-txt-color-inverse, white);
-    border-color: var(--u-input-border-color-focus, #3b82f6);
+    background: var(--u-primary-color, #1976D2);
+    color: var(--u-txt-color-inverse, #FFFFFF);
+    border-color: var(--u-input-border-color-focus, #1976D2);
   }
 
   .pagination select {
     padding: 2px 4px;
-    border: 1px solid var(--u-input-border-color, #d1d5db);
+    border: 1px solid var(--u-input-border-color, #E0E0E0);
     border-radius: 3px;
     font-size: 11px;
     margin-left: 8px;
@@ -261,7 +263,7 @@ export const richTableStyles = css`
     align-items: center;
     justify-content: center;
     padding: 40px;
-    color: var(--u-txt-color-weak, #9ca3af);
+    color: var(--u-txt-color-weak, #757575);
   }
 
 
@@ -269,50 +271,33 @@ export const richTableStyles = css`
      .styles.ts 만 훑는 정리로는 보이지 않는 자리다. */
   .row-menu {
     cursor: pointer;
-    color: var(--u-txt-color-weak, #94a3b8);
+    color: var(--u-txt-color-weak, #757575);
   }
 
   .row-error-cell {
     padding: 2px 8px;
     background: var(--u-danger-bg-color, #FFEBEE);
-    color: var(--u-danger-color, #ef4444);
+    color: var(--u-danger-color, #D32F2F);
     font-size: 11px;
   }
 
   .new-row-marker {
-    color: var(--u-success-color-weaker, #86efac);
+    color: var(--u-success-color-weaker, #81C784);
   }
 
   /* ── 다크 보정 ──
-     ⚠**여기 남은 규칙은 "다크 테마 구현"이 아니다.** 역할 토큰의 중립 계열은 두 테마에서
-     서로 다른 팔레트 단에 매핑돼 있어(--u-bg-color = neutral-0 라이트 / neutral-100 다크,
-     --u-border-color = neutral-300 / neutral-400) 테마 보정이 토큰 층에 이미 들어 있다.
-     그래서 base 규칙 하나로 두 테마가 성립한다.
+     ★**이 블록은 비어 있다. 그것이 목표 상태다.**
 
-     종전에는 이 자리에 57개 선언이 있었고, base 레이어가 토큰을 전혀 쓰지 않았기 때문에
-     (Tailwind 계열 hex 하드코딩) 다크를 통째로 재구현할 수밖에 없었다. base 를 역할 토큰으로
-     옮기면서 그 대부분이 불필요해졌다.
+     종전에는 여기 57개 선언이 있었고, base 레이어가 토큰을 전혀 쓰지 않아(하드코딩 hex)
+     다크를 통째로 재구현할 수밖에 없었다. base 를 역할 토큰으로 옮기며 대부분이 사라졌고,
+     마지막까지 남은 것은 **표면 높이 축의 부재** 하나였다 — 배경 역할 토큰이 상호작용
+     상태 이름(-hover/-active/-disabled)뿐이라 "바탕보다 한 단 올라온 면"을 뜻할 수단이
+     없었다. 라이트에서는 neutral-50/100 이 흰 바탕 위에서 읽히지만 다크에서는 그 단이
+     #0A0A0A/#121212 로 거의 검정이라 툴바·헤더·페이지네이션이 배경에 묻혔다.
 
-     남긴 것은 역할 층에 자리가 없는 하나뿐이다:
+     @iyulab/components 1.18.0 이 --u-bg-color-raised 를 신설해 그 자리를 채웠고,
+     base 규칙이 그것을 쓰므로 다크 전용 규칙이 필요 없다.
 
-     **표면 높이 축이 없다.** 배경 역할 토큰은 상호작용 상태 이름(-hover/-active/
-        -disabled)뿐이라 "바탕보다 한 단 올라온 면"을 뜻하는 토큰이 없다. 라이트에서는
-        neutral-50/100 이 흰 바탕 위에서 충분히 읽히지만, 다크에서는 그 단이 각각
-        #0A0A0A/#121212 로 거의 검정이라 툴바·헤더·페이지네이션이 배경에 묻힌다.
-
-
-     ⚠:host-context 는 Firefox/Safari 미지원이다. 그러나 위 base 마이그레이션으로
-     **색의 대부분이 이제 토큰 층에서 테마를 따르므로**, 그 브라우저에서도 다크가
-     동작한다 — 종전에는 이 블록이 전부였기 때문에 다크가 아예 없었다. */
-
-  :host-context([theme="dark"]) .toolbar,
-  :host-context([theme="dark"]) thead th,
-  :host-context([theme="dark"]) .detail-row td,
-  :host-context([theme="dark"]) .pagination {
-    background: var(--u-neutral-200, #1E1E1E);
-  }
-
-  :host-context([theme="dark"]) .pagination button {
-    background: var(--u-neutral-300, #2A2A2A);
-  }
+     ⇒ **부수 효과로 Firefox·Safari 의 다크가 완성된다.** :host-context 는 그 둘에서
+     미지원이라 이 블록의 색은 애초에 적용된 적이 없었다. 토큰 층은 브라우저를 가리지 않는다. */
 `;

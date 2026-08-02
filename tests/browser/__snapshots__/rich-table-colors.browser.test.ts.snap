@@ -27,19 +27,19 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "color": "rgb(212, 212, 212)",
   },
   "dark .pagination": {
-    "background-color": "rgb(30, 30, 30)",
+    "background-color": "rgb(42, 42, 42)",
     "border-bottom-color": "rgb(138, 138, 138)",
     "border-color": "rgb(61, 61, 61) rgb(138, 138, 138) rgb(138, 138, 138)",
     "color": "rgb(138, 138, 138)",
   },
   "dark .pagination button": {
-    "background-color": "rgb(42, 42, 42)",
+    "background-color": "rgb(30, 30, 30)",
     "border-bottom-color": "rgb(61, 61, 61)",
     "border-color": "rgb(61, 61, 61)",
     "color": "rgba(255, 255, 255, 0.3)",
   },
   "dark .toolbar": {
-    "background-color": "rgb(30, 30, 30)",
+    "background-color": "rgb(42, 42, 42)",
     "border-bottom-color": "rgb(61, 61, 61)",
     "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(61, 61, 61)",
     "color": "rgb(212, 212, 212)",
@@ -81,7 +81,7 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "color": "rgb(212, 212, 212)",
   },
   "dark thead th": {
-    "background-color": "rgb(30, 30, 30)",
+    "background-color": "rgb(42, 42, 42)",
     "border-bottom-color": "rgb(61, 61, 61)",
     "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(61, 61, 61)",
     "color": "rgb(212, 212, 212)",
@@ -129,7 +129,7 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "color": "rgb(33, 33, 33)",
   },
   "light .toolbar .btn-success": {
-    "background-color": "rgb(67, 160, 71)",
+    "background-color": "rgb(46, 125, 50)",
     "border-bottom-color": "rgb(255, 255, 255)",
     "border-color": "rgb(255, 255, 255)",
     "color": "rgb(255, 255, 255)",
@@ -165,7 +165,7 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "color": "rgb(33, 33, 33)",
   },
   "light thead th": {
-    "background-color": "rgb(245, 245, 245)",
+    "background-color": "rgb(250, 250, 250)",
     "border-bottom-color": "rgb(224, 224, 224)",
     "border-color": "rgb(33, 33, 33) rgb(33, 33, 33) rgb(224, 224, 224)",
     "color": "rgb(33, 33, 33)",

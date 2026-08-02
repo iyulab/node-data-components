@@ -12,14 +12,14 @@ const baseStyles = css`
     height: 100%;
     overflow: hidden;
     outline: none;
-    border: 1px solid var(--u-border-color, #e2e8f0);
+    border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 4px;
-    background: var(--u-bg-color, #fff);
+    background: var(--u-bg-color, #FFFFFF);
   }
 
   .sheet-container:focus-within {
-    border-color: var(--u-blue-500, #3b82f6);
-    box-shadow: 0 0 0 2px var(--u-blue-100, #dbeafe);
+    border-color: var(--u-blue-500, #2196F3);
+    box-shadow: 0 0 0 2px var(--u-blue-100, #BBDEFB);
   }
 
   .sheet-scroll {
@@ -43,15 +43,15 @@ const baseStyles = css`
     z-index: 4;
     width: 48px;
     min-width: 48px;
-    background: var(--u-neutral-100, #f1f5f9);
-    border-right: 1px solid var(--u-border-color, #e2e8f0);
-    border-bottom: 2px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-neutral-100, #F5F5F5);
+    border-right: 1px solid var(--u-border-color, #E0E0E0);
+    border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     cursor: pointer;
     user-select: none;
   }
 
   .corner:hover {
-    background: var(--u-neutral-200, #e2e8f0);
+    background: var(--u-neutral-200, #EEEEEE);
   }
 
   /* Column headers (A, B, C...) */
@@ -59,14 +59,14 @@ const baseStyles = css`
     position: sticky;
     top: 0;
     z-index: 2;
-    background: var(--u-neutral-100, #f1f5f9);
+    background: var(--u-neutral-100, #F5F5F5);
     padding: 4px 8px;
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-    color: var(--u-txt-color-weak, #64748b);
-    border-right: 1px solid var(--u-border-color, #e2e8f0);
-    border-bottom: 2px solid var(--u-border-color, #e2e8f0);
+    color: var(--u-txt-color-weak, #757575);
+    border-right: 1px solid var(--u-border-color, #E0E0E0);
+    border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     white-space: nowrap;
     min-width: 80px;
     cursor: pointer;
@@ -75,8 +75,8 @@ const baseStyles = css`
   }
 
   .col-header.col-selected {
-    background: var(--u-blue-200, #bfdbfe);
-    color: var(--u-blue-800, #1e40af);
+    background: var(--u-blue-200, #90CAF9);
+    color: var(--u-blue-800, #1565C0);
   }
 
   .resize-handle {
@@ -102,7 +102,7 @@ const baseStyles = css`
   }
 
   .resize-handle:hover::after {
-    background: var(--u-blue-500, #3b82f6);
+    background: var(--u-blue-500, #2196F3);
   }
 
   .sheet-container.is-resizing {
@@ -124,31 +124,31 @@ const baseStyles = css`
     text-align: right;
     padding: 0 6px;
     font-size: 11px;
-    color: var(--u-txt-color-weak, #64748b);
+    color: var(--u-txt-color-weak, #757575);
     /* 예외 — 표면 높이 축이 없다. 행번호 여백은 "비활성"이 아니라 시트 바탕보다
        한 단 내려간 면이다. --u-bg-color-disabled 를 쓰면 다크에서 바탕(neutral-100)과
        같은 값이 되어 여백 구분이 사라진다 — 스냅샷이 그것을 잡았다. */
-    background: var(--u-neutral-50, #f8fafc);
-    border-right: 1px solid var(--u-border-color, #e2e8f0);
-    border-bottom: 1px solid var(--u-border-color-weak, #f1f5f9);
+    background: var(--u-neutral-50, #FAFAFA);
+    border-right: 1px solid var(--u-border-color, #E0E0E0);
+    border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
     cursor: pointer;
     user-select: none;
     vertical-align: middle;
   }
 
   .row-num.row-selected {
-    background: var(--u-blue-100, #dbeafe);
-    color: var(--u-blue-800, #1e40af);
+    background: var(--u-blue-100, #BBDEFB);
+    color: var(--u-blue-800, #1565C0);
     font-weight: 600;
   }
 
   /* Data cells */
   .cell {
     padding: 0 6px;
-    border-right: 1px solid var(--u-border-color-weak, #f1f5f9);
-    border-bottom: 1px solid var(--u-border-color-weak, #f1f5f9);
+    border-right: 1px solid var(--u-border-color-weak, #EEEEEE);
+    border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
     font-size: 13px;
-    color: var(--u-txt-color, #0f172a);
+    color: var(--u-txt-color, #212121);
     min-width: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -167,8 +167,8 @@ const baseStyles = css`
 
   /* The anchor cell (top-left of selection) */
   .cell.anchor {
-    background: var(--u-bg-color, #fff);
-    outline: 2px solid var(--u-blue-500, #3b82f6);
+    background: var(--u-bg-color, #FFFFFF);
+    outline: 2px solid var(--u-blue-500, #2196F3);
     outline-offset: -2px;
     overflow: visible;
     z-index: 1;
@@ -188,13 +188,13 @@ const baseStyles = css`
     min-width: 100%;
     height: calc(100% + 2px);
     border: none;
-    outline: 2px solid var(--u-blue-500, #3b82f6);
+    outline: 2px solid var(--u-blue-500, #2196F3);
     outline-offset: -1px;
     padding: 0 6px;
     font-size: 13px;
     font-family: inherit;
-    color: var(--u-txt-color, #0f172a);
-    background: var(--u-bg-color, #fff);
+    color: var(--u-txt-color, #212121);
+    background: var(--u-bg-color, #FFFFFF);
     box-sizing: border-box;
     z-index: 10;
     box-shadow: 0 2px 8px var(--u-shadow-color-strong, rgba(0, 0, 0, 0.16));
@@ -209,8 +209,8 @@ const baseStyles = css`
     min-width: 120px;
     max-height: 200px;
     overflow-y: auto;
-    background: var(--u-bg-color, #fff);
-    border: 1px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-bg-color, #FFFFFF);
+    border: 1px solid var(--u-border-color, #E0E0E0);
     border-top: none;
     border-radius: 0 0 4px 4px;
     box-shadow: 0 4px 12px var(--u-shadow-color-normal, rgba(0, 0, 0, 0.12));
@@ -220,7 +220,7 @@ const baseStyles = css`
   .dropdown-item {
     padding: 4px 8px;
     font-size: 13px;
-    color: var(--u-txt-color, #0f172a);
+    color: var(--u-txt-color, #212121);
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
@@ -228,18 +228,18 @@ const baseStyles = css`
   }
 
   .dropdown-item:hover {
-    background: var(--u-neutral-100, #f1f5f9);
+    background: var(--u-neutral-100, #F5F5F5);
   }
 
   .dropdown-item.highlighted {
     background: var(--u-primary-bg-color, #E3F2FD);
-    color: var(--u-blue-800, #1e40af);
+    color: var(--u-blue-800, #1565C0);
   }
 
   .dropdown-empty {
     padding: 6px 8px;
     font-size: 12px;
-    color: var(--u-txt-color-weak, #64748b);
+    color: var(--u-txt-color-weak, #757575);
     font-style: italic;
   }
 
@@ -251,12 +251,12 @@ const baseStyles = css`
   /* Readonly column/cell */
   .cell.cell-readonly {
     background: var(--u-bg-color-disabled, #FAFAFA);
-    color: var(--u-txt-color-weak, #64748b);
+    color: var(--u-txt-color-weak, #757575);
     cursor: default;
   }
 
   .cell.cell-readonly.selected {
-    background: var(--u-neutral-100, #f1f5f9);
+    background: var(--u-neutral-100, #F5F5F5);
   }
 
   .cell.cell-readonly.anchor {
@@ -266,13 +266,13 @@ const baseStyles = css`
   /* Computed column/cell */
   .cell.cell-computed {
     background: var(--u-primary-bg-color, #E3F2FD);
-    color: var(--u-txt-color, #0f172a);
+    color: var(--u-txt-color, #212121);
     font-style: italic;
     cursor: default;
   }
 
   .cell.cell-computed.selected {
-    background: var(--u-blue-100, #dbeafe);
+    background: var(--u-blue-100, #BBDEFB);
   }
 
   .cell.cell-computed.anchor {
@@ -315,20 +315,20 @@ const DARK_PREFIXES = [
 
 const darkRules = (host: string) => `
   ${host} .col-header.col-selected {
-    background: var(--u-blue-100, #1e3a5f);
+    background: var(--u-blue-100, #BBDEFB);
   }
 
   ${host} .cell.cell-readonly.selected {
-    background: var(--u-neutral-200, #2A2A2A);
+    background: var(--u-neutral-200, #EEEEEE);
   }
 
 
   ${host} .cell.cell-computed.selected {
-    background: var(--u-blue-200, #2a4a6f);
+    background: var(--u-blue-200, #90CAF9);
   }
 
   ${host} .cell.cell-computed.anchor {
-    background: var(--u-blue-100, #1e3a5f);
+    background: var(--u-blue-100, #BBDEFB);
   }
 
 `;

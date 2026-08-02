@@ -38,8 +38,8 @@ const baseStyles = css`
     align-items: center;
     justify-content: space-between;
     padding: 0.75rem;
-    background: var(--u-bg-color, #fff);
-    border: 1px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-bg-color, #FFFFFF);
+    border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
   }
 
@@ -49,18 +49,18 @@ const baseStyles = css`
   }
 
   .view-toggles u-button[active] {
-    background: var(--u-primary-color, #1E88E5);
+    background: var(--u-primary-color, #1976D2);
     /* 예외 1 — "주색 위의 글자" 역할 토큰이 없다.
        역할 층의 유채색은 전경 5단(--u-primary-color-*)뿐이고, 그 위에 얹는 글자색을
        가리키는 토큰은 없다. 실측: 라이트 #FFFFFF/#1E88E5 = 3.68, 다크 #000000/#2A659D
        = 3.45 — 다크는 흰 글자였다면 6.09 였다. 즉 현재 값이 최선이 아니지만, 팔레트를
        직접 바꾸면 게시된 시각이 움직이므로 토큰 추가 결정까지 현행을 유지한다. */
-    color: var(--u-neutral-0, #fff);
+    color: var(--u-neutral-0, #FFFFFF);
   }
 
   .info {
     font-size: 0.875rem;
-    color: var(--u-txt-color-weak, #64748b);
+    color: var(--u-txt-color-weak, #757575);
     font-weight: 500;
   }
 
@@ -80,8 +80,8 @@ const baseStyles = css`
 
   /* Card Styles */
   .card {
-    background: var(--u-bg-color, #fff);
-    border: 1px solid var(--u-border-color, #e2e8f0);
+    background: var(--u-bg-color, #FFFFFF);
+    border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
     padding: 1.25rem;
     cursor: pointer;
@@ -89,13 +89,13 @@ const baseStyles = css`
   }
 
   .card:hover {
-    border-color: var(--u-primary-color, #1E88E5);
+    border-color: var(--u-primary-color, #1976D2);
     box-shadow: 0 4px 12px var(--u-shadow-color-weak, rgba(0, 0, 0, 0.08));
     transform: translateY(-2px);
   }
 
   .card.selected {
-    border-color: var(--u-primary-color, #1E88E5);
+    border-color: var(--u-primary-color, #1976D2);
     background: var(--u-bg-color-active, #EEEEEE);
     box-shadow: 0 0 0 3px var(--u-primary-color-weakest, #90CAF9);
   }
@@ -115,14 +115,14 @@ const baseStyles = css`
   .card-field .label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--u-txt-color-weak, #64748b);
+    color: var(--u-txt-color-weak, #757575);
     min-width: 80px;
     flex-shrink: 0;
   }
 
   .card-field .value {
     font-size: 0.9375rem;
-    color: var(--u-txt-color, #0f172a);
+    color: var(--u-txt-color, #212121);
     word-break: break-word;
   }
 
@@ -140,14 +140,14 @@ const baseStyles = css`
   /* Table */
   .table-wrapper {
     overflow-x: auto;
-    border: 1px solid var(--u-border-color, #e2e8f0);
+    border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--u-bg-color, #fff);
+    background: var(--u-bg-color, #FFFFFF);
   }
 
   thead {
@@ -156,7 +156,7 @@ const baseStyles = css`
        "바탕보다 한 단 올라온 면"을 뜻하는 토큰이 없다. 헤더에 -hover 를 쓰면
        마우스 상태를 뜻하게 되므로 팔레트를 직접 읽는다. neutral-50 은 두 테마에서
        각각 #FAFAFA/#0A0A0A 로 반전되므로 다크 보정은 필요 없다. */
-    background: var(--u-neutral-50, #f8fafc);
+    background: var(--u-neutral-50, #FAFAFA);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -167,8 +167,8 @@ const baseStyles = css`
     text-align: left;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--u-txt-color-weak, #64748b);
-    border-bottom: 2px solid var(--u-border-color, #e2e8f0);
+    color: var(--u-txt-color-weak, #757575);
+    border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     white-space: nowrap;
   }
 
@@ -186,13 +186,13 @@ const baseStyles = css`
   }
 
   tbody tr:not(:last-child) {
-    border-bottom: 1px solid var(--u-border-color-weak, #f1f5f9);
+    border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
   }
 
   td {
     padding: 0.875rem 1rem;
     font-size: 0.9375rem;
-    color: var(--u-txt-color, #0f172a);
+    color: var(--u-txt-color, #212121);
   }
 
   /* Empty State */
@@ -201,7 +201,7 @@ const baseStyles = css`
     align-items: center;
     justify-content: center;
     min-height: 300px;
-    color: var(--u-txt-color-weak, #64748b);
+    color: var(--u-txt-color-weak, #757575);
     font-size: 1rem;
   }
 `;

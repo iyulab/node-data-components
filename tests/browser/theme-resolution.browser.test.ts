@@ -96,13 +96,20 @@ describe('★ 팔레트 토큰은 테마 보정을 해 주지 않는다', () => 
     expect(dark.blue / light.blue).toBeLessThan(0.5);
   });
 
-  it('유채색에는 이 어긋남을 흡수할 역할 토큰이 없다', () => {
-    // --u-primary-color 계열은 두 테마가 **같은 팔레트 단**을 가리킨다(blue-600).
-    // 즉 유채색 표면·전경은 팔레트의 비대칭이 그대로 통과한다.
+  it('★유채색 역할 토큰도 이제 테마별로 다른 단을 고른다 (전경 한정)', () => {
+    // ★이 테스트는 원래 정반대를 단언했다 — *"유채색에는 이 어긋남을 흡수할 역할 토큰이
+    //   없다"*. 그것이 참인 동안 이 패키지는 유채색 자리마다 다크를 손으로 보정했다.
+    //   components 1.16.0 이 역할 단을 **대비로** 다시 고르면서 전제가 바뀌었다:
+    //     라이트 blue-700(#1976D2) · 다크 blue-600(#2A659D) — **단 선택이 다르다.**
+    //   중립이 진작부터 하던 일(위 테스트)을 유채색 전경도 하게 된 것이다.
+    //
+    // ⚠**표면은 아직 아니다.** --u-*-bg-color 4종이 라이트 shade-0 ↔ 다크 shade-100 으로
+    //   짝지어져 있지만 warning 은 빠져 있고, --u-*-color-weakest 를 면으로 쓰는 자리
+    //   (u-alert)는 여전히 대비가 부족하다. 그래서 이 패키지의 다크 규칙이 0 이 아니다.
     const l = tokenOf('--u-primary-color');
     document.documentElement.setAttribute('theme', 'dark');
     const d = tokenOf('--u-primary-color');
-    expect(l).toBe('#1E88E5');
-    expect(d).toBe('#2A659D'); // 값은 다르지만 둘 다 blue-600 — 단 선택은 동일하다
+    expect(l).toBe('#1976D2'); // blue-700 — 흰 글자 4.60 ✓ (blue-600 은 3.68 ✗)
+    expect(d).toBe('#2A659D'); // blue-600 — 흰 글자 6.09 ✓ (다크는 원래 통과)
   });
 });
