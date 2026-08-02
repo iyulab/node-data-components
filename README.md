@@ -124,12 +124,12 @@ const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null �
 
 - [USimpleSheet](./docs/USimpleSheet.md)
 - [UDataView](./docs/UDataView.md)
-- URichTable — 문서 작성 예정([types.ts](./src/components/u-rich-table/types.ts) 참고)
+- [URichTable](./docs/URichTable.md)
 - [UDataGrid 마이그레이션 가이드](./docs/migrating-from-datagrid.md)
 
 ## Theming
 
-`@iyulab/components`의 테마 시스템을 사용합니다. 라이트/다크 모드 자동 지원.
+`@iyulab/components`의 디자인 토큰을 읽습니다. **토큰 시트가 문서에 있어야 테마가 동작합니다.**
 
 ```typescript
 import { Theme } from '@iyulab/components';
@@ -137,6 +137,35 @@ import { Theme } from '@iyulab/components';
 Theme.init({ default: 'system' });
 Theme.set('dark'); // 'light' | 'dark' | 'system'
 ```
+
+`Theme.init()`을 쓰지 않는다면 정적 진입점을 대신 임포트하세요:
+
+```typescript
+import '@iyulab/components/styles/tokens.css';
+```
+
+### 토큰 시트가 없으면
+
+컴포넌트는 렌더되지만 **라이트 기준 고정값**으로 그려지며, 다크 테마와 테마 변수
+오버라이드가 적용되지 않습니다. 이는 의도된 폴백 규약입니다.
+
+### 브랜드 색 바꾸기
+
+색은 역할 토큰을 통해 읽으므로, 주색 한 줄로 버튼·선택 강조·포커스가 함께 따라옵니다:
+
+```css
+:root { --u-primary-color: #7B1FA2; }
+```
+
+### 알려진 제약
+
+- **`--u-txt-color-weak`가 라이트에서 WCAG AA에 미달합니다** — 흰 배경 대비 **2.68**
+  (AA 기준 4.5). 다크는 5.43으로 정상이라 라이트 한쪽만의 문제입니다. 그래서 이 패키지의
+  보조 텍스트 일부는 AA를 통과하는 고정값을 유지하며, 그만큼 테마 오버라이드를 따르지
+  않습니다. 업스트림에서 해소되면 함께 정리됩니다.
+- **일부 다크 규칙은 Chromium 전용입니다** — 유채색 표면과 표면 높이는 역할 층에
+  대응 토큰이 없어 `:host-context()`로 보정하며, 이 선택자는 Firefox/Safari에서
+  동작하지 않습니다. 그 외의 색은 전 브라우저에서 테마를 따릅니다.
 
 ## License
 

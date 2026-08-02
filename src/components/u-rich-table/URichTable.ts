@@ -50,8 +50,35 @@ export class URichTable extends LitElement {
     this.rowErrors = next;
   }
 
+  /**
+   * 행의 식별자. 선택·확장·행 오류 상태가 전부 이 값으로 추적된다.
+   *
+   * ⚠`_id` 는 이 컴포넌트가 **부여하지 않는다.** 소비자가 넣어 주지 않으면 모든 행의
+   * `_id` 가 `undefined` 가 되고, Set 은 그 하나만 담으므로 **한 행을 고르면 전부
+   * 골라진다.** 그래서 없을 때는 위치를 대신 쓴다 — 다만 위치 기반 식별은 데이터가
+   * 재정렬·재페이징되면 **선택이 다른 행으로 옮겨간다.** 정렬/필터/페이지가 소비자
+   * 책임인 컴포넌트이므로, 실제 사용에서는 `_id` 를 주는 것이 옳다.
+   */
+  private _rowId(row: Record<string, unknown>, index: number): string {
+    const id = row._id;
+    if (id !== undefined && id !== null) return String(id);
+    this._warnMissingRowId();
+    return `#${index}`;
+  }
+
+  private _warnedMissingRowId = false;
+  private _warnMissingRowId(): void {
+    if (this._warnedMissingRowId) return;
+    this._warnedMissingRowId = true;
+    console.warn(
+      '[@iyulab/data-components] u-rich-table: 행에 `_id` 가 없어 **위치**로 식별합니다. ' +
+      '데이터가 재정렬·재페이징되면 선택 상태가 다른 행으로 옮겨갑니다. ' +
+      '각 행에 고유한 `_id` 를 부여하세요.',
+    );
+  }
+
   getSelectedRows(): Record<string, unknown>[] {
-    return this.data.filter(row => this.selectedIds.has(row._id as string));
+    return this.data.filter((row, i) => this.selectedIds.has(this._rowId(row, i)));
   }
 
   // --- Rendering ---
@@ -148,7 +175,7 @@ export class URichTable extends LitElement {
       return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${this.emptyMessage}</div></td></tr>`;
     }
     return this.data.map((row, rowIdx) => {
-      const rowId = row._id as string;
+      const rowId = this._rowId(row, rowIdx);
       const isSelected = this.selectedIds.has(rowId);
       const isExpanded = this.expandedIds.has(rowId);
       const hasError = this.rowErrors.has(rowId);
@@ -302,7 +329,7 @@ export class URichTable extends LitElement {
   private _onSelectAll(e: Event): void {
     const checked = (e.target as HTMLInputElement).checked;
     if (checked) {
-      this.selectedIds = new Set(this.data.map(r => r._id as string));
+      this.selectedIds = new Set(this.data.map((r, i) => this._rowId(r, i)));
     } else {
       this.selectedIds = new Set();
     }
@@ -324,7 +351,7 @@ export class URichTable extends LitElement {
     const end = Math.max(this._lastSelectedIndex, rowIdx);
     const next = new Set(this.selectedIds);
     for (let i = start; i <= end; i++) {
-      next.add(this.data[i]._id as string);
+      next.add(this._rowId(this.data[i], i));
     }
     this.selectedIds = next;
     this._fireSelectionChange();
@@ -442,7 +469,7 @@ export class URichTable extends LitElement {
     else next.delete(rowId);
     this.expandedIds = next;
     this.dispatchEvent(new CustomEvent('row-expand', {
-      detail: { row: this.data.find(r => r._id === rowId), expanded },
+      detail: { row: this.data.find((r, i) => this._rowId(r, i) === rowId), expanded },
       bubbles: true, composed: true
     }));
   }
@@ -599,7 +626,8 @@ export class URichTable extends LitElement {
       }
       if (e.key === ' ' && this.selectable) {
         e.preventDefault();
-        const rowId = this.data[this.focusedCell.rowIndex]?._id as string;
+        const r = this.data[this.focusedCell.rowIndex];
+        const rowId = r ? this._rowId(r, this.focusedCell.rowIndex) : undefined;
         if (rowId) this._onRowSelect(rowId);
       }
       if (e.key === 'Delete' && this.selectedIds.size > 0) {
@@ -640,7 +668,7 @@ export class URichTable extends LitElement {
   }
 
   private _selectAll(): void {
-    this.selectedIds = new Set(this.data.map(r => r._id as string));
+    this.selectedIds = new Set(this.data.map((r, i) => this._rowId(r, i)));
     this._fireSelectionChange();
   }
 
