@@ -22,6 +22,11 @@ const SELECTORS = [
   ':host', '.toolbar', '.toolbar .selection-info', '.toolbar .search-input',
   '.toolbar .btn-primary', '.toolbar .btn-success', 'thead th', '.sort-indicator',
   'tbody tr', 'tbody td', '.pagination', '.pagination button', '.empty-message',
+  // ⚠상태 틴트 — 이것들을 렌더하지 않으면 "색이 이렇게 바뀐다"는 주장이 소스 대조에
+  // 머문다. 오늘 잡힌 회귀 둘(.pagination button 색 소실, :host 가 color 를 소유한 적
+  // 없음)이 전부 **규칙이 적용되는가** 의 문제였지 hex 값의 문제가 아니었다.
+  '.filter-row td', '.filter-row input', '.new-row td', '.new-row input',
+  'tbody tr.selected', 'tbody tr.editing', 'tbody td .cell-edit-input',
 ];
 const PROPS = ['background-color', 'color', 'border-color', 'border-bottom-color'];
 
@@ -35,14 +40,28 @@ describe('URichTable 계산색 회귀망', () => {
 
       const el = document.createElement('u-rich-table') as HTMLElement & {
         columns: unknown[]; data: unknown[]; totalCount: number;
-        selectable: boolean; addable: boolean; updateComplete: Promise<unknown>;
+        selectable: boolean; addable: boolean; filterable: boolean; editable: boolean;
+        updateComplete: Promise<unknown>;
       };
-      el.columns = [{ key: 'a', label: 'A', sortable: true }, { key: 'b', label: 'B' }];
+      el.columns = [
+        { key: 'a', label: 'A', sortable: true, filterable: true },
+        { key: 'b', label: 'B', editable: true },
+      ];
       el.data = [{ a: 1, b: 'x' }, { a: 2, b: 'y' }];
       el.totalCount = 2;
       el.selectable = true;
       el.addable = true;
+      el.filterable = true;      // .filter-row 를 렌더시킨다
+      el.editable = true;        // 셀 편집 경로를 연다
       document.body.appendChild(el);
+      await el.updateComplete;
+
+      // 상태 틴트를 실제로 그리게 한다 — 선택 1행 + 편집 중 셀 1개.
+      const box = el.shadowRoot!.querySelector<HTMLInputElement>('tbody .checkbox-cell input');
+      box?.click();
+      await el.updateComplete;
+      const cell = el.shadowRoot!.querySelectorAll('tbody td')[1] as HTMLElement | undefined;
+      cell?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
       await el.updateComplete;
 
       for (const sel of SELECTORS) {

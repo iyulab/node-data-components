@@ -3,28 +3,52 @@
 exports[`USimpleSheet 계산색 회귀망 > 두 테마의 계산색이 고정 스냅샷과 일치한다 1`] = `
 {
   "dark .cell": {
-    "background-color": "rgba(0, 0, 0, 0)",
+    "background-color": "rgb(18, 18, 18)",
     "border-bottom-color": "rgb(42, 42, 42)",
     "border-right-color": "rgb(42, 42, 42)",
     "color": "rgb(212, 212, 212)",
   },
   "dark .cell.cell-computed": {
-    "background-color": "rgb(6, 22, 41)",
+    "background-color": "rgb(10, 34, 59)",
+    "border-bottom-color": "rgb(42, 42, 42)",
+    "border-right-color": "rgb(42, 42, 42)",
+    "color": "rgb(212, 212, 212)",
+  },
+  "dark .cell.cell-computed.selected": {
+    "background-color": "rgb(10, 34, 59)",
     "border-bottom-color": "rgb(42, 42, 42)",
     "border-right-color": "rgb(42, 42, 42)",
     "color": "rgb(212, 212, 212)",
   },
   "dark .cell.cell-readonly": {
-    "background-color": "rgb(18, 18, 18)",
+    "background-color": "rgb(30, 30, 30)",
     "border-bottom-color": "rgb(42, 42, 42)",
     "border-right-color": "rgb(42, 42, 42)",
     "color": "rgb(138, 138, 138)",
   },
-  "dark .col-header": {
+  "dark .cell.cell-readonly.selected": {
+    "background-color": "rgb(30, 30, 30)",
+    "border-bottom-color": "rgb(42, 42, 42)",
+    "border-right-color": "rgb(42, 42, 42)",
+    "color": "rgb(138, 138, 138)",
+  },
+  "dark .cell.selected": {
     "background-color": "rgb(18, 18, 18)",
+    "border-bottom-color": "rgb(42, 42, 42)",
+    "border-right-color": "rgb(42, 42, 42)",
+    "color": "rgb(212, 212, 212)",
+  },
+  "dark .col-header": {
+    "background-color": "rgb(6, 22, 41)",
     "border-bottom-color": "rgb(61, 61, 61)",
     "border-right-color": "rgb(61, 61, 61)",
-    "color": "rgb(138, 138, 138)",
+    "color": "rgb(71, 141, 206)",
+  },
+  "dark .col-header.col-selected": {
+    "background-color": "rgb(6, 22, 41)",
+    "border-bottom-color": "rgb(61, 61, 61)",
+    "border-right-color": "rgb(61, 61, 61)",
+    "color": "rgb(71, 141, 206)",
   },
   "dark .corner": {
     "background-color": "rgb(18, 18, 18)",
@@ -33,40 +57,64 @@ exports[`USimpleSheet 계산색 회귀망 > 두 테마의 계산색이 고정 �
     "color": "rgb(212, 212, 212)",
   },
   "dark .row-num": {
-    "background-color": "rgb(10, 10, 10)",
+    "background-color": "rgb(6, 22, 41)",
     "border-bottom-color": "rgb(42, 42, 42)",
     "border-right-color": "rgb(61, 61, 61)",
-    "color": "rgb(138, 138, 138)",
+    "color": "rgb(71, 141, 206)",
   },
   "dark .sheet-container": {
     "background-color": "rgb(18, 18, 18)",
-    "border-bottom-color": "rgb(61, 61, 61)",
-    "border-right-color": "rgb(61, 61, 61)",
+    "border-bottom-color": "rgb(32, 82, 129)",
+    "border-right-color": "rgb(32, 82, 129)",
     "color": "rgb(212, 212, 212)",
   },
   "light .cell": {
-    "background-color": "rgba(0, 0, 0, 0)",
+    "background-color": "rgb(255, 255, 255)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-right-color": "rgb(238, 238, 238)",
     "color": "rgb(33, 33, 33)",
   },
   "light .cell.cell-computed": {
-    "background-color": "rgb(227, 242, 253)",
+    "background-color": "rgb(187, 222, 251)",
+    "border-bottom-color": "rgb(238, 238, 238)",
+    "border-right-color": "rgb(238, 238, 238)",
+    "color": "rgb(33, 33, 33)",
+  },
+  "light .cell.cell-computed.selected": {
+    "background-color": "rgb(187, 222, 251)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-right-color": "rgb(238, 238, 238)",
     "color": "rgb(33, 33, 33)",
   },
   "light .cell.cell-readonly": {
-    "background-color": "rgb(250, 250, 250)",
+    "background-color": "rgb(245, 245, 245)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-right-color": "rgb(238, 238, 238)",
     "color": "rgb(158, 158, 158)",
   },
-  "light .col-header": {
+  "light .cell.cell-readonly.selected": {
     "background-color": "rgb(245, 245, 245)",
+    "border-bottom-color": "rgb(238, 238, 238)",
+    "border-right-color": "rgb(238, 238, 238)",
+    "color": "rgb(158, 158, 158)",
+  },
+  "light .cell.selected": {
+    "background-color": "rgb(255, 255, 255)",
+    "border-bottom-color": "rgb(238, 238, 238)",
+    "border-right-color": "rgb(238, 238, 238)",
+    "color": "rgb(33, 33, 33)",
+  },
+  "light .col-header": {
+    "background-color": "rgb(144, 202, 249)",
     "border-bottom-color": "rgb(224, 224, 224)",
     "border-right-color": "rgb(224, 224, 224)",
-    "color": "rgb(158, 158, 158)",
+    "color": "rgb(21, 101, 192)",
+  },
+  "light .col-header.col-selected": {
+    "background-color": "rgb(144, 202, 249)",
+    "border-bottom-color": "rgb(224, 224, 224)",
+    "border-right-color": "rgb(224, 224, 224)",
+    "color": "rgb(21, 101, 192)",
   },
   "light .corner": {
     "background-color": "rgb(245, 245, 245)",
@@ -75,15 +123,15 @@ exports[`USimpleSheet 계산색 회귀망 > 두 테마의 계산색이 고정 �
     "color": "rgb(33, 33, 33)",
   },
   "light .row-num": {
-    "background-color": "rgb(250, 250, 250)",
+    "background-color": "rgb(187, 222, 251)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-right-color": "rgb(224, 224, 224)",
-    "color": "rgb(158, 158, 158)",
+    "color": "rgb(21, 101, 192)",
   },
   "light .sheet-container": {
     "background-color": "rgb(255, 255, 255)",
-    "border-bottom-color": "rgb(224, 224, 224)",
-    "border-right-color": "rgb(224, 224, 224)",
+    "border-bottom-color": "rgb(33, 150, 243)",
+    "border-right-color": "rgb(33, 150, 243)",
     "color": "rgb(33, 33, 33)",
   },
 }

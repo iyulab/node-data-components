@@ -284,6 +284,25 @@ export const richTableStyles = css`
     color: var(--u-txt-color-weak, #9ca3af);
   }
 
+
+  /* 종전에는 아래 셋이 템플릿 안에 style="…#94a3b8" 형태로 박혀 있었다.
+     .styles.ts 만 훑는 정리로는 보이지 않는 자리다. */
+  .row-menu {
+    cursor: pointer;
+    color: var(--u-txt-color-weak, #94a3b8);
+  }
+
+  .row-error-cell {
+    padding: 2px 8px;
+    background: var(--u-red-0, #fef2f2);
+    color: var(--u-danger-color, #ef4444);
+    font-size: 11px;
+  }
+
+  .new-row-marker {
+    color: var(--u-success-color-weaker, #86efac);
+  }
+
   /* ── 다크 보정 ──
      ⚠**여기 남은 규칙은 "다크 테마 구현"이 아니다.** 역할 토큰의 중립 계열은 두 테마에서
      서로 다른 팔레트 단에 매핑돼 있어(--u-bg-color = neutral-0 라이트 / neutral-100 다크,

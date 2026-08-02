@@ -2,6 +2,30 @@
 
 exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스냅샷과 일치한다 1`] = `
 {
+  "dark .filter-row input": {
+    "background-color": "rgb(59, 59, 59)",
+    "border-bottom-color": "rgb(61, 61, 61)",
+    "border-color": "rgb(61, 61, 61)",
+    "color": "rgb(255, 255, 255)",
+  },
+  "dark .filter-row td": {
+    "background-color": "rgb(28, 19, 0)",
+    "border-bottom-color": "rgb(61, 61, 61)",
+    "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(61, 61, 61)",
+    "color": "rgb(212, 212, 212)",
+  },
+  "dark .new-row input": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "border-bottom-color": "rgb(22, 66, 40)",
+    "border-color": "rgb(22, 66, 40)",
+    "color": "rgb(138, 138, 138)",
+  },
+  "dark .new-row td": {
+    "background-color": "rgb(6, 20, 12)",
+    "border-bottom-color": "rgb(212, 212, 212)",
+    "border-color": "rgb(212, 212, 212)",
+    "color": "rgb(212, 212, 212)",
+  },
   "dark .pagination": {
     "background-color": "rgb(30, 30, 30)",
     "border-bottom-color": "rgb(138, 138, 138)",
@@ -39,13 +63,19 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "color": "rgb(212, 212, 212)",
   },
   "dark tbody td": {
-    "background-color": "rgba(0, 0, 0, 0)",
-    "border-bottom-color": "rgb(212, 212, 212)",
-    "border-color": "rgb(212, 212, 212)",
+    "background-color": "rgb(28, 19, 0)",
+    "border-bottom-color": "rgb(61, 61, 61)",
+    "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(61, 61, 61)",
     "color": "rgb(212, 212, 212)",
   },
   "dark tbody tr": {
     "background-color": "rgba(0, 0, 0, 0)",
+    "border-bottom-color": "rgb(42, 42, 42)",
+    "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(42, 42, 42)",
+    "color": "rgb(212, 212, 212)",
+  },
+  "dark tbody tr.selected": {
+    "background-color": "rgb(3, 13, 26)",
     "border-bottom-color": "rgb(42, 42, 42)",
     "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(42, 42, 42)",
     "color": "rgb(212, 212, 212)",
@@ -55,6 +85,30 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "border-bottom-color": "rgb(61, 61, 61)",
     "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(61, 61, 61)",
     "color": "rgb(212, 212, 212)",
+  },
+  "light .filter-row input": {
+    "background-color": "rgb(255, 255, 255)",
+    "border-bottom-color": "rgb(224, 224, 224)",
+    "border-color": "rgb(224, 224, 224)",
+    "color": "rgb(0, 0, 0)",
+  },
+  "light .filter-row td": {
+    "background-color": "rgb(255, 253, 231)",
+    "border-bottom-color": "rgb(224, 224, 224)",
+    "border-color": "rgb(33, 33, 33) rgb(33, 33, 33) rgb(224, 224, 224)",
+    "color": "rgb(33, 33, 33)",
+  },
+  "light .new-row input": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "border-bottom-color": "rgb(129, 199, 132)",
+    "border-color": "rgb(129, 199, 132)",
+    "color": "rgb(107, 114, 128)",
+  },
+  "light .new-row td": {
+    "background-color": "rgb(232, 245, 233)",
+    "border-bottom-color": "rgb(33, 33, 33)",
+    "border-color": "rgb(33, 33, 33)",
+    "color": "rgb(33, 33, 33)",
   },
   "light .pagination": {
     "background-color": "rgb(250, 250, 250)",
@@ -93,13 +147,19 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "color": "rgb(33, 33, 33)",
   },
   "light tbody td": {
-    "background-color": "rgba(0, 0, 0, 0)",
-    "border-bottom-color": "rgb(33, 33, 33)",
-    "border-color": "rgb(33, 33, 33)",
+    "background-color": "rgb(255, 253, 231)",
+    "border-bottom-color": "rgb(224, 224, 224)",
+    "border-color": "rgb(33, 33, 33) rgb(33, 33, 33) rgb(224, 224, 224)",
     "color": "rgb(33, 33, 33)",
   },
   "light tbody tr": {
     "background-color": "rgba(0, 0, 0, 0)",
+    "border-bottom-color": "rgb(238, 238, 238)",
+    "border-color": "rgb(33, 33, 33) rgb(33, 33, 33) rgb(238, 238, 238)",
+    "color": "rgb(33, 33, 33)",
+  },
+  "light tbody tr.selected": {
+    "background-color": "rgb(227, 242, 253)",
     "border-bottom-color": "rgb(238, 238, 238)",
     "border-color": "rgb(33, 33, 33) rgb(33, 33, 33) rgb(238, 238, 238)",
     "color": "rgb(33, 33, 33)",

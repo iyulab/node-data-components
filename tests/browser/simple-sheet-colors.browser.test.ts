@@ -24,6 +24,11 @@ beforeAll(() => {
 const SELECTORS = [
   '.sheet-container', '.corner', '.col-header', '.row-num',
   '.cell', '.cell.selected', '.cell.cell-readonly', '.cell.cell-computed',
+  // ⚠남긴 다크 규칙 6개를 **실제로 그리게** 해야 "지우면 색이 달라진다"는 주장이
+  // 측정이 된다. 렌더되지 않는 선택자는 규칙이 적용되는지조차 말해 주지 못한다.
+  '.col-header.col-selected', '.cell.cell-readonly.selected', '.cell.cell-computed.selected',
+  // 커버 못 하는 것: .cell-computed.anchor(앵커 위치 의존) ·
+  // .dropdown-item.highlighted(드롭다운 열림 필요). 그 둘은 미측정이다.
 ];
 const PROPS = ['background-color', 'color', 'border-right-color', 'border-bottom-color'];
 
@@ -48,6 +53,11 @@ describe('USimpleSheet 계산색 회귀망', () => {
         { key: 'c', label: 'C', compute: () => '1' },
       ];
       document.body.appendChild(el);
+      await el.updateComplete;
+
+      // 코너를 눌러 전체 선택 — 남긴 다크 규칙이 걸리는 상태(열 선택 · 읽기전용 선택 ·
+      // 계산 셀 선택)를 한 번에 그린다. 열 선택은 click 이 아니라 mousedown 경로다.
+      (el.shadowRoot!.querySelector('.corner') as HTMLElement | undefined)?.click();
       await el.updateComplete;
 
       for (const sel of SELECTORS) {

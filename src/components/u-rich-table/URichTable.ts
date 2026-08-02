@@ -196,7 +196,7 @@ export class URichTable extends LitElement {
           ` : ''}
           ${this.columns.map((col, colIdx) => this._renderCell(row, rowIdx, col, colIdx))}
           <td class="actions-cell">
-            <span style="cursor:pointer;color:#94a3b8" @click=${() => this._onRowMenu(row)}>⋯</span>
+            <span class="row-menu" @click=${() => this._onRowMenu(row)}>⋯</span>
           </td>
         </tr>
         ${isExpanded && this.detailRenderer ? html`
@@ -205,7 +205,7 @@ export class URichTable extends LitElement {
           </tr>
         ` : ''}
         ${hasError ? html`
-          <tr><td colspan=${this._colSpan()} style="padding:2px 8px;background:#fef2f2;color:#ef4444;font-size:11px;">
+          <tr><td colspan=${this._colSpan()} class="row-error-cell">
             ${this.rowErrors.get(rowId)}
           </td></tr>
         ` : ''}
@@ -285,7 +285,7 @@ export class URichTable extends LitElement {
   private _renderNewRow(): TemplateResult {
     return html`
       <tr class="new-row">
-        ${this.selectable ? html`<td class="checkbox-cell"><span style="color:#86efac">+</span></td>` : ''}
+        ${this.selectable ? html`<td class="checkbox-cell"><span class="new-row-marker">+</span></td>` : ''}
         ${this.expandable ? html`<td></td>` : ''}
         ${this.columns.map((col, colIdx) => html`
           <td>
