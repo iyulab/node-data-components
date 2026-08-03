@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.10.0] - 2026-08-03
+
+### Added
+
+- **표의 보조 전경을 «표 안에서만» 조절할 수 있다** — 파생 토큰 5단.
+
+  ```
+  --dc-empty-color      빈 상태 안내문              data-view · simple-sheet · rich-table
+  --dc-header-color     열 머리 · 행 머리           data-view · simple-sheet
+  --dc-muted-color      보조 텍스트 · 라벨          data-view · rich-table
+  --dc-icon-color       정렬 표시 · 확장 · 행 메뉴  rich-table
+  --dc-readonly-color   읽기 전용 셀                simple-sheet
+  ```
+
+  종전에는 세 컴포넌트가 보조 전경을 전부 `--u-txt-color-weak` 로 **섀도 안에서 직독**해,
+  문서 전체의 보조 텍스트를 바꾸지 않고는 표만 맞출 방법이 없었다(소비자 토큰 0 · `part` 0).
+
+  ⚠**기본 렌더는 변하지 않는다.** 다섯 단이 전부 `--u-txt-color-weak` 에서 파생되고
+  다크 대응도 그 역할 토큰이 이미 갖고 있다 — 다크 전용 선언을 더하지 않았다.
+
+  ★**한 토큰으로 접지 않았다.** 전 컬럼이 읽기 전용인 시트에서는 데이터가 통째로 흐려
+  보이는데, 단이 하나면 *"읽기 전용 셀만 진하게"* 가 원리적으로 불가능해진다.
+
+  ⚠**컴포넌트가 «읽는» 단만 선언한다** — 다섯을 어디서나 선언하면 소비자가 바꿔도 아무 일이
+  없는 자리가 생긴다. 어느 단이 어디에 있는지는 README 의 표가 정본이고,
+  `tests/consumer-tokens.test.ts` 가 **선언과 사용을 양방향으로** 대조한다.
+
 ## [0.9.1] - 2026-08-03
 
 ### Fixed

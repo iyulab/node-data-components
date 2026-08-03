@@ -3,6 +3,20 @@ import { css } from 'lit';
 
 export const richTableStyles = css`
   :host {
+    /* ── 소비자 조절점 — 보조 전경 ──
+       ★이 패키지 표 셋의 보조 전경이 전부 --u-txt-color-weak 직독이라 «표 안에서만»
+       조절할 방법이 없었다(소비자 토큰 0 · part 0). 소비앱은 한 제품 안에 표를 넷 두는데,
+       그중 업스트림 표만 조절되지 않으면 나머지에 맞출 수가 없다.
+       ⚠**한 토큰으로 접지 않는다** — 실측상 역할이 갈리고, 접으면 "읽기 전용 셀만 진하게"
+       같은 요청이 원리적으로 불가능해진다. 그것이 이 요청의 발단이었다.
+       ⚠**이 컴포넌트가 «읽는» 단만 선언한다.** 다섯을 어디서나 선언하면 소비자가 바꿔도
+       아무 일이 없는 자리가 생긴다 — 이 리포가 반복해서 본 «토큰 존재 ≠ 배선»이다.
+       ⚠**다크 블록에 다시 선언하지 않는다.** --u-txt-color-weak 자체가 테마 변형이므로
+       시트가 있으면 따라온다. 이 패키지의 다크 블록이 «비어 있는 것»이 목표 상태다.
+       ⚠**폴백 리터럴은 라이트 시트 값의 복제다**(루트 tokens:sync 가 대조한다). */
+    --dc-muted-color: var(--u-txt-color-weak, #757575);   /* 보조 텍스트 · 라벨 */
+    --dc-icon-color:  var(--u-txt-color-weak, #757575);   /* 정렬 표시 · 확장 · 행 메뉴 */
+    --dc-empty-color: var(--u-txt-color-weak, #757575);   /* 빈 상태 안내문 */
     display: block;
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 13px;
@@ -23,7 +37,7 @@ export const richTableStyles = css`
 
   .toolbar .selection-info {
     font-size: 12px;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-muted-color);
   }
 
   .toolbar .search-input {
@@ -81,7 +95,7 @@ export const richTableStyles = css`
 
   .sort-indicator {
     font-size: 10px;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-icon-color);
     margin-left: 4px;
   }
 
@@ -159,7 +173,7 @@ export const richTableStyles = css`
     width: 30px;
     text-align: center;
     cursor: pointer;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-icon-color);
   }
 
   .expand-cell:hover {
@@ -184,7 +198,7 @@ export const richTableStyles = css`
     border-radius: 3px;
     background: transparent;
     font-size: 12px;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-muted-color);
     outline: none;
   }
 
@@ -216,7 +230,7 @@ export const richTableStyles = css`
     background: var(--u-bg-color-raised, #FAFAFA);
     border-top: 1px solid var(--u-border-color, #E0E0E0);
     font-size: 12px;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-muted-color);
   }
 
   .pagination .page-buttons {
@@ -255,7 +269,7 @@ export const richTableStyles = css`
     align-items: center;
     justify-content: center;
     padding: 40px;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-muted-color);
   }
 
   .empty-message {
@@ -263,7 +277,7 @@ export const richTableStyles = css`
     align-items: center;
     justify-content: center;
     padding: 40px;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-empty-color);
   }
 
 
@@ -271,7 +285,7 @@ export const richTableStyles = css`
      .styles.ts 만 훑는 정리로는 보이지 않는 자리다. */
   .row-menu {
     cursor: pointer;
-    color: var(--u-txt-color-weak, #757575);
+    color: var(--dc-icon-color);
   }
 
   .row-error-cell {
