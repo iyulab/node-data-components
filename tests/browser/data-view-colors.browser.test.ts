@@ -1,6 +1,6 @@
 import { describe, it, beforeAll, expect } from 'vitest';
-import lightCss from '../../../components/src/assets/styles/light.css?raw';
-import darkCss from '../../../components/src/assets/styles/dark.css?raw';
+import lightCss from '@iyulab/components/styles/light.css?raw';
+import darkCss from '@iyulab/components/styles/dark.css?raw';
 import '../../src/components/data-view/UDataView';
 
 /**
