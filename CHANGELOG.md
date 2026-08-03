@@ -1,5 +1,67 @@
 # Changelog
 
+## [0.11.0] - 2026-08-04
+
+### Changed
+
+- ⚠**표 문구가 «영어 기본 + 로케일 레지스트리»로 이주했다** — 기본값 7건이 한국어 리터럴이었다
+  (`u-rich-table` 6 · `u-simple-sheet` 1).
+
+  ```ts
+  import { Locale } from '@iyulab/components';
+  import { messages } from '@iyulab/data-components';
+
+  Locale.set('ko');                                  // 검증 메시지와 함께 전환된다
+  messages.register('ja', { empty: 'データなし' });   // 언어를 더하거나 문구를 덮는다
+  ```
+
+  ⚠**한국어 환경은 종전과 같은 문구를 본다**(내장 `ko` · `ko-KR` → `ko`).
+  ⚠**소비자가 준 값은 여전히 이긴다** — `emptyMessage` 등 프로퍼티 계약은 그대로다.
+
+  ★**기본값을 «비우고» 렌더에서 해석한다.** 프로퍼티 초기값에 문자열을 박으면 **생성 시점의
+  로케일에 고정**돼 나중에 `Locale.set()` 을 불러도 이미 만들어진 표는 따라오지 않는다.
+  ⚠**따라서 프로퍼티를 읽으면 기본 상태에서 `''` 가 나온다**(종전에는 한국어 리터럴).
+  화면 문구는 렌더 결과가 계약이다.
+
+  ★검증 메시지(`필수 항목입니다`)는 **`@iyulab/components` 의 키셋**을 쓴다
+  (`Locale.getValue('valueMissing')` · 14로케일). 같은 문장을 두 곳에 두지 않는다.
+
+### Requires
+
+- `@iyulab/components >= 1.23.0` (`Locale.namespace`).
+
+### Added
+
+- **`u-simple-sheet` 의 행 높이·여백·글자 크기를 소비자가 정할 수 있다** — 조절점 6종.
+
+  ```
+  --dc-row-height           24px   셀 height · line-height (둘 다)
+  --dc-cell-padding-block    0px   셀 · 편집 입력의 세로 여백 (행 높이에 가산)
+  --dc-cell-padding-inline   6px   〃 가로 여백
+  --dc-font-size            13px   본문 셀 · 편집 입력 · 드롭다운 항목
+  --dc-header-font-size     12px   열 머리
+  --dc-header-font-weight    600   〃
+  ```
+
+  종전에는 치수가 전부 리터럴이라, 한 화면에 표가 여럿일 때 **시트만 다른 높이로 남아도
+  맞출 방법이 없었다**(공개 API 에 치수 노브 0건 · `part` 0건). 0.10.0 이 연 색 축과 같은
+  자리이고, 색을 맞추고 나서야 높이 차이가 드러난 형태다.
+
+  ⚠**행 높이와 `line-height` 는 한 토큰이 정한다.** 따로 열면 소비자가 한쪽만 바꿔 글자가
+  세로로 어긋난다 — 그 묶임이 이 축의 유일한 제약이다.
+
+  ⚠**색 축과 달리 역할 토큰에서 파생하지 않는다** — 역할 층에 치수 축이 없다. 그래서
+  `:host` 리터럴 기본값이고, 소비자는 **요소 선택자**로 덮는다(`:root` 는 닿지 않는다).
+
+  ⚠**기본 렌더는 변하지 않는다.** 선언하지 않으면 종전 값으로 그려진다.
+
+  ⚠**선언값과 읽히는 행 높이는 1.5px 다르다** — `border-collapse` 로 접힌 테두리가 사용값에
+  더해진다(`24px` 선언 → `25.5px` 로 읽힘). 32px 로 맞추려면 `30.5px` 를 선언한다.
+
+  `tests/browser/simple-sheet-density.browser.test.ts` 가 **실제 크로미움 계산값으로** 효력을
+  잰다 — 소스 대조는 «적혀 있음»만 증명하고, 문서 스코프 선언이 섀도의 `:host` 를 이기는지는
+  캐스케이드 문제라 계산값으로만 갈린다.
+
 ## [0.10.0] - 2026-08-03
 
 ### Added

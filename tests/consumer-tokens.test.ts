@@ -105,3 +105,47 @@ describe('소비자 조절점 — 보조 전경 5단', () => {
     expect(bad).toEqual([]);
   });
 });
+
+/**
+ * **소비자 조절점 — 밀도·타이포**(`USimpleSheet`).
+ *
+ * ⚠여기서는 «배선»만 잰다. 실제로 소비자 선언이 섀도의 `:host` 리터럴을 이기는지는
+ * 계산값 문제라 `tests/browser/simple-sheet-density.browser.test.ts` 가 잰다 —
+ * 이 파일이 색 축에서 세운 원칙(*"있다 ≠ 닿는다"*)을 치수 축에도 그대로 적용한 것이다.
+ */
+const DIMENSION: Record<string, string[]> = {
+  'src/components/simple-sheet/USimpleSheet.styles.ts': [
+    '--dc-row-height',
+    '--dc-cell-padding-block',
+    '--dc-cell-padding-inline',
+    '--dc-font-size',
+    '--dc-header-font-size',
+    '--dc-header-font-weight',
+  ],
+};
+
+describe('소비자 조절점 — 밀도·타이포', () => {
+  it('🔴선언과 사용이 어긋나지 않는다 (양방향)', () => {
+    const bad: string[] = [];
+    for (const [file, names] of Object.entries(DIMENSION)) {
+      const src = strip(readFileSync(join(root, file), 'utf-8'));
+      for (const n of names) {
+        if (!new RegExp(`${n}\\s*:`).test(src)) bad.push(`${file}: ${n} 선언이 없다`);
+        if (!src.includes(`var(${n})`)) bad.push(`${file}: ${n} 선언만 있고 안 읽힌다`);
+      }
+    }
+    expect(bad, '선언과 사용이 어긋난다').toEqual([]);
+  });
+
+  it('⚠치수 축은 역할 토큰에서 파생하지 않는다 — 역할 층에 치수 축이 없다', () => {
+    // 색 축은 `var(--u-txt-color-weak, …)` 파생이 «출발점»이지만, 치수는 대응하는 역할
+    // 토큰이 존재하지 않는다. 없는 토큰을 참조하면 폴백 리터럴만 남아 조절점이 두 겹이 된다.
+    const src = strip(
+      readFileSync(join(root, 'src/components/simple-sheet/USimpleSheet.styles.ts'), 'utf-8'),
+    );
+    const derived = DIMENSION['src/components/simple-sheet/USimpleSheet.styles.ts'].filter(n =>
+      new RegExp(`${n}\\s*:[^;]*var\\(`).test(src),
+    );
+    expect(derived).toEqual([]);
+  });
+});

@@ -18,6 +18,25 @@ const baseStyles = css`
     --dc-header-color:   var(--u-txt-color-weak, #757575);   /* 열 머리 · 행 머리 */
     --dc-empty-color:    var(--u-txt-color-weak, #757575);   /* 빈 상태 안내문 */
     --dc-readonly-color: var(--u-txt-color-weak, #757575);   /* 읽기 전용 셀 */
+
+    /* ── 소비자 조절점 — 밀도·타이포 ──
+       ★색 축(위)과 같은 이유로 열었다. 한 제품 안에 표가 여럿일 때 «어느 높이가 옳은가»는
+       소비자가 정할 일인데, 이 컴포넌트는 치수가 전부 리터럴이라 정할 방법이 없었다.
+       ⚠**행 높이와 line-height 는 한 토큰이 정한다.** 따로 열면 소비자가 한쪽만 바꿔
+       글자가 세로로 어긋난다 — 그 묶임이 이 축의 유일한 제약이다.
+       ⚠**여백 축은 «가산»이다**: 실제 행 높이 = --dc-row-height + 2×--dc-cell-padding-block.
+       기본값이 0 이라 선언하지 않으면 종전과 같다.
+       ⚠**색 축과 달리 역할 토큰에서 파생하지 않는다** — 역할 층에 치수 축이 없다.
+       그래서 폴백이 아니라 :host 리터럴 기본값이고, 소비자는 **요소 선택자**로 덮는다
+       (:host 선언은 상속값을 이기므로 :root 로는 닿지 않는다).
+       ⚠**이 컴포넌트가 «읽는» 단만 선언한다** — 색 축과 같은 규칙이다. */
+    --dc-row-height:          24px;   /* 셀 height · line-height (묶임) */
+    --dc-cell-padding-block:   0px;   /* 셀 · 편집 입력의 세로 여백 (가산) */
+    --dc-cell-padding-inline:  6px;   /* 〃 가로 여백 */
+    --dc-font-size:           13px;   /* 본문 셀 · 편집 입력 · 드롭다운 항목 */
+    --dc-header-font-size:    12px;   /* 열 머리 */
+    --dc-header-font-weight:   600;   /* 〃 */
+
     display: block;
     width: 100%;
     height: 400px;
@@ -78,8 +97,8 @@ const baseStyles = css`
     background: var(--u-neutral-100, #F5F5F5);
     padding: 4px 8px;
     text-align: center;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: var(--dc-header-font-size);
+    font-weight: var(--dc-header-font-weight);
     color: var(--dc-header-color);
     border-right: 1px solid var(--u-border-color, #E0E0E0);
     border-bottom: 2px solid var(--u-border-color, #E0E0E0);
@@ -160,18 +179,20 @@ const baseStyles = css`
 
   /* Data cells */
   .cell {
-    padding: 0 6px;
+    padding: var(--dc-cell-padding-block) var(--dc-cell-padding-inline);
     border-right: 1px solid var(--u-border-color-weak, #EEEEEE);
     border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
-    font-size: 13px;
+    font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
     min-width: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     cursor: cell;
-    height: 24px;
-    line-height: 24px;
+    /* ⚠height 는 «빈 셀»을 정한다 — 내용이 있는 셀의 높이는 line-height 가 만든다.
+       둘 중 하나만 배선하면 데이터 행과 빈 행의 높이가 갈린다(네거티브 컨트롤이 잡은 자리). */
+    height: var(--dc-row-height);
+    line-height: var(--dc-row-height);
     vertical-align: middle;
     position: relative;
     box-sizing: border-box;
@@ -206,8 +227,9 @@ const baseStyles = css`
     border: none;
     outline: 2px solid var(--u-blue-500, #2196F3);
     outline-offset: -1px;
-    padding: 0 6px;
-    font-size: 13px;
+    /* ⚠셀과 «같은 값»이어야 한다 — 어긋나면 편집 진입 순간 글자가 튄다. */
+    padding: var(--dc-cell-padding-block) var(--dc-cell-padding-inline);
+    font-size: var(--dc-font-size);
     font-family: inherit;
     color: var(--u-txt-color, #212121);
     background: var(--u-bg-color, #FFFFFF);
@@ -235,7 +257,8 @@ const baseStyles = css`
 
   .dropdown-item {
     padding: 4px 8px;
-    font-size: 13px;
+    /* 셀 값의 후보를 보이는 자리다 — 본문 글자 축을 따른다. */
+    font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
     cursor: pointer;
     white-space: nowrap;

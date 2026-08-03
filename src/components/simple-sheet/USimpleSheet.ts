@@ -1,3 +1,4 @@
+import { messages } from '../../utilities/messages.js';
 import { html, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { ref } from 'lit/directives/ref.js';
@@ -80,7 +81,7 @@ export class USimpleSheet extends UElement {
   /** 읽기 전용 모드 */
   @property({ type: Boolean }) readonly = false;
   /** 드롭다운에 일치 항목이 없을 때 문구 */
-  @property({ type: String }) noMatchMessage = '일치하는 항목 없음';
+  @property({ type: String }) noMatchMessage = '';
 
   /**
    * 명시 테마. 'dark'이면 다크 스타일을 적용합니다.
@@ -363,7 +364,7 @@ export class USimpleSheet extends UElement {
             </div>
           ` : noMatch && isStrict ? html`
             <div class="cell-dropdown">
-              <div class="dropdown-empty">${this.noMatchMessage}</div>
+              <div class="dropdown-empty">${this.noMatchMessage || messages.text('noMatch')}</div>
             </div>
           ` : ''}
         ` : this._formatValue(value, c, r)}

@@ -1,3 +1,5 @@
+import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
+import { messages } from '../../utilities/messages.js';
 // src/components/u-rich-table/URichTable.component.ts
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
@@ -16,22 +18,23 @@ export class URichTable extends LitElement {
   @property({ type: Number }) pageSize = 25;
   @property({ type: Number }) currentPage = 1;
   @property({ type: Boolean }) loading = false;
-  @property({ type: String }) emptyMessage = '데이터가 없습니다';
+  @property({ type: String }) emptyMessage = '';
   /** 로딩 표시 문구 */
-  @property({ type: String }) loadingMessage = '로딩 중...';
+  @property({ type: String }) loadingMessage = '';
   /** 필터 입력 placeholder */
-  @property({ type: String }) filterPlaceholder = '필터...';
+  @property({ type: String }) filterPlaceholder = '';
   /** 필터 select 의 "전체" 항목 문구 */
-  @property({ type: String }) filterAllLabel = '전체';
+  @property({ type: String }) filterAllLabel = '';
   /** 새 행 추가 버튼 문구 */
-  @property({ type: String }) addRowLabel = '+ 새 행';
+  @property({ type: String }) addRowLabel = '';
   /**
    * 페이지 정보 문구. (전체, 시작, 끝) 을 받아 문자열을 만든다.
    * 언어마다 어순이 달라 템플릿 문자열이 아니라 함수로 연다.
    */
   @property({ attribute: false })
   pageInfoFormatter: (total: number, start: number, end: number) => string =
-    (total, start, end) => `전체 ${total.toLocaleString()}건 중 ${start}-${end} 표시`;
+    (total, start, end) =>
+      messages.text('pageInfo', { total: total.toLocaleString(), start, end });
   @property({ type: Boolean }) selectable = false;
   @property({ type: Boolean }) editable = false;
   @property({ type: Boolean }) addable = false;
@@ -129,7 +132,7 @@ export class URichTable extends LitElement {
         <div style="flex:1"></div>
         <slot name="toolbar-end"></slot>
         ${this.addable ? html`
-          <button class="btn btn-success" @click=${this._onAddRowClick}>${this.addRowLabel}</button>
+          <button class="btn btn-success" @click=${this._onAddRowClick}>${this.addRowLabel || messages.text('addRow')}</button>
         ` : ''}
       </div>
     `;
@@ -168,11 +171,11 @@ export class URichTable extends LitElement {
             ${col.filterable !== false ? (
               col.filterType === 'select' && col.options
                 ? html`<select @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
-                    <option value="">${this.filterAllLabel}</option>
+                    <option value="">${this.filterAllLabel || messages.text('filterAll')}</option>
                     ${col.options.map(o => html`<option value=${o.value}>${o.label}</option>`)}
                   </select>`
                 : html`<input
-                    placeholder=${this.filterPlaceholder}
+                    placeholder=${this.filterPlaceholder || messages.text('filterPlaceholder')}
                     @input=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLInputElement).value)} />`
             ) : ''}
           </td>
@@ -184,10 +187,10 @@ export class URichTable extends LitElement {
 
   private _renderBody(): TemplateResult | TemplateResult[] {
     if (this.loading) {
-      return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage}</div></td></tr>`;
+      return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div></td></tr>`;
     }
     if (this.data.length === 0) {
-      return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${this.emptyMessage}</div></td></tr>`;
+      return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${this.emptyMessage || messages.text('empty')}</div></td></tr>`;
     }
     return this.data.map((row, rowIdx) => {
       const rowId = this._rowId(row, rowIdx);
@@ -450,7 +453,7 @@ export class URichTable extends LitElement {
 
     // Validation
     if (col.required && !newValue && newValue !== 0) {
-      this.validationErrors = new Map(this.validationErrors).set(`${rowIndex}-${colIndex}`, '필수 항목입니다');
+      this.validationErrors = new Map(this.validationErrors).set(`${rowIndex}-${colIndex}`, Locale.getValue('valueMissing'));
       return;
     }
     if (col.validator) {

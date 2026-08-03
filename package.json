@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "keywords": [
     "iyulab",
     "web-components",
@@ -58,7 +58,7 @@
     "lint:fix": "eslint src/ --fix"
   },
   "dependencies": {
-    "@iyulab/components": "^1.18.0",
+    "@iyulab/components": "^1.23.0",
     "lit": "^3.3.3"
   },
   "peerDependencies": {
