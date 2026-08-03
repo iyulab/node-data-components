@@ -35,7 +35,7 @@ export const richTableStyles = css`
   }
 
   .toolbar .search-input:focus {
-    border-color: var(--u-input-border-color-focus, #1976D2);
+    border-color: var(--u-input-border-color-focus, #1565C0);
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
 
@@ -239,7 +239,7 @@ export const richTableStyles = css`
   .pagination button.active {
     background: var(--u-primary-color, #1976D2);
     color: var(--u-txt-color-inverse, #FFFFFF);
-    border-color: var(--u-input-border-color-focus, #1976D2);
+    border-color: var(--u-input-border-color-focus, #1565C0);
   }
 
   .pagination select {
