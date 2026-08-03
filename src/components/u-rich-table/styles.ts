@@ -36,7 +36,7 @@ export const richTableStyles = css`
 
   .toolbar .search-input:focus {
     border-color: var(--u-input-border-color-focus, #1565C0);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--u-primary-color-strong, #1565C0) 20%, transparent);
   }
 
   .toolbar .btn {
