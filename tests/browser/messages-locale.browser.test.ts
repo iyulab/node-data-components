@@ -21,7 +21,13 @@ import '../../src/components/simple-sheet/USimpleSheet';
  *    생성 시점에 고정된다. 이 이주가 기본값을 비운 이유가 그것이다.
  */
 
-type Table = HTMLElement & { data: unknown[]; updateComplete: Promise<unknown> };
+// ⚠`requestUpdate` 를 빠뜨려 이 파일은 **타입 에러를 안은 채로 통과**하고 있었다 —
+//   `tsc --noEmit` 은 어느 패키지의 `build` 에도 게이트로 걸려 있지 않다(CLAUDE.md 기록).
+type Table = HTMLElement & {
+  data: unknown[];
+  updateComplete: Promise<unknown>;
+  requestUpdate(): void;
+};
 
 const mountTable = async (attrs: Record<string, string> = {}) => {
   const el = document.createElement('u-rich-table') as Table;

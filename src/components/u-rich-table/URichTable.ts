@@ -89,9 +89,9 @@ export class URichTable extends LitElement {
     if (this._warnedMissingRowId) return;
     this._warnedMissingRowId = true;
     console.warn(
-      '[@iyulab/data-components] u-rich-table: 행에 `_id` 가 없어 **위치**로 식별합니다. ' +
-      '데이터가 재정렬·재페이징되면 선택 상태가 다른 행으로 옮겨갑니다. ' +
-      '각 행에 고유한 `_id` 를 부여하세요.',
+      '[@iyulab/data-components] u-rich-table: rows have no `_id`, so selection is tracked ' +
+      'by **position**. Re-sorting or re-paging the data moves the selection to a different ' +
+      'row. Give every row a unique `_id`.',
     );
   }
 
