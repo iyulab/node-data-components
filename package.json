@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "keywords": [
     "iyulab",
     "web-components",
@@ -51,11 +51,12 @@
   ],
   "scripts": {
     "start": "vite",
-    "build": "eslint && vite build",
+    "build": "npm run typecheck && eslint && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix"
+    "lint:fix": "eslint src/ --fix",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@iyulab/components": "^1.23.0",

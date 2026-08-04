@@ -38,8 +38,13 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 ```
 
 `_id`가 없으면 **위치(행 번호)로 대체**하고 콘솔에 경고를 냅니다. 동작은 하지만, 데이터가
-재정렬·재페이징되면 선택 상태가 다른 행으로 옮겨갑니다 — 위 1번 때문에 재정렬은 흔한
-일이므로 안전망으로만 여기세요.
+재정렬되면 선택 상태가 다른 행으로 옮겨갑니다 — 위 1번 때문에 재정렬은 흔한 일이므로
+안전망으로만 여기세요.
+
+🔴**`selectable` 과 서버 페이징을 함께 쓴다면 `_id`는 안전망이 아니라 전제조건입니다.**
+위치 기반 대체는 페이지가 바뀌어도 같은 키를 만듭니다 — 1페이지의 `#0`과 2페이지의 `#0`이
+**같은 값**입니다. 그래서 1페이지에서 첫 행을 고르면 2페이지의 첫 행도 선택된 것으로
+렌더됩니다. 선택이 옮겨가는 것이 아니라 **충돌하는** 것이라 경고만으로는 막을 수 없습니다.
 
 ## 기본 사용
 
@@ -94,7 +99,56 @@ table.pageInfoFormatter = (total, start, end) => `${start}–${end} of ${total}`
 
 | 메서드 | 반환 | 설명 |
 |------|------|------|
-| `getSelectedRows()` | `Record<string, unknown>[]` | 현재 선택된 행 |
+| `getSelectedRows()` | `Record<string, unknown>[]` | **현재 페이지의** 선택된 행 (아래 참조) |
+| `selectedRowIds` *(getter)* | `ReadonlySet<string>` | 선택된 **모든** 행의 `_id` — 페이지를 가로질러 누적된 전부 |
+| `setSelection(ids)` | `void` | 선택을 통째로 대체합니다. 현재 페이지에 없는 `_id`도 받습니다 |
+| `clearSelection()` | `void` | 선택을 전부 비웁니다 — 다른 페이지의 누적분까지 |
+
+### 선택은 페이지를 넘어 유지됩니다
+
+`data`를 바꿔도 선택은 초기화되지 않습니다. 서버 페이징에서 *"여러 페이지에 걸쳐 고른 뒤
+한꺼번에 처리"* 가 성립하도록 한 설계입니다.
+
+- **전체선택 체크박스는 «현재 페이지» 범위**입니다. 켜면 이 페이지 행이 선택에 더해지고,
+  끄면 이 페이지 행만 빠집니다 — 다른 페이지의 선택분은 그대로입니다.
+- **`getSelectedRows()`는 현재 페이지만 돌려줍니다.** 컴포넌트가 갖고 있지 않은 행을
+  돌려줄 수는 없기 때문입니다. 페이지를 가로지르는 선택 전부가 필요하면 **`selectedRowIds`**
+  를 쓰세요. 선택 건수 라벨은 누적을 세므로, 선택이 페이지를 가로지르면
+  `4 selected (1 on this page)` 처럼 두 숫자를 함께 보여 줍니다.
+- 일괄 처리를 끝낸 뒤 상태를 되돌리려면 **`clearSelection()`**, 앱이 선택을 정본으로 들고
+  있다면 **`setSelection(ids)`** 를 쓰세요.
+
+```typescript
+table.addEventListener('selection-change', (e) => {
+  e.detail.selectedIds;   // 누적 식별자 — 일괄 처리 대상
+  e.detail.selectedRows;  // 현재 페이지의 행 객체 (길이가 다른 것이 정상입니다)
+});
+
+// 처리 후 정리
+await bulkApprove(table.selectedRowIds);
+table.clearSelection();
+```
+
+⚠**`setSelection()`은 같은 집합이면 아무 일도 하지 않습니다.** `selection-change`를 받아
+앱 상태를 갱신하고 그것을 다시 `setSelection()`으로 돌려주는 배선이 자연스러운데, 무조건
+이벤트를 내면 그 자리가 무한 루프가 되기 때문입니다.
+
+### `select-all` — 「전체선택을 눌렀다」는 의도
+
+`selection-change`만으로는 *"세 행을 골랐다"*와 *"전체선택을 눌렀다"*가 구분되지 않습니다.
+서버 페이징에서 후자는 앱이 *"조건에 맞는 N건 전부를 선택하시겠습니까?"*를 제안할 자리입니다.
+
+```typescript
+table.addEventListener('select-all', (e) => {
+  e.detail.checked;      // 켰는가 껐는가
+  e.detail.pageRowIds;   // 이번 조작이 더하거나 뺀 현재 페이지 식별자
+});
+```
+
+⚠**`scope: 'page' | 'all'` 같은 필드는 없습니다.** 이 컴포넌트는 `'all'`을 낼 수 없습니다 —
+다른 페이지의 행을 갖고 있지 않고, 서버 페이징에서 *전역 전체선택*은 식별자 목록이 아니라
+**조회 조건**이라 컴포넌트가 표현할 수 있는 것이 아닙니다. 컴포넌트는 의도만 알리고,
+그것을 *"전체 N건"*으로 해석할지는 앱이 정합니다.
 
 ## ColumnDef
 
@@ -131,7 +185,8 @@ interface ColumnDef {
 
 | 이벤트 | `detail` |
 |------|------|
-| `selection-change` | `{ selectedRows }` |
+| `selection-change` | `{ selectedRows, selectedIds }` — 앞은 **현재 페이지의 행**, 뒤는 **누적 식별자** |
+| `select-all` | `{ checked, pageRowIds }` — 전체선택 체크박스 조작. `selection-change`와 함께 발생 |
 | `row-create` | `{ row }` |
 | `row-update` | `{ row, field, value, oldValue }` |
 | `row-delete` | `{ row }` |
@@ -141,7 +196,8 @@ interface ColumnDef {
 | `page-change` | `{ page, pageSize }` |
 | `paste` | `{ rows }` |
 
-React에서는 `URichTableReact`가 이 아홉 개를 `onSelectionChange` 형태로 노출합니다.
+React에서는 `URichTableReact`가 이들을 `onSelectionChange` 형태로 노출합니다 — 목록이 표와
+어긋나면 **컴파일 에러**가 납니다(`src/react.ts`의 완전성 단언).
 
 ## 키보드 · 클립보드
 
@@ -152,10 +208,10 @@ React에서는 `URichTableReact`가 이 아홉 개를 `onSelectionChange` 형태
 | `Tab` | 확정 후 오른쪽 셀로 |
 | `Escape` | 편집 취소 |
 | `Space` | 포커스된 행 선택 토글 (`selectable`) |
-| `Delete` | 선택된 행마다 `row-delete` 발생 |
+| `Delete` | **현재 페이지의** 선택된 행마다 `row-delete` 발생 |
 | `Ctrl`/`Cmd` + `C` | 선택 영역을 TSV로 복사 |
 | `Ctrl`/`Cmd` + `V` | TSV 붙여넣기 → `paste` 발생 |
-| `Ctrl`/`Cmd` + `A` | 전체 선택 |
+| `Ctrl`/`Cmd` + `A` | **현재 페이지** 전체 선택 (전체선택 체크박스와 같은 범위) |
 
 복사·붙여넣기는 TSV(탭 구분)라 스프레드시트와 그대로 오갑니다. 값 변환이 필요하면
 `clipboardParse` / `clipboardFormat`을 쓰세요.

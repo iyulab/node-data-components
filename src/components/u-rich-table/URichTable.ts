@@ -69,6 +69,47 @@ export class URichTable extends LitElement {
   }
 
   /**
+   * 선택된 행의 **식별자 집합** — 페이지를 가로질러 누적된 전부.
+   *
+   * `getSelectedRows()` 는 현재 페이지의 행 객체만 돌려주므로(갖고 있지 않은 행을 만들 수 없다)
+   * *"여러 페이지에 걸쳐 고른 뒤 일괄 처리"* 에는 이쪽이 필요하다.
+   *
+   * ⚠**스냅샷이다.** 내부 집합을 그대로 넘기면 `ReadonlySet` 이 타입 수준 약속일 뿐이라
+   * JS 소비자가 `add` 로 내부 상태를 **갱신 신호 없이** 망가뜨릴 수 있다. 복제 비용은
+   * 선택 크기에 비례하고 무시할 수준이다.
+   */
+  get selectedRowIds(): ReadonlySet<string> {
+    return new Set(this.selectedIds);
+  }
+
+  /**
+   * 선택을 **통째로 대체**한다 — 페이지를 가로지르는 누적분까지.
+   *
+   * 앱이 자기 상태를 정본으로 삼는 경우(외부 저장·복원, 필터 변경 시 정리)의 진입점이다.
+   * 현재 페이지에 없는 식별자를 넣어도 된다 — 그 페이지로 이동하면 선택된 것으로 렌더된다.
+   *
+   * ⚠**같은 집합이면 아무 일도 하지 않는다.** 앱이 `selection-change` 를 받아 자기 상태를
+   * 갱신하고 다시 이것을 부르는 것이 자연스러운 배선인데, 무조건 발생시키면 그 자리가
+   * **무한 루프**가 된다.
+   */
+  setSelection(ids: Iterable<string>): void {
+    const next = new Set(ids);
+    if (next.size === this.selectedIds.size && [...next].every(id => this.selectedIds.has(id))) return;
+    this.selectedIds = next;
+    this._fireSelectionChange();
+  }
+
+  /**
+   * 선택을 **전부** 비운다 — 페이지를 가로지르는 누적분까지.
+   *
+   * 전체선택 체크박스는 «이 페이지»만 다루므로 전역 소거의 자리가 없다. 일괄 처리를 끝낸 뒤
+   * 앱이 상태를 되돌리는 경로가 여기다. `selection-change` 를 발생시킨다.
+   */
+  clearSelection(): void {
+    this.setSelection([]);
+  }
+
+  /**
    * 행의 식별자. 선택·확장·행 오류 상태가 전부 이 값으로 추적된다.
    *
    * ⚠`_id` 는 이 컴포넌트가 **부여하지 않는다.** 소비자가 넣어 주지 않으면 모든 행의
@@ -95,8 +136,23 @@ export class URichTable extends LitElement {
     );
   }
 
+  /**
+   * **현재 페이지의** 선택된 행. 서버 페이징에서 다른 페이지의 선택분은 여기 없다 —
+   * 이 컴포넌트가 갖고 있지 않은 행을 돌려줄 수는 없기 때문이다.
+   * 페이지를 가로지르는 선택 집합이 필요하면 {@link selectedRowIds} 를 쓴다.
+   */
   getSelectedRows(): Record<string, unknown>[] {
     return this.data.filter((row, i) => this.selectedIds.has(this._rowId(row, i)));
+  }
+
+  /** 이 페이지 행들의 식별자. 전체선택/해제가 «이 페이지» 범위임을 정의하는 값이다. */
+  private _pageRowIds(): string[] {
+    return this.data.map((row, i) => this._rowId(row, i));
+  }
+
+  /** 현재 페이지에서 선택된 행 수 — 전체선택 체크박스의 «분자». */
+  private get _selectedOnPage(): number {
+    return this._pageRowIds().reduce((n, id) => n + (this.selectedIds.has(id) ? 1 : 0), 0);
   }
 
   // --- Rendering ---
@@ -115,19 +171,30 @@ export class URichTable extends LitElement {
     `;
   }
 
+  /**
+   * ⚠**두 숫자를 섞지 않는다.** 체크박스는 «이 페이지»를 켜고 끄므로 그 상태도 페이지 기준이고,
+   * 라벨의 건수는 페이지를 가로지르는 **누적**이다. 종전에는 분자만 누적이고 분모가 페이지라
+   * 다른 페이지의 선택분이 이 페이지의 체크 상태로 새어 나왔다 — 페이지 1을 전량 선택하고
+   * 넘어가면 페이지 2에서 아무것도 고르지 않았는데 체크박스가 켜져 보였고, 그것을 끄면
+   * 페이지 1의 선택이 조용히 사라졌다.
+   */
   private _renderToolbar(): TemplateResult {
-    const selectedCount = this.selectedIds.size;
+    const total = this.selectedIds.size;
+    const onPage = this._selectedOnPage;
+    const crossesPages = total > onPage;
     return html`
       <div class="toolbar">
         ${this.selectable ? html`
           <div class="selection-info">
             <input type="checkbox"
-              .checked=${selectedCount > 0 && selectedCount === this.data.length}
-              .indeterminate=${selectedCount > 0 && selectedCount < this.data.length}
+              .checked=${this.data.length > 0 && onPage === this.data.length}
+              .indeterminate=${onPage > 0 && onPage < this.data.length}
               @change=${this._onSelectAll} />
-            ${selectedCount > 0 ? html`<span>${selectedCount}건 선택됨</span>` : ''}
+            ${total > 0 ? html`<span>${crossesPages
+              ? messages.text('selectedAcrossPages', { count: total, onPage })
+              : messages.text('selected', { count: total })}</span>` : ''}
           </div>
-          ${selectedCount > 0 ? html`<slot name="bulk-actions"></slot>` : ''}
+          ${total > 0 ? html`<slot name="bulk-actions"></slot>` : ''}
         ` : ''}
         <div style="flex:1"></div>
         <slot name="toolbar-end"></slot>
@@ -336,7 +403,7 @@ export class URichTable extends LitElement {
           `)}
           <button ?disabled=${this.currentPage >= totalPages} @click=${() => this._onPageChange(this.currentPage + 1)}>▶</button>
           <select @change=${(e: Event) => this._onPageSizeChange(Number((e.target as HTMLSelectElement).value))}>
-            ${[25, 50, 100].map(s => html`<option value=${s} ?selected=${s === this.pageSize}>${s}행</option>`)}
+            ${[25, 50, 100].map(s => html`<option value=${s} ?selected=${s === this.pageSize}>${messages.text('rowsPerPage', { size: s })}</option>`)}
           </select>
         </div>
       </div>
@@ -344,14 +411,38 @@ export class URichTable extends LitElement {
   }
 
   // --- Event Handlers ---
+  /**
+   * 전체선택 체크박스 — 범위는 **현재 페이지**다(합집합/차집합, 치환이 아니다).
+   * 종전에는 켤 때 `new Set(현재 페이지)` 로 **치환**하고 끌 때 `new Set()` 으로 **전역 소거**해서,
+   * 어느 쪽이든 다른 페이지의 선택분이 함께 날아갔다. 전역 소거가 필요하면 {@link clearSelection}.
+   *
+   * ## 왜 `select-all` 을 따로 내보내는가
+   *
+   * `selection-change` 만으로는 *"사용자가 세 행을 골랐다"* 와 *"사용자가 전체선택을 눌렀다"* 가
+   * 구분되지 않는다. 서버 페이징에서 그 구분은 앱에 필요하다 — 전체선택을 누른 순간이
+   * *"이 조건에 맞는 N건 전부"* 를 제안할 자리이기 때문이다.
+   *
+   * ⚠**`scope: 'page' | 'all'` 필드는 두지 않았다.** 이 컴포넌트는 `'all'` 을 **낼 수 없다** —
+   * 다른 페이지의 행을 갖고 있지 않고, 서버 페이징에서 «전역 전체선택»은 id 목록이 아니라
+   * **조회 조건**이라 컴포넌트가 표현할 수 있는 것이 아니다. 값이 하나뿐인 유니온은
+   * *"라이브러리가 모르는 개념을 아는 척하는"* 필드가 된다. ⇒ 컴포넌트는 **의도만** 알리고
+   * 전역 해석은 앱이 한다.
+   */
   private _onSelectAll(e: Event): void {
     const checked = (e.target as HTMLInputElement).checked;
-    if (checked) {
-      this.selectedIds = new Set(this.data.map((r, i) => this._rowId(r, i)));
-    } else {
-      this.selectedIds = new Set();
+    const pageIds = this._pageRowIds();
+    const next = new Set(this.selectedIds);
+    for (const id of pageIds) {
+      if (checked) next.add(id);
+      else next.delete(id);
     }
+    this.selectedIds = next;
     this._fireSelectionChange();
+    // 의도를 따로 알린다 — 아래 주석 참조.
+    this.dispatchEvent(new CustomEvent('select-all', {
+      detail: { checked, pageRowIds: pageIds },
+      bubbles: true, composed: true
+    }));
   }
 
   private _onRowSelect(rowId: string): void {
@@ -601,9 +692,15 @@ export class URichTable extends LitElement {
     this._onCellDblClick(rowIndex, colIndex, value);
   }
 
+  /**
+   * ⚠**두 필드가 서로 다른 것을 센다.** `selectedRows` 는 **현재 페이지의 행 객체**이고
+   * `selectedIds` 는 페이지를 가로지르는 **누적 식별자**다. 서버 페이징에서 둘의 길이가
+   * 다른 것이 정상이며, 그 차이를 감출 방법은 없다 — 컴포넌트가 다른 페이지의 행을
+   * 갖고 있지 않기 때문이다.
+   */
   private _fireSelectionChange(): void {
     this.dispatchEvent(new CustomEvent('selection-change', {
-      detail: { selectedRows: this.getSelectedRows() },
+      detail: { selectedRows: this.getSelectedRows(), selectedIds: [...this.selectedIds] },
       bubbles: true, composed: true
     }));
   }
@@ -685,8 +782,11 @@ export class URichTable extends LitElement {
     this.focusedCell = { rowIndex: newRow, colIndex: newCol };
   }
 
+  /** `Ctrl`/`Cmd` + `A` — 전체선택 체크박스와 같은 범위(현재 페이지 합집합)여야 한다. */
   private _selectAll(): void {
-    this.selectedIds = new Set(this.data.map((r, i) => this._rowId(r, i)));
+    const next = new Set(this.selectedIds);
+    for (const id of this._pageRowIds()) next.add(id);
+    this.selectedIds = next;
     this._fireSelectionChange();
   }
 

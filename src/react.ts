@@ -34,21 +34,55 @@ export const UDataViewReact = createComponent({
   react: React,
 });
 
+/**
+ * `RichTableEventMap` → React `onXxx` prop 대응.
+ *
+ * ⚠**이 목록은 손으로 쓸 수밖에 없다** — `createComponent` 는 런타임 객체를 요구하는데
+ * 이벤트 맵은 타입이라 런타임에 남지 않는다. 그래서 «도출»이 불가능하고, 이 리포가
+ * 반복해서 밟은 *«손으로 쓴 목록이 결함을 숨긴다»* 의 조건이 그대로 성립한다 —
+ * 맵에 이벤트를 더하고 여기를 잊으면 **React 소비자에게만 조용히 없는 이벤트**가 된다.
+ * ⇒ 도출 대신 **완전성을 컴파일 시간에 고정**한다(바로 아래).
+ */
+const RICH_TABLE_EVENTS = {
+  onSelectionChange: 'selection-change',
+  onSelectAll: 'select-all',
+  onRowCreate: 'row-create',
+  onRowUpdate: 'row-update',
+  onRowDelete: 'row-delete',
+  onRowExpand: 'row-expand',
+  onSortChange: 'sort-change',
+  onFilterChange: 'filter-change',
+  onPageChange: 'page-change',
+  onPaste: 'paste',
+} as const satisfies Record<string, keyof RichTableEventMap>;
+
+/**
+ * `RichTableEventMap` 의 키 중 위 표가 덮지 않은 것 — **있으면 컴파일 에러**다.
+ *
+ * ⚠거짓 분기를 `never` 가 아니라 **빠진 키 자체**로 둔 것이 요점이다. `never` 로 두면
+ * 에러가 `Type 'true' is not assignable to type 'never'` 라 **무엇이 빠졌는지 말하지 않는다.**
+ * 지금은 `… to type '"select-all"'` 처럼 이름이 그대로 나온다.
+ *
+ * ★네거티브 컨트롤로 `onSelectAll` 을 지워 실제로 발화하는 것을 확인했다.
+ */
+type UncoveredRichTableEvents = Exclude<
+  keyof RichTableEventMap,
+  (typeof RICH_TABLE_EVENTS)[keyof typeof RICH_TABLE_EVENTS]
+>;
+const _richTableEventsAreExhaustive: UncoveredRichTableEvents extends never
+  ? true
+  : UncoveredRichTableEvents = true;
+void _richTableEventsAreExhaustive;
+
 /** URichTable React 래퍼 — RichTableEventMap의 모든 이벤트를 onXxx로 노출 */
 export const URichTableReact = createComponent({
   tagName: 'u-rich-table',
   elementClass: URichTable,
   react: React,
-  events: {
-    onSelectionChange: 'selection-change' as EventName<RichTableEventMap['selection-change']>,
-    onRowCreate: 'row-create' as EventName<RichTableEventMap['row-create']>,
-    onRowUpdate: 'row-update' as EventName<RichTableEventMap['row-update']>,
-    onRowDelete: 'row-delete' as EventName<RichTableEventMap['row-delete']>,
-    onRowExpand: 'row-expand' as EventName<RichTableEventMap['row-expand']>,
-    onSortChange: 'sort-change' as EventName<RichTableEventMap['sort-change']>,
-    onFilterChange: 'filter-change' as EventName<RichTableEventMap['filter-change']>,
-    onPageChange: 'page-change' as EventName<RichTableEventMap['page-change']>,
-    onPaste: 'paste' as EventName<RichTableEventMap['paste']>,
+  events: RICH_TABLE_EVENTS as {
+    [K in keyof typeof RICH_TABLE_EVENTS]: EventName<
+      RichTableEventMap[(typeof RICH_TABLE_EVENTS)[K]]
+    >;
   },
 });
 

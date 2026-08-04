@@ -25,7 +25,7 @@ import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
  */
 export type DataMessageKey =
   | 'empty' | 'loading' | 'filterPlaceholder' | 'filterAll' | 'addRow' | 'pageInfo'
-  | 'noMatch';
+  | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
 
@@ -37,6 +37,9 @@ messages.register('en', {
   addRow: '+ New row',
   pageInfo: 'Showing {start}-{end} of {total}',
   noMatch: 'No matching item',
+  selected: '{count} selected',
+  selectedAcrossPages: '{count} selected ({onPage} on this page)',
+  rowsPerPage: '{size} rows',
 });
 
 messages.register('ko', {
@@ -47,4 +50,7 @@ messages.register('ko', {
   addRow: '+ 새 행',
   pageInfo: '전체 {total}건 중 {start}-{end} 표시',
   noMatch: '일치하는 항목 없음',
+  selected: '{count}건 선택됨',
+  selectedAcrossPages: '{count}건 선택됨 (이 페이지 {onPage}건)',
+  rowsPerPage: '{size}행',
 });
