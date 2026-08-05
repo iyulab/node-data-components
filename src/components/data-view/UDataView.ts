@@ -1,5 +1,5 @@
 ﻿import { html, type TemplateResult } from 'lit';
-import { property, state, customElement } from 'lit/decorators.js';
+import { property, customElement } from 'lit/decorators.js';
 
 import '@iyulab/components/dist/components/icon/UIcon.js';
 import '@iyulab/components/dist/components/button/UButton.js';
@@ -47,7 +47,6 @@ export class UDataView extends UElement {
   /** 커스텀 셀 렌더 함수 (table용) */
   @property({ attribute: false }) renderCell?: (item: DataItem, column: DataColumn, index: number) => TemplateResult | string;
 
-  @state() private selectedIndex: number | null = null;
 
   render() {
     return html`
@@ -73,11 +72,25 @@ export class UDataView extends UElement {
     `;
   }
 
+  /**
+   * 레이아웃 전환 버튼.
+   *
+   * ⚠**선택 상태를 `variant`+`color` 로 나타낸다.** 종전에는 `?active` 로 이 시트의
+   * `u-button[active]` 규칙(배경 한 줄)을 켰는데, 그 규칙은 자기 주석에 *"주색 위의 글자
+   * 대비가 3.45~3.68 로 최선이 아니다"* 라고 적고 있었다. `UButton` 자신의 `variant`·`color`
+   * 를 쓰면 그 대비 계약을 컴포넌트가 책임진다.
+   * 접근성은 `aria-pressed` 가 나른다 — 색만으로는 토글 상태가 보조기술에 닿지 않는다.
+   */
   private renderViewButton(mode: ViewMode, icon: string, label: string) {
+    const selected = this.mode === mode;
     return html`
       <u-button
-        ?active=${this.mode === mode}
+        variant=${selected ? 'solid' : 'ghost'}
+        color=${selected ? 'primary' : 'neutral'}
         title=${label}
+        aria-label=${label}
+        aria-pressed=${selected ? 'true' : 'false'}
+        @click=${() => { this.mode = mode; }}
       >
         <u-icon lib="bootstrap" name=${icon}></u-icon>
       </u-button>
@@ -129,9 +142,7 @@ export class UDataView extends UElement {
           </thead>
           <tbody>
             ${this.items.map((item, index) => html`
-              <tr 
-                class=${this.selectedIndex === index ? 'selected' : ''}
-              >
+              <tr>
                 ${cols.map(col => html`
                   <td>${this.getCellContent(item, col, index)}</td>
                 `)}
@@ -149,9 +160,7 @@ export class UDataView extends UElement {
       : this.renderDefaultCard(item);
 
     return html`
-      <div 
-        class="card ${this.selectedIndex === index ? 'selected' : ''}"
-      >
+      <div class="card">
         ${content}
       </div>
     `;
@@ -163,9 +172,7 @@ export class UDataView extends UElement {
       : this.renderDefaultCard(item);
 
     return html`
-      <div 
-        class="card list-card ${this.selectedIndex === index ? 'selected' : ''}"
-      >
+      <div class="card list-card">
         ${content}
       </div>
     `;

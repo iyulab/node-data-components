@@ -18,6 +18,23 @@
 npm install @iyulab/data-components
 ```
 
+## 🤖 Skills Usage
+
+이 패키지는 AI 코딩 에이전트가 라이브러리를 이해하고 사용하도록 돕는
+[Agent Skill](https://agentskills.io/)을 포함합니다.
+
+**GitHub 경유 (권장):**
+
+```bash
+npx skills add iyulab/node-data-components
+```
+
+**로컬 `node_modules` 경유:**
+
+```bash
+npx skills add ./node_modules/@iyulab/data-components/skills/iyulab-data-components
+```
+
 ## Quick Start
 
 ### USimpleSheet

@@ -1,5 +1,44 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Agent skill pack ships with the package** (`skills/iyulab-data-components`).
+  Until now the only way to learn the API was to read the emitted `.d.ts` files, which
+  made the internal file layout a de-facto contract and left the *combinations* — server
+  paging together with selection — undocumented. The reference for `u-rich-table` opens
+  with the two things that actually bite: every row needs a unique `_id` (without it a
+  single selection looks like "everything is selected"), and the app owns the query
+  (`totalCount` is not `data.length`).
+
+  ```bash
+  npx skills add ./node_modules/@iyulab/data-components/skills/iyulab-data-components
+  ```
+
+- **The public types `u-rich-table` asks for are exported from the package root** —
+  `ColumnDef`, `CellPosition`, `SortState`, `FilterState`, `RichTableEventMap`.
+  `columns` requires `ColumnDef[]`, but that name could not be imported from the root, so
+  consumers had to deep-import an internal path or hand-copy the shape (which then drifts
+  silently when the upstream type changes).
+
+  ```ts
+  import type { ColumnDef, RichTableEventMap } from '@iyulab/data-components';
+  ```
+
+### Fixed
+
+- **`u-data-view`: the layout toggle buttons did nothing.** Grid / list / table were
+  rendered but never wired to a click handler, so `mode` could only be changed by setting
+  the property — and the "selected" highlight was therefore stuck on `grid` forever.
+  The buttons now switch the layout and expose their state via `aria-pressed`.
+
+### Removed
+
+- **`u-data-view`: unreachable selected-row styling.** The `.selected` rules were driven
+  by an internal index that was never assigned, so they could not apply. Removed along
+  with the dead state.
+
 ## [0.12.0] - 2026-08-04
 
 ### Fixed

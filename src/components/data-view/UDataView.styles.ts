@@ -64,15 +64,10 @@ const baseStyles = css`
     gap: 0.25rem;
   }
 
-  .view-toggles u-button[active] {
-    background: var(--u-primary-color, #1976D2);
-    /* 예외 1 — "주색 위의 글자" 역할 토큰이 없다.
-       역할 층의 유채색은 전경 5단(--u-primary-color-*)뿐이고, 그 위에 얹는 글자색을
-       가리키는 토큰은 없다. 실측: 라이트 #FFFFFF/#1E88E5 = 3.68, 다크 #000000/#2A659D
-       = 3.45 — 다크는 흰 글자였다면 6.09 였다. 즉 현재 값이 최선이 아니지만, 팔레트를
-       직접 바꾸면 게시된 시각이 움직이므로 토큰 추가 결정까지 현행을 유지한다. */
-    color: var(--u-neutral-0, #FFFFFF);
-  }
+  /* 선택된 레이아웃 버튼의 표기는 UButton 의 variant+color 가 맡는다(cycle-244).
+     종전의 u-button[active] 규칙은 배경만 바꾸면서 그 위 글자 대비가 3.45~3.68 이라고
+     스스로 적고 있었다 — 컴포넌트의 색 계약을 우회하지 않고 그쪽에 위임한다.
+     (주석 안 백틱 금지: css 태그드 템플릿을 그 자리에서 끝낸다) */
 
   .info {
     font-size: 0.875rem;
@@ -108,12 +103,6 @@ const baseStyles = css`
     border-color: var(--u-primary-color, #1976D2);
     box-shadow: 0 4px 12px var(--u-shadow-color-weak, rgba(0, 0, 0, 0.08));
     transform: translateY(-2px);
-  }
-
-  .card.selected {
-    border-color: var(--u-primary-color, #1976D2);
-    background: var(--u-bg-color-active, #EEEEEE);
-    box-shadow: 0 0 0 3px var(--u-primary-color-weakest, #90CAF9);
   }
 
   .card-content {
@@ -195,10 +184,6 @@ const baseStyles = css`
 
   tbody tr:hover {
     background: var(--u-bg-color-hover, #F5F5F5);
-  }
-
-  tbody tr.selected {
-    background: var(--u-bg-color-active, #EEEEEE);
   }
 
   tbody tr:not(:last-child) {
