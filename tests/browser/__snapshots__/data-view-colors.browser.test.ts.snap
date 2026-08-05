@@ -20,12 +20,6 @@ exports[`UDataView 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "border-color": "rgb(61, 61, 61)",
     "color": "rgb(212, 212, 212)",
   },
-  "dark .view-toggles u-button[active]": {
-    "background-color": "rgb(42, 101, 157)",
-    "border-bottom-color": "rgb(0, 0, 0)",
-    "border-color": "rgb(0, 0, 0)",
-    "color": "rgb(0, 0, 0)",
-  },
   "dark grid .card": {
     "background-color": "rgb(18, 18, 18)",
     "border-bottom-color": "rgb(61, 61, 61)",
@@ -85,12 +79,6 @@ exports[`UDataView 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "border-bottom-color": "rgb(224, 224, 224)",
     "border-color": "rgb(224, 224, 224)",
     "color": "rgb(33, 33, 33)",
-  },
-  "light .view-toggles u-button[active]": {
-    "background-color": "rgb(25, 118, 210)",
-    "border-bottom-color": "rgb(255, 255, 255)",
-    "border-color": "rgb(255, 255, 255)",
-    "color": "rgb(255, 255, 255)",
   },
   "light grid .card": {
     "background-color": "rgb(255, 255, 255)",

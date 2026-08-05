@@ -30,10 +30,17 @@ beforeAll(() => {
   document.head.appendChild(s);
 });
 
+/**
+ * ⚠**`.card.selected` 와 `.view-toggles u-button[active]` 는 목록에서 내려갔다**(2026-08-05).
+ * 전자는 **한 번도 도달할 수 없는 규칙**이었고(그것을 켜는 상태가 어디서도 대입되지 않았다),
+ * 후자는 선택된 레이아웃 버튼의 배경을 여기서 직접 칠하던 규칙인데 그 위 글자 대비가
+ * 3.45~3.68 이었다 — 지금은 `UButton` 의 `variant`+`color` 가 그 계약을 진다.
+ * 그 표기가 실제로 붙는지는 유닛 회귀(`u-data-view-toolbar.test.ts`)가 잰다.
+ */
 const SELECTORS = [
-  '.toolbar', '.info', '.card', '.card.selected', '.card-field .label',
+  '.toolbar', '.info', '.card', '.card-field .label',
   '.card-field .value', '.table-wrapper', 'table', 'thead', 'th',
-  'tbody tr', '.view-toggles u-button[active]',
+  'tbody tr',
 ];
 const PROPS = ['background-color', 'color', 'border-color', 'border-bottom-color'];
 
