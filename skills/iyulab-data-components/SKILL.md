@@ -4,7 +4,7 @@ description: Data-oriented web components built on Lit — a server-paged rich t
 license: MIT
 metadata:
   author: iyulab
-  version: "0.12.0"
+  version: "0.13.0"
 ---
 
 # @iyulab/data-components
