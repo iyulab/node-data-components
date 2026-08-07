@@ -42,16 +42,20 @@
     "./u-rich-table": "./src/components/u-rich-table/URichTable.js"
   },
   "sideEffects": [
-    "./src/utilities/shadowDomProtection.ts",
-    "./src/components/data-view/UDataView.ts",
-    "./src/components/simple-sheet/USimpleSheet.ts",
-    "./src/components/u-rich-table/URichTable.ts",
-    "./src/init.ts",
-    "./dist/utilities/shadowDomProtection.js",
     "./dist/components/data-view/UDataView.js",
+    "./src/components/data-view/UDataView.ts",
     "./dist/components/simple-sheet/USimpleSheet.js",
+    "./src/components/simple-sheet/USimpleSheet.ts",
     "./dist/components/u-rich-table/URichTable.js",
-    "./dist/init.js"
+    "./src/components/u-rich-table/URichTable.ts",
+    "./dist/index.js",
+    "./src/index.ts",
+    "./dist/init.js",
+    "./src/init.ts",
+    "./dist/react.js",
+    "./src/react.ts",
+    "./dist/utilities/shadowDomProtection.js",
+    "./src/utilities/shadowDomProtection.ts"
   ],
   "scripts": {
     "start": "vite",
