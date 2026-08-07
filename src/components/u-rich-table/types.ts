@@ -59,6 +59,12 @@ export interface RichTableEventMap {
   }>;
   'row-delete': CustomEvent<{ row: Record<string, unknown> }>;
   'row-expand': CustomEvent<{ row: Record<string, unknown>; expanded: boolean }>;
+  /**
+   * 사용자가 행을 "열었다" — 셀 클릭 또는 포커스된 행에서의 `Enter`. `selectable` 과 무관하다:
+   * 선택은 "무엇을 처리할까", 활성화는 "무엇을 볼까"이다. `editable` 열에서 `Enter` 는 이미
+   * 셀 편집 진입 신호이므로 그 경우는 내지 않는다(`via: 'keyboard'` 는 비-editable 열에서만 발생).
+   */
+  'row-activate': CustomEvent<{ row: Record<string, unknown>; id: string; via: 'click' | 'keyboard' }>;
   'sort-change': CustomEvent<{ field: string; direction: 'asc' | 'desc' | null }>;
   'filter-change': CustomEvent<{ filters: FilterState }>;
   'page-change': CustomEvent<{ page: number; pageSize: number }>;

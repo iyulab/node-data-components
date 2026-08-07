@@ -50,6 +50,7 @@ const RICH_TABLE_EVENTS = {
   onRowUpdate: 'row-update',
   onRowDelete: 'row-delete',
   onRowExpand: 'row-expand',
+  onRowActivate: 'row-activate',
   onSortChange: 'sort-change',
   onFilterChange: 'filter-change',
   onPageChange: 'page-change',

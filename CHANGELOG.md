@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Added
+
+- **`u-rich-table` gained a `row-activate` event** — the most common grid interaction, "click a
+  row to see its detail," had no way to reach the app. `selection-change` is checkbox-only and
+  conflating it with "the row being viewed" breaks multi-select screens; `row-expand` announces
+  that a detail row opened but gives the app no slot to render into. Clicking a cell now always
+  fires `row-activate` (`editable` columns included — a single click never enters edit mode, only
+  `dblclick` does), and so does `Enter` on a focused cell in a non-`editable` column (an
+  `editable` column's `Enter` still starts editing, unchanged). `detail: { row, id, via: 'click' |
+  'keyboard' }`. Purely additive — no existing behavior changes.
+
 ### Fixed
 
 - 🔴**`u-rich-table`: giving the host a height made the pagination unreachable.** The component

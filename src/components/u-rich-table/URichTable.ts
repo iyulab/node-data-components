@@ -500,6 +500,21 @@ export class URichTable extends LitElement {
   private _onCellClick(rowIdx: number, colIdx: number): void {
     this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
     this._lastSelectedIndex = rowIdx;
+    this._fireRowActivate(rowIdx, 'click');
+  }
+
+  /**
+   * 「선택」(체크박스)과 별개로 「보고 있는 행」을 앱에 알린다. 셀 단일 클릭은
+   * `editable` 열에서도 편집에 들어가지 않으므로(dblclick만 진입) 항상 안전하게 낼 수 있다.
+   * 키보드 경로(Enter)는 `editable` 열에서 이미 편집 진입 신호이므로 그 경우는 내지 않는다.
+   */
+  private _fireRowActivate(rowIdx: number, via: 'click' | 'keyboard'): void {
+    const row = this.data[rowIdx];
+    if (!row) return;
+    this.dispatchEvent(new CustomEvent('row-activate', {
+      detail: { row, id: this._rowId(row, rowIdx), via },
+      bubbles: true, composed: true
+    }));
   }
 
   private _onCellDblClick(rowIdx: number, colIdx: number, value: unknown): void {
@@ -739,6 +754,8 @@ export class URichTable extends LitElement {
         if (col?.editable) {
           const value = this.data[this.focusedCell.rowIndex]?.[col.key];
           this._onCellDblClick(this.focusedCell.rowIndex, this.focusedCell.colIndex, value);
+        } else {
+          this._fireRowActivate(this.focusedCell.rowIndex, 'keyboard');
         }
       }
       if (e.key === ' ' && this.selectable) {

@@ -176,6 +176,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `row-create` | `{ row }` | The add-row control produced a row |
 | `row-delete` | `{ row }` | A row was deleted |
 | `row-expand` | `{ row, expanded }` | A detail row was opened or closed |
+| `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). Independent of `selectable` — selection is "what to act on", activation is "what to view" |
 | `paste` | `{ rows }` | TSV was pasted into the grid |
 
 ## ColumnDef
@@ -211,7 +212,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | Keys | Action |
 |---|---|
 | Arrow keys | Move the focused cell |
-| `Enter` | Start editing the focused cell / commit and move down |
+| `Enter` | Editable cell: start editing / commit and move down. Non-editable cell: emit `row-activate` |
 | `Escape` | Cancel editing |
 | `Tab` | Commit and move to the next cell |
 | `Space` | Toggle selection of the focused row (when `selectable`) |
