@@ -17,7 +17,16 @@ export const richTableStyles = css`
     --dc-muted-color: var(--u-txt-color-weak, #757575);   /* 보조 텍스트 · 라벨 */
     --dc-icon-color:  var(--u-txt-color-weak, #757575);   /* 정렬 표시 · 확장 · 행 메뉴 */
     --dc-empty-color: var(--u-txt-color-weak, #757575);   /* 빈 상태 안내문 */
-    display: block;
+    /* ── 세로 레이아웃 ──
+       🔴**높이 제약은 데이터 그리드의 기본 사용 형태다** — 「조회 조건 + 결과 목록」이 한 화면에
+       들어가야 하고, 결과가 몇 건이든 조건 영역과 페이지 이동은 항상 같은 자리에 있어야 한다.
+       종전에는 «display: block» 이라 호스트에 높이를 주면 내용이 자연 높이로 넘쳤고,
+       «overflow: hidden» 때문에 **넘친 부분에 도달할 방법이 없었다.** 페이지네이션이 마지막
+       자식이므로 **가장 먼저 사라진다** ⇒ *표는 그려지는데 2페이지로 갈 수 없었다.*
+       ⚠**높이를 주지 않는 사용은 그대로다** — «flex: 1 1 auto» 는 제약이 없으면 내용 높이를
+       따르고 «overflow: auto» 는 넘치지 않으면 스크롤바를 만들지 않는다. */
+    display: flex;
+    flex-direction: column;
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 13px;
     color: var(--u-txt-color, #212121);
@@ -26,7 +35,15 @@ export const richTableStyles = css`
     overflow: hidden;
   }
 
+  /* 행 영역만 스크롤한다 — 툴바와 페이지네이션은 자리를 지킨다. */
+  .table-wrap {
+    flex: 1 1 auto;
+    overflow: auto;
+    min-height: 0;   /* ⚠flex 아이템의 기본 min-height:auto 는 «줄어들지 않음»이라 이것이 없으면 넘친다 */
+  }
+
   .toolbar {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -80,9 +97,19 @@ export const richTableStyles = css`
     background: var(--u-bg-color-raised, #FAFAFA);
     font-weight: 600;
     text-align: left;
-    border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     user-select: none;
-    position: relative;
+
+    /* ⚠**아래 경계선을 «border-bottom» 으로 그리지 않는다.** «border-collapse: collapse» 에서
+       셀 테두리는 테이블이 소유하므로 **헤더만 sticky 로 띄우면 함께 따라오지 않는다** —
+       스크롤하는 순간 구분선이 사라지고 행이 헤더 밑으로 비쳐 지나간다. «box-shadow» 는
+       요소가 그리므로 sticky 를 따라온다. */
+    box-shadow: inset 0 -2px 0 var(--u-border-color, #E0E0E0);
+
+    /* 행 영역이 스크롤되는 동안 열 이름은 남는다 — 「어느 열이 무엇인지」가 이 컴포넌트의
+       스크롤 모델에서 잃으면 안 되는 것이다. */
+    position: sticky;
+    top: 0;
+    z-index: 1;
   }
 
   thead th.sortable {
@@ -223,6 +250,7 @@ export const richTableStyles = css`
   }
 
   .pagination {
+    flex: 0 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;

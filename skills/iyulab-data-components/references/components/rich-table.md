@@ -57,6 +57,24 @@ table.addEventListener('filter-change', e => load({ filters: e.detail.filters })
 `totalCount` is what the pager counts — not `data.length`. Setting `data` alone
 produces a table that believes it holds every matching record.
 
+## Sizing: give the host a height
+
+The component manages its own vertical layout. Constrain the host and the row
+area is what scrolls — the toolbar and the pager keep their positions, and the
+header row stays visible while rows move under it:
+
+```css
+u-rich-table { height: calc(100vh - 280px); }
+```
+
+That is the shape a query screen wants: filters above, the pager always in the
+same place, and column names readable no matter how far down you are.
+
+Leave the height off and the table grows to its content instead — no inner
+scrollbar, the page scrolls. Both are supported; pick per screen. What you
+should **not** do is wrap it in your own `overflow: auto` container, which puts
+the header and toolbar back inside the scrolling region.
+
 ## Selection across pages
 
 Two facts are deliberately separate, because in server paging they differ:

@@ -4,6 +4,25 @@
 
 ### Fixed
 
+- 🔴**`u-rich-table`: giving the host a height made the pagination unreachable.** The component
+  declared no vertical layout, so under a height constraint the content overflowed at its natural
+  size while `:host` clipped with `overflow: hidden` — and because the pagination is the last child,
+  it was the first thing to disappear. It stayed in the DOM; it was simply neither visible nor
+  scrollable to. *The table rendered, but page 2 could not be reached.*
+
+  That left consumers with two options, both of which cost something the grid is for: constrain the
+  height and lose paging, or leave it unconstrained and let 50 rows become a 2,000px document whose
+  header scrolls away.
+
+  The host is now a column flex container: the toolbar and pagination hold their positions and only
+  the row area scrolls. The header row is `sticky`, so column names stay put while rows scroll —
+  the boundary line under it is drawn with an inset `box-shadow` rather than `border-bottom`,
+  because under `border-collapse: collapse` cell borders belong to the table and do not follow a
+  stuck header.
+
+  **Unconstrained use is unchanged**: with no height, `flex: 1 1 auto` follows content height and
+  `overflow: auto` adds no scrollbar. Verified in a real browser at both sizes.
+
 - 🔴**`sideEffects` omitted this package's own entry barrel, so bundlers dropped every element
   registration.** The barrel that `exports["."]` resolves to exists solely to register the custom
   elements, but it was not in the `sideEffects` allowlist. A consumer writing

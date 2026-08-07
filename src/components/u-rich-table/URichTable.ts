@@ -159,14 +159,16 @@ export class URichTable extends LitElement {
   render(): TemplateResult {
     return html`
       ${this._renderToolbar()}
-      <table>
-        ${this._renderHeader()}
-        <tbody>
-          ${this.filterable ? this._renderFilterRow() : ''}
-          ${this._renderBody()}
-          ${this.addable ? this._renderNewRow() : ''}
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          ${this._renderHeader()}
+          <tbody>
+            ${this.filterable ? this._renderFilterRow() : ''}
+            ${this._renderBody()}
+            ${this.addable ? this._renderNewRow() : ''}
+          </tbody>
+        </table>
+      </div>
       ${this._renderPagination()}
     `;
   }
