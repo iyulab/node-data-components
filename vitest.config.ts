@@ -33,6 +33,10 @@ export default defineConfig({
             enabled: true,
             provider: playwright(),
             instances: [{ browser: 'chromium' }],
+            // 고정 포트 이유는 packages/components/vitest.config.ts 참조 —
+            // 이 머신의 Windows 동적 포트 제외 범위와 vitest 기본 포트가
+            // 충돌해 EACCES 로 실패하던 것을 실측으로 확인했다.
+            api: { host: '127.0.0.1', port: 41502 },
           },
           isolate: true,
         },

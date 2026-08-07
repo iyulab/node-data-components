@@ -28,7 +28,11 @@ const SELECTORS = [
   '.filter-row td', '.filter-row input', '.new-row td', '.new-row input',
   'tbody tr.selected', 'tbody tr.editing', 'tbody td .cell-edit-input',
 ];
-const PROPS = ['background-color', 'color', 'border-color', 'border-bottom-color'];
+// ⚠`thead th` 의 헤더 구분선은 `border-bottom` 이 아니라 `box-shadow`(sticky 를 따라오게
+// 하려는 의도적 설계, `styles.ts` 주석 참조)라서 `box-shadow` 를 빼면 이 컴포넌트의
+// 유일한 구분선이 스냅샷 사각지대에 남는다 — EACCES 로 이 스위트가 오래 로컬에서 못 돌아
+// 그 사각지대가 드러나지 않고 있었다(이번에 `border-bottom-color` 스냅샷도 낡아 있었다).
+const PROPS = ['background-color', 'color', 'border-color', 'border-bottom-color', 'box-shadow'];
 
 describe('URichTable 계산색 회귀망', () => {
   it('두 테마의 계산색이 고정 스냅샷과 일치한다', async () => {
