@@ -246,7 +246,34 @@ u-simple-sheet {
 `0.11.0` 이전부터 그랬고, 교정하면 기본 렌더가 바뀌므로 이 릴리스에서는 두었습니다.)
 
 ⚠**`0.11.0` 도 조절점만 엽니다** — 선언하지 않으면 종전과 같은 값으로 그려집니다.
-이 여섯은 `u-simple-sheet` 전용입니다(`u-data-view`·`u-rich-table` 은 읽지 않습니다).
+`--dc-row-height`·`--dc-cell-padding-block`·`--dc-cell-padding-inline`·
+`--dc-header-font-size`·`--dc-header-font-weight` 다섯은 `u-simple-sheet` 전용입니다
+(`u-data-view`·`u-rich-table` 은 읽지 않습니다). `--dc-font-size` 만 예외입니다 — 바로
+아래 `u-rich-table` 절 참조.
+
+### 그리드 밀도 조절 (`u-rich-table` · 0.16.0~)
+
+시트 밀도 축(위)과 같은 이유로, `u-rich-table` 도 `--dc-font-size` 를 갖습니다 —
+`--u-density` 를 폴백 원본으로 삼는 것도 `u-simple-sheet` 와 동일합니다.
+
+| 토큰 | 기본값 | 무엇을 정하나 |
+|---|---|---|
+| `--dc-font-size` | `13px`(`var(--u-density, 13px)`) | 열 머리 · 본문 셀 · 편집 입력 |
+
+⚠**이 컴포넌트는 시각 위계가 넉 단(13/12/11/10px)이고, 이 하나만 밀도를 따릅니다.**
+툴바·페이지네이션·필터 행·배지·정렬 표시자·검증 오류 메시지는 의도적으로 남습니다 —
+전부를 한 스위치에 묶으면 그 위계가 무너집니다. 편집 입력은 본문 셀과 **같은 토큰**을
+공유합니다 — 따로 두면 편집 진입 순간 글자가 튑니다.
+
+```css
+/* 조상에 걸면 헤더·본문·편집 입력이 함께 움직입니다 */
+.app-shell { --u-density: 15px; }
+
+/* 이 그리드만 다르게 */
+u-rich-table { --dc-font-size: 15px; }
+```
+
+⚠**미설정 시 렌더는 종전(`13px`)과 바이트 단위로 동일합니다.**
 
 ### 알려진 제약
 

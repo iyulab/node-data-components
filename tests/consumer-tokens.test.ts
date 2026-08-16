@@ -122,6 +122,11 @@ const DIMENSION: Record<string, string[]> = {
     '--dc-header-font-size',
     '--dc-header-font-weight',
   ],
+  // ★USimpleSheet 와 달리 --dc-font-size 하나뿐이다 — 이 컴포넌트는 시각 위계가 넉 단
+  // (13/12/11/10px)으로 갈려 있고, 밀도 스위치가 여는 것은 헤더·본문 셀·편집 입력뿐이다.
+  // 나머지(툴바·페이지네이션·필터행·배지 등)는 의도적으로 이 표 밖이다 — styles.ts 의
+  // 「소비자 조절점 — 본문 타이포」주석 참조.
+  'src/components/u-rich-table/styles.ts': ['--dc-font-size'],
 };
 
 describe('소비자 조절점 — 밀도·타이포', () => {
@@ -141,21 +146,24 @@ describe('소비자 조절점 — 밀도·타이포', () => {
     // 색 축은 `var(--u-txt-color-weak, …)` 파생이 «출발점»이지만, 치수는 대응하는 역할
     // 토큰이 존재하지 않는다. 없는 토큰을 참조하면 폴백 리터럴만 남아 조절점이 두 겹이 된다.
     //
-    // ★단 --dc-font-size 는 예외다 — components/flex-table 이 이미 읽는 --u-density 밀도
-    // 스위치를 폴백 원본으로 가져, 컨트롤·표·시트가 한 벌로 움직인다(회귀:
-    // simple-sheet-density.browser.test.ts). 역할 토큰이 아니라 그 스위치 자체를
-    // 참조하므로 위 문단의 "역할 층에 치수 축이 없다"는 여전히 참이다 — 파생 원천이
-    // 역할 토큰이 아니라 컴포넌트 층 앰비언트 스위치라는 점이 다르다.
-    const src = strip(
-      readFileSync(join(root, 'src/components/simple-sheet/USimpleSheet.styles.ts'), 'utf-8'),
-    );
+    // ★단 --dc-font-size 는 두 컴포넌트 모두에서 예외다 — components/flex-table 이 이미
+    // 읽는 --u-density 밀도 스위치를 폴백 원본으로 가져, 컨트롤·표·시트·그리드가 한 벌로
+    // 움직인다(회귀: simple-sheet-density.browser.test.ts · rich-table-density.browser.test.ts).
+    // 역할 토큰이 아니라 그 스위치 자체를 참조하므로 위 문단의 "역할 층에 치수 축이 없다"는
+    // 여전히 참이다 — 파생 원천이 역할 토큰이 아니라 컴포넌트 층 앰비언트 스위치라는 점이 다르다.
     const ALLOWED_DERIVED = ['--dc-font-size'];
-    const derived = DIMENSION['src/components/simple-sheet/USimpleSheet.styles.ts'].filter(n =>
-      new RegExp(`${n}\\s*:[^;]*var\\(`).test(src),
-    );
-    expect(derived).toEqual(ALLOWED_DERIVED);
-    // 그 예외가 정확히 --u-density 를 가리키는지까지 못박는다 — 다른 var() 로 슬쩍
-    // 바뀌어도 이 단언은 위에서 이미 통과했을 것이므로 근원을 별도로 확인한다.
-    expect(new RegExp('--dc-font-size\\s*:\\s*var\\(--u-density,').test(src)).toBe(true);
+    for (const [file, names] of Object.entries(DIMENSION)) {
+      const src = strip(readFileSync(join(root, file), 'utf-8'));
+      const derived = names.filter(n => new RegExp(`${n}\\s*:[^;]*var\\(`).test(src));
+      expect(derived, file).toEqual(names.some(n => n === '--dc-font-size') ? ALLOWED_DERIVED : []);
+      // 그 예외가 정확히 --u-density 를 가리키는지까지 못박는다 — 다른 var() 로 슬쩍
+      // 바뀌어도 위 단언은 이미 통과했을 것이므로 근원을 별도로 확인한다.
+      if (names.includes('--dc-font-size')) {
+        expect(
+          new RegExp('--dc-font-size\\s*:\\s*var\\(--u-density,').test(src),
+          file,
+        ).toBe(true);
+      }
+    }
   });
 });

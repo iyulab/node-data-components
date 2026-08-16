@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.16.0] - 2026-08-16
+
+### Added
+
+- **`u-rich-table` gained a `--dc-font-size` custom property**, defaulting to
+  `var(--u-density, 13px)` — the same LOB density switch `@iyulab/components`,
+  `@iyulab/flex-table`, and `u-simple-sheet` already read. Setting `--u-density` on an
+  ancestor now scales the table's header and body cell text (and the cell edit input, which
+  intentionally shares the same token so entering edit mode never changes the font size)
+  along with the rest of the UI. This component's other text (toolbar, pagination, filter
+  row, badges, sort indicator, validation messages) keeps its own fixed sizes — it forms a
+  four-step visual hierarchy (13/12/11/10px) that a single density switch would flatten, so
+  only the primary content axis (header/body/edit) follows it. Unset, rendering is
+  byte-identical to before. An explicit `u-rich-table { --dc-font-size: … }` override still
+  wins over the switch.
+
 ## [0.15.0] - 2026-08-16
 
 ### Added

@@ -17,6 +17,20 @@ export const richTableStyles = css`
     --dc-muted-color: var(--u-txt-color-weak, #757575);   /* 보조 텍스트 · 라벨 */
     --dc-icon-color:  var(--u-txt-color-weak, #757575);   /* 정렬 표시 · 확장 · 행 메뉴 */
     --dc-empty-color: var(--u-txt-color-weak, #757575);   /* 빈 상태 안내문 */
+    /* ── 소비자 조절점 — 본문 타이포 ──
+       ★USimpleSheet와 같은 이름 --dc-font-size 를 그대로 쓴다 — 이 패키지의 표 컴포넌트가
+       공유하는 관용(위 색 축과 같은 이유: --dc-muted-color 도 세 컴포넌트가 공유한다).
+       components/flex-table/USimpleSheet 이 이미 읽는 --u-density 밀도 스위치를 폴백
+       원본으로 가져, 컨트롤·표·시트·이 그리드가 한 벌로 움직인다.
+       ⚠**모든 font-size 선언이 아니라 이 하나만 연다.** 이 컴포넌트는 시각 위계가
+       13(본문)·12(툴바/보조)·11(필터/페이지네이션)·10(장식적 표시자)px 넉 단으로
+       이미 갈려 있다 — 전부를 하나의 스위치로 묶으면 위계가 무너진다. 여기서 여는 것은
+       **헤더·본문 셀**(:host 상속 경로) + **편집 입력**뿐이다. 편집 입력은 반드시 이
+       토큰을 같이 읽어야 한다 — 따로 두면 편집 진입 순간 글자 크기가 튄다(USimpleSheet
+       가 "본문 셀 · 편집 입력 · 드롭다운 항목"을 한 토큰으로 묶은 것과 같은 이유).
+       나머지 열한 곳(툴바·페이지네이션·필터행·배지·정렬 표시자·검증 오류)은 의도적으로
+       남겨 둔다 — 장식·보조 텍스트라 D-17 이 아이콘/배지 크기를 뺀 것과 같은 경계다. */
+    --dc-font-size: var(--u-density, 13px);
     /* ── 세로 레이아웃 ──
        🔴**높이 제약은 데이터 그리드의 기본 사용 형태다** — 「조회 조건 + 결과 목록」이 한 화면에
        들어가야 하고, 결과가 몇 건이든 조건 영역과 페이지 이동은 항상 같은 자리에 있어야 한다.
@@ -28,7 +42,7 @@ export const richTableStyles = css`
     display: flex;
     flex-direction: column;
     font-family: system-ui, -apple-system, sans-serif;
-    font-size: 13px;
+    font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
     border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
@@ -177,7 +191,8 @@ export const richTableStyles = css`
     padding: 4px 6px;
     border: 1px solid var(--u-primary-color, #1976D2);
     border-radius: 3px;
-    font-size: 13px;
+    /* --dc-font-size 를 본문 셀과 공유한다 — 따로 두면 편집 진입 순간 글자가 튄다. */
+    font-size: var(--dc-font-size);
     outline: none;
   }
 
