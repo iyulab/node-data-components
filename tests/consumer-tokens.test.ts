@@ -137,15 +137,25 @@ describe('소비자 조절점 — 밀도·타이포', () => {
     expect(bad, '선언과 사용이 어긋난다').toEqual([]);
   });
 
-  it('⚠치수 축은 역할 토큰에서 파생하지 않는다 — 역할 층에 치수 축이 없다', () => {
+  it('⚠치수 축은 역할 토큰에서 파생하지 않는다 — 유일한 예외는 --dc-font-size ↔ --u-density', () => {
     // 색 축은 `var(--u-txt-color-weak, …)` 파생이 «출발점»이지만, 치수는 대응하는 역할
     // 토큰이 존재하지 않는다. 없는 토큰을 참조하면 폴백 리터럴만 남아 조절점이 두 겹이 된다.
+    //
+    // ★단 --dc-font-size 는 예외다 — components/flex-table 이 이미 읽는 --u-density 밀도
+    // 스위치를 폴백 원본으로 가져, 컨트롤·표·시트가 한 벌로 움직인다(회귀:
+    // simple-sheet-density.browser.test.ts). 역할 토큰이 아니라 그 스위치 자체를
+    // 참조하므로 위 문단의 "역할 층에 치수 축이 없다"는 여전히 참이다 — 파생 원천이
+    // 역할 토큰이 아니라 컴포넌트 층 앰비언트 스위치라는 점이 다르다.
     const src = strip(
       readFileSync(join(root, 'src/components/simple-sheet/USimpleSheet.styles.ts'), 'utf-8'),
     );
+    const ALLOWED_DERIVED = ['--dc-font-size'];
     const derived = DIMENSION['src/components/simple-sheet/USimpleSheet.styles.ts'].filter(n =>
       new RegExp(`${n}\\s*:[^;]*var\\(`).test(src),
     );
-    expect(derived).toEqual([]);
+    expect(derived).toEqual(ALLOWED_DERIVED);
+    // 그 예외가 정확히 --u-density 를 가리키는지까지 못박는다 — 다른 var() 로 슬쩍
+    // 바뀌어도 이 단언은 위에서 이미 통과했을 것이므로 근원을 별도로 확인한다.
+    expect(new RegExp('--dc-font-size\\s*:\\s*var\\(--u-density,').test(src)).toBe(true);
   });
 });

@@ -176,3 +176,66 @@ describe('USimpleSheet 밀도·타이포 조절점', () => {
     expect(getComputedStyle(cellOf(await mount())).lineHeight).toBe('24px');
   });
 });
+
+/**
+ * `--dc-font-size` 가 `--u-density`(`components`/`flex-table` 이 이미 읽는 그 밀도
+ * 스위치)를 폴백 원본으로 갖는가 — 컨트롤·표·시트가 "한 벌"로 움직이는지의 마지막 조각.
+ *
+ * ⚠**`--u-density` 는 상속되는 커스텀 프로퍼티**라 조상 요소에 걸면 섀도 경계를 넘어
+ * `u-simple-sheet` 의 `:host` 에 도달한다 — `components` 의 `density-switch.browser.test.ts`
+ * 와 같은 전제다. 여기서는 그 값이 `--dc-font-size` 의 **폴백**으로만 쓰이므로, 소비자가
+ * `--dc-font-size` 를 요소 선택자로 직접 선언하면(기존 스위트가 검증하는 그 경로) 여전히
+ * 그 값이 이긴다 — 두 스위트는 서로 다른 경로를 재므로 중복이 아니다.
+ */
+describe('USimpleSheet — --u-density 밀도 스위치 연동', () => {
+  afterEach(() => {
+    override?.remove();
+    override = null;
+    document.body.replaceChildren();
+  });
+
+  it('미설정 시 종전 값(13px)과 바이트 단위로 동일하다', async () => {
+    const cs = getComputedStyle(cellOf(await mount()));
+    expect(cs.fontSize).toBe('13px');
+  });
+
+  it('조상에 --u-density 를 걸면 본문 셀 font-size 가 따라간다', async () => {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('style', '--u-density: 15px');
+    const el = document.createElement('u-simple-sheet') as Sheet;
+    el.rows = 3;
+    el.cols = 3;
+    el.data = DATA;
+    wrap.appendChild(el);
+    document.body.appendChild(wrap);
+    await el.updateComplete;
+    expect(getComputedStyle(cellOf(el)).fontSize).toBe('15px');
+  });
+
+  it('머리행(--dc-header-font-size)은 --u-density 의 영향을 받지 않는다 — 독립 계약 유지', async () => {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('style', '--u-density: 18px');
+    const el = document.createElement('u-simple-sheet') as Sheet;
+    el.rows = 3;
+    el.cols = 3;
+    el.data = DATA;
+    wrap.appendChild(el);
+    document.body.appendChild(wrap);
+    await el.updateComplete;
+    expect(getComputedStyle(headerOf(el)).fontSize).toBe('12px');
+  });
+
+  it('요소 선택자의 --dc-font-size 명시값이 --u-density 보다 이긴다', async () => {
+    const wrap = document.createElement('div');
+    wrap.setAttribute('style', '--u-density: 20px');
+    declare('--dc-font-size: 15px;');
+    const el = document.createElement('u-simple-sheet') as Sheet;
+    el.rows = 3;
+    el.cols = 3;
+    el.data = DATA;
+    wrap.appendChild(el);
+    document.body.appendChild(wrap);
+    await el.updateComplete;
+    expect(getComputedStyle(cellOf(el)).fontSize).toBe('15px');
+  });
+});

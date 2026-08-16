@@ -218,9 +218,15 @@ u-rich-table { --dc-icon-color: #B0B0B0; }
 | `--dc-row-height` | `24px` | 셀 `height` 와 `line-height` **둘 다** |
 | `--dc-cell-padding-block` | `0px` | 셀·편집 입력의 세로 여백 (행 높이에 **가산**) |
 | `--dc-cell-padding-inline` | `6px` | 〃 가로 여백 |
-| `--dc-font-size` | `13px` | 본문 셀 · 편집 입력 · 드롭다운 항목 |
-| `--dc-header-font-size` | `12px` | 열 머리 |
+| `--dc-font-size` | `13px`(`var(--u-density, 13px)`) | 본문 셀 · 편집 입력 · 드롭다운 항목 |
+| `--dc-header-font-size` | `12px` | 열 머리 — `--u-density` 와 무관(본문과 독립) |
 | `--dc-header-font-weight` | `600` | 〃 |
+
+⚠**`--dc-font-size` 만 예외입니다 — `@iyulab/components`/`@iyulab/flex-table` 의 밀도
+스위치(`--u-density`)를 폴백 원본으로 갖습니다**(0.15.0~). 조상에 `--u-density` 를 걸면
+본문 글자가 컨트롤·표와 함께 움직입니다. 이 요소에 `--dc-font-size` 를 직접 선언하면
+그 값이 여전히 이깁니다 — 다른 다섯 토큰과 같은 규칙입니다. 머리행은 이 스위치의
+영향을 받지 않습니다.
 
 ```css
 /* ⚠요소 선택자로 겨눕니다 — :root 는 닿지 않습니다(아래 참조) */
@@ -230,8 +236,9 @@ u-simple-sheet {
 ```
 
 ⚠**`:root` 로는 닿지 않습니다.** 커스텀 프로퍼티 상속값은 섀도 루트의 `:host` 선언에
-집니다. 색 축과 달리 이 여섯은 `:host` 에 리터럴 기본값을 갖고 있으므로(역할 층에 치수
-축이 없어 파생할 곳이 없습니다) **요소 선택자**(`u-simple-sheet { … }`)로 선언하십시오.
+집니다. 색 축과 달리 이 여섯은(`--dc-font-size` 도 포함 — 역할 토큰이 아니라 `--u-density`
+스위치를 참조할 뿐, 역할 층에서 파생하는 것은 아닙니다) `:host` 에 기본값을 갖고 있으므로
+**요소 선택자**(`u-simple-sheet { … }`)로 선언하십시오.
 
 ⚠**선언값과 «읽히는» 행 높이는 1.5px 다릅니다.** `border-collapse` 로 접힌 테두리가
 사용값에 더해집니다 — 기본 `24px` 선언이 `25.5px` 로 읽힙니다. 32px 로 맞추려면

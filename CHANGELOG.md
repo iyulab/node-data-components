@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.15.0] - 2026-08-16
+
+### Added
+
+- **`u-simple-sheet`'s body font size now reads `var(--u-density, 13px)`.** `@iyulab/components`
+  (`u-button`/`u-form`/`u-button-group`) and `@iyulab/flex-table` (`--ft-font-size`) already read
+  this switch; setting `--u-density` on an ancestor now scales the sheet's body text along with
+  them, instead of leaving it as the one stack that doesn't follow. Unset, rendering is
+  byte-identical to before (same 13px default). The element-selector override
+  (`u-simple-sheet { --dc-font-size: … }`) still wins over the switch, matching every other
+  token on this component. `--dc-header-font-size` is unaffected — the header and body font
+  sizes remain independent, as before.
+
 ## [0.14.0] - 2026-08-07
 
 ### Added

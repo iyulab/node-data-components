@@ -29,12 +29,19 @@ const baseStyles = css`
        ⚠**색 축과 달리 역할 토큰에서 파생하지 않는다** — 역할 층에 치수 축이 없다.
        그래서 폴백이 아니라 :host 리터럴 기본값이고, 소비자는 **요소 선택자**로 덮는다
        (:host 선언은 상속값을 이기므로 :root 로는 닿지 않는다).
-       ⚠**이 컴포넌트가 «읽는» 단만 선언한다** — 색 축과 같은 규칙이다. */
+       ⚠**이 컴포넌트가 «읽는» 단만 선언한다** — 색 축과 같은 규칙이다.
+       ★**단 하나의 예외 — --dc-font-size 는 --u-density 를 폴백 원본으로 갖는다.**
+       components(UButton/UForm/UButtonGroup)와 flex-table(--ft-font-size)이
+       이미 같은 형태로 이 스위치를 읽는다 — 컨트롤과 표가 «한 벌»로 움직이려면 이
+       스택도 같은 원천을 봐야 한다. **--dc-header-font-size 는 여기 포함되지 않는다** —
+       본문과 머리행이 서로 독립이라는 이 컴포넌트의 기존 계약(아래 회귀 테스트가
+       고정)을 이 변경이 깨지 않는다. --u-density 미설정 시 렌더는 종전과 바이트
+       단위로 동일하다(기본값이 같은 13px). */
     --dc-row-height:          24px;   /* 셀 height · line-height (묶임) */
     --dc-cell-padding-block:   0px;   /* 셀 · 편집 입력의 세로 여백 (가산) */
     --dc-cell-padding-inline:  6px;   /* 〃 가로 여백 */
-    --dc-font-size:           13px;   /* 본문 셀 · 편집 입력 · 드롭다운 항목 */
-    --dc-header-font-size:    12px;   /* 열 머리 */
+    --dc-font-size:           var(--u-density, 13px);   /* 본문 셀 · 편집 입력 · 드롭다운 항목 */
+    --dc-header-font-size:    12px;   /* 열 머리 — --u-density 와 무관(독립 계약 유지) */
     --dc-header-font-weight:   600;   /* 〃 */
 
     display: block;
