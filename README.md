@@ -221,6 +221,12 @@ u-rich-table { --dc-icon-color: #B0B0B0; }
 | `--dc-font-size` | `13px`(`var(--u-density, 13px)`) | 본문 셀 · 편집 입력 · 드롭다운 항목 |
 | `--dc-header-font-size` | `12px` | 열 머리 — `--u-density` 와 무관(본문과 독립) |
 | `--dc-header-font-weight` | `600` | 〃 |
+| `--dc-sheet-height` | `400px` | `:host` 전체 높이 (0.17.0~) |
+
+⚠**`--dc-sheet-height` 는 "자연 높이로 준다"가 아니라 "상한을 정한다"입니다.** `rows` 는
+표시 개수가 아니라 데이터 격자의 **최소 용량**이라, 이 값을 낮춰도 `rows` 만큼의 빈 행이
+줄지는 않습니다 — 그 안에서 내장 `overflow-y: auto` 로 스크롤해 접근하십시오. 콘텐츠
+분량에 맞춰 자동으로 줄어드는 옵트인은 별도 스코프입니다.
 
 ⚠**`--dc-font-size` 만 예외입니다 — `@iyulab/components`/`@iyulab/flex-table` 의 밀도
 스위치(`--u-density`)를 폴백 원본으로 갖습니다**(0.15.0~). 조상에 `--u-density` 를 걸면
@@ -245,11 +251,11 @@ u-simple-sheet {
 `30.5px` 를 선언하십시오. (같은 이유로 **빈 행은 데이터 행보다 1.5px 낮습니다** —
 `0.11.0` 이전부터 그랬고, 교정하면 기본 렌더가 바뀌므로 이 릴리스에서는 두었습니다.)
 
-⚠**`0.11.0` 도 조절점만 엽니다** — 선언하지 않으면 종전과 같은 값으로 그려집니다.
+⚠**조절점만 엽니다** — 선언하지 않으면 종전과 같은 값으로 그려집니다.
 `--dc-row-height`·`--dc-cell-padding-block`·`--dc-cell-padding-inline`·
-`--dc-header-font-size`·`--dc-header-font-weight` 다섯은 `u-simple-sheet` 전용입니다
-(`u-data-view`·`u-rich-table` 은 읽지 않습니다). `--dc-font-size` 만 예외입니다 — 바로
-아래 `u-rich-table` 절 참조.
+`--dc-header-font-size`·`--dc-header-font-weight`·`--dc-sheet-height` 여섯은
+`u-simple-sheet` 전용입니다(`u-data-view`·`u-rich-table` 은 읽지 않습니다).
+`--dc-font-size` 만 예외입니다 — 바로 아래 `u-rich-table` 절 참조.
 
 ### 그리드 밀도 조절 (`u-rich-table` · 0.16.0~)
 

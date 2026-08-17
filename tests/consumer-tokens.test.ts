@@ -121,6 +121,7 @@ const DIMENSION: Record<string, string[]> = {
     '--dc-font-size',
     '--dc-header-font-size',
     '--dc-header-font-weight',
+    '--dc-sheet-height',
   ],
   // ★USimpleSheet 와 달리 --dc-font-size 하나뿐이다 — 이 컴포넌트는 시각 위계가 넉 단
   // (13/12/11/10px)으로 갈려 있고, 밀도 스위치가 여는 것은 헤더·본문 셀·편집 입력뿐이다.

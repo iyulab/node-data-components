@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.17.0] - 2026-08-17
+
+### Added
+
+- **`u-simple-sheet` gained a `--dc-sheet-height` custom property**, defaulting to `400px` — the
+  value the host was previously hardcoded to. Every other size axis on this component (row height,
+  cell padding, font size) was already a consumer-adjustable custom property; the host's own height
+  was the one dimension left as a literal, so a consumer embedding the sheet in a constrained layout
+  (a form, a panel with a fixed footer) had no supported way to make it shorter or taller — only an
+  external `height` override that fought the component's own `:host` rule on specificity. Unset,
+  rendering is byte-identical to before. Like the other five tokens on this component, it does not
+  derive from a role-layer token and is set with an element selector (`u-simple-sheet { … }`) rather
+  than `:root`.
+
+  This token sets an upper bound, not a natural height: `rows` governs the grid's minimum row
+  *capacity*, not how many rows are visible, so lowering `--dc-sheet-height` does not shrink the
+  number of rows rendered — it constrains the box and leaves the existing `overflow-y: auto` to
+  reach the rest.
+
 ## [0.16.0] - 2026-08-16
 
 ### Added
