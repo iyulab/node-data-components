@@ -1,4 +1,5 @@
 import { describe, it, beforeEach, afterEach, expect } from 'vitest';
+import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import '../../src/components/u-rich-table/URichTable';
 
 /**
@@ -77,8 +78,12 @@ const goToPage = async (el: Table, n: number) => {
 };
 
 let table: Table | null = null;
-beforeEach(() => { document.body.innerHTML = ''; });
-afterEach(() => { table?.remove(); table = null; document.body.innerHTML = ''; });
+// ⚠선택 라벨(`messages.text('selected', …)`)은 `Locale.get()`을 읽는다 — 핀 없이 두면
+// 이 스위트가 브라우저의 기본 감지 로케일(`navigator.language`)을 물려받는다. 개발 머신이
+// 한국어면 「3 selected」 대신 「3건 선택됨」을 보게 되어 이 파일의 단언이 환경에 따라
+// 갈린다(`messages-locale.browser.test.ts`가 이미 세운 관행을 여기도 적용한다).
+beforeEach(() => { Locale.set('en'); document.body.innerHTML = ''; });
+afterEach(() => { table?.remove(); table = null; document.body.innerHTML = ''; Locale.set('en'); });
 
 describe('URichTable — 페이지를 가로지르는 선택', () => {
   it('전체선택 체크박스는 «이 페이지» 상태를 그린다 — 다른 페이지 선택분이 새지 않는다', async () => {
