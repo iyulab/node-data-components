@@ -25,6 +25,11 @@ import '../../src/components/simple-sheet/USimpleSheet';
  * ⇒ 토큰은 **셀 content 높이**를 정하고, 소비앱이 «32px 로 맞추고 싶다»면 선언값은
  * `30.5px` 다. 이 상수를 테스트가 직접 재서 쓴다 — 손으로 적으면 테두리 규칙이 바뀔 때
  * 조용히 낡는다.
+ *
+ * ⚠**그런데 기본 렌더 검증(⑵) 하나만 25.5px 를 리터럴로 박아 두고 있었다** — 다른
+ * Chromium 빌드(151.0.7922.34)에서 25.3333px 로 실측되어 실패했다(2026-08-17). 이
+ * 문단이 이미 세운 원칙("손으로 적으면 조용히 낡는다")을 그 한 줄만 못 지킨 것이었다 —
+ * ⑵ 도 이제 delta 범위 검증으로 통일한다.
  */
 
 /** 선언값 → 읽히는 사용값의 차. 하드코딩하지 않고 기본 렌더에서 잰다. */
@@ -84,9 +89,16 @@ describe('USimpleSheet 밀도·타이포 조절점', () => {
     }).toEqual({
       lineHeight: '24px', fontSize: '13px', paddingTop: '0px', paddingLeft: '6px',
     });
-    // 소비앱이 보고한 25.5 를 이 자리에서 그대로 재현해 둔다 — 저쪽 하니스와 우리가
-    // «같은 것»을 재고 있음을 고정하는 값이다.
-    expect(cs.height).toBe('25.5px');
+    // ⚠«사용값»의 정확한 소수점(border-collapse 접힘)은 브라우저 엔진의 서브픽셀 반올림에
+    // 달려 있어 여기서 리터럴로 고정하지 않는다 — 소비앱이 처음 보고했을 때는 25.5px 였고
+    // 이 스위트를 실행하는 Chromium 빌드에 따라 25.3333px 처럼 갈릴 수 있다(둘 다 실측
+    // 확인됨). 이 단언이 실제로 지키려는 것은 "선언한 line-height(24px) 위에 테두리 한 겹
+    // 만큼만 얹힌다"이지 정확한 소수점이 아니므로, 다른 단언들과 같은 방식(delta 측정)으로
+    // 재되 범위로 검증한다 — 0이면 border-collapse 자체가 깨진 것이고 2px 를 넘으면 다른
+    // 여백/테두리 규칙이 섞여든 것이다.
+    const overhead = parseFloat(cs.height) - parseFloat(cs.lineHeight);
+    expect(overhead).toBeGreaterThan(0);
+    expect(overhead).toBeLessThan(2);
   });
 
   it('⑴ 문서 스코프 요소 선택자로 --dc-row-height 를 선언하면 행이 이동한다', async () => {
