@@ -60,7 +60,6 @@ export class URecordPicker extends UFormControlElement<string> {
   /** Typed text — distinct from `.value` (the committed id). */
   @state() private query = '';
   @state() private items: PickerItem[] = [];
-  // @ts-expect-error TS6133 - set during search but not yet read by any render branch
   @state() private loading = false;
   @state() private activeIndex = -1;
   @state() private error = false;
@@ -116,15 +115,17 @@ export class URecordPicker extends UFormControlElement<string> {
       <u-popover part="popover" role="listbox" for=".container" trigger="manual"
         strategy="fixed" placement="bottom-start" offset="1"
       >
-        ${this.error
-          ? html`<div class="no-results">${messages.text('pickerSearchError')}</div>`
-          : this.items.length === 0
-            ? html`<div class="no-results">${messages.text('noMatch')}</div>`
-            : this.items.map((item, i) => html`
-              <u-option .value=${item.id} ?selected=${i === this.activeIndex}
-                @click=${() => this.commitInline(item)}
-              >${item.label}</u-option>
-            `)}
+        ${this.loading
+          ? html`<div class="popover-loading"><u-spinner></u-spinner></div>`
+          : this.error
+            ? html`<div class="no-results">${messages.text('pickerSearchError')}</div>`
+            : this.items.length === 0
+              ? html`<div class="no-results">${messages.text('noMatch')}</div>`
+              : this.items.map((item, i) => html`
+                <u-option .value=${item.id} ?selected=${i === this.activeIndex}
+                  @click=${() => this.commitInline(item)}
+                >${item.label}</u-option>
+              `)}
       </u-popover>
 
       <u-dialog placement="center">

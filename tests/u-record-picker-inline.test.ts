@@ -33,6 +33,16 @@ const type = async (picker: Picker, text: string) => {
   await picker.updateComplete;
 };
 
+// Waits out every update cycle a picker triggers, not just the next one — `runInlineSearch`
+// awaits `updateComplete` internally before its final `loading = false`, so a single await can
+// resolve before that trailing cycle lands.
+const settle = async (picker: Picker) => {
+  const el = picker as unknown as { isUpdatePending: boolean; updateComplete: Promise<unknown> };
+  do {
+    await el.updateComplete;
+  } while (el.isUpdatePending);
+};
+
 describe('URecordPicker — inline typeahead', () => {
   it('debounces search and renders results as u-option', async () => {
     const search = vi.fn(async (q: string): Promise<PickerItem[]> =>
@@ -46,6 +56,27 @@ describe('URecordPicker — inline typeahead', () => {
     await el.updateComplete;
 
     expect(search).toHaveBeenCalledWith('ac');
+    const options = el.shadowRoot!.querySelectorAll('u-option');
+    expect(options.length).toBe(1);
+    expect(options[0].textContent?.trim()).toBe('Acme Corp');
+  });
+
+  it('shows a spinner while a search is in flight, then swaps it for results', async () => {
+    let resolveSearch!: (items: PickerItem[]) => void;
+    const search = vi.fn(() => new Promise<PickerItem[]>((resolve) => { resolveSearch = resolve; }));
+    el = await mount(search);
+
+    await type(el, 'ac');
+    await vi.advanceTimersByTimeAsync(250);
+    await el.updateComplete;
+
+    expect(el.shadowRoot!.querySelector('u-spinner')).toBeTruthy();
+    expect(el.shadowRoot!.querySelectorAll('u-option').length).toBe(0);
+
+    resolveSearch([{ id: '1', label: 'Acme Corp' }]);
+    await settle(el);
+
+    expect(el.shadowRoot!.querySelector('u-spinner')).toBeFalsy();
     const options = el.shadowRoot!.querySelectorAll('u-option');
     expect(options.length).toBe(1);
     expect(options[0].textContent?.trim()).toBe('Acme Corp');

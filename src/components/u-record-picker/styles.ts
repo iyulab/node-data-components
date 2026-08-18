@@ -38,6 +38,12 @@ export const styles = css`
     font-size: 0.875rem;
   }
 
+  .popover-loading {
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    justify-content: center;
+  }
+
   .dialog-error {
     padding: 0.5rem 0.75rem;
     margin-bottom: 0.5rem;
