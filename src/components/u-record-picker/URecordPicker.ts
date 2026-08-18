@@ -60,10 +60,13 @@ export class URecordPicker extends UFormControlElement<string> {
   /** Typed text — distinct from `.value` (the committed id). */
   @state() private query = '';
   @state() private items: PickerItem[] = [];
-  // @ts-expect-error TS6133 - will be used by Task 2
+  // @ts-expect-error TS6133 - set during search but not yet read by any render branch
   @state() private loading = false;
   @state() private activeIndex = -1;
   @state() private error = false;
+
+  private inlineDebounceTimer?: number;
+  private inlineSearchSeq = 0;
 
   @state() private dialogQuery = '';
   @state() private dialogItems: PickerItem[] = [];
@@ -94,6 +97,8 @@ export class URecordPicker extends UFormControlElement<string> {
             ?readonly=${this.readonly}
             placeholder=${ifDefined(this.placeholder)}
             .value=${live(this.query)}
+            @input=${this.handleInlineInput}
+            @keydown=${this.handleInlineKeydown}
           />
           <u-icon class="suffix-item"
             ?hidden=${!this.clearable || !this.value || this.disabled || this.readonly}
@@ -117,6 +122,7 @@ export class URecordPicker extends UFormControlElement<string> {
             ? html`<div class="no-results">${messages.text('noMatch')}</div>`
             : this.items.map((item, i) => html`
               <u-option .value=${item.id} ?selected=${i === this.activeIndex}
+                @click=${() => this.commitInline(item)}
               >${item.label}</u-option>
             `)}
       </u-popover>
@@ -146,6 +152,86 @@ export class URecordPicker extends UFormControlElement<string> {
         </slot>
       </u-dialog>
     `;
+  }
+
+  private handleInlineInput = (e: InputEvent) => {
+    this.query = (e.target as HTMLInputElement).value;
+    this.activeIndex = -1;
+    window.clearTimeout(this.inlineDebounceTimer);
+
+    if (!this.query) {
+      this.items = [];
+      this.popoverEl?.hide();
+      return;
+    }
+
+    this.inlineDebounceTimer = window.setTimeout(() => {
+      this.runInlineSearch(this.query);
+    }, this.debounce);
+  };
+
+  private async runInlineSearch(query: string): Promise<void> {
+    const seq = ++this.inlineSearchSeq;
+    this.loading = true;
+    this.error = false;
+    try {
+      const results = await this.search(query);
+      if (seq !== this.inlineSearchSeq) return; // superseded by a newer keystroke
+      this.items = results;
+      await this.updateComplete;
+      if (results.length > 0) {
+        this.popoverEl?.show(this.containerEl!);
+      } else {
+        this.popoverEl?.hide();
+      }
+    } catch {
+      if (seq !== this.inlineSearchSeq) return;
+      this.items = [];
+      this.error = true;
+      await this.updateComplete;
+      this.popoverEl?.show(this.containerEl!);
+    } finally {
+      if (seq === this.inlineSearchSeq) this.loading = false;
+    }
+  }
+
+  private commitInline(item: PickerItem): void {
+    this._selectedItem = item;
+    this.query = item.label;
+    const changed = this.value !== item.id;
+    this.value = item.id;
+    this.items = [];
+    this.popoverEl?.hide();
+    if (changed) this.emitChange();
+  }
+
+  private handleInlineKeydown = (e: KeyboardEvent) => {
+    if (this.items.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        this.activeIndex = (this.activeIndex + 1) % this.items.length;
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        this.activeIndex = (this.activeIndex - 1 + this.items.length) % this.items.length;
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (this.activeIndex >= 0) this.commitInline(this.items[this.activeIndex]);
+        break;
+      case 'Escape':
+        e.preventDefault();
+        this.items = [];
+        this.popoverEl?.hide();
+        break;
+    }
+  };
+
+  private emitChange(): void {
+    if (!this.novalidate) this.validate();
+    this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
   }
 
   protected updated(changedProperties: PropertyValues): void {
