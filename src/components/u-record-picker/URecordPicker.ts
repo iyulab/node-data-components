@@ -60,14 +60,13 @@ export class URecordPicker extends UFormControlElement<string> {
   /** Typed text — distinct from `.value` (the committed id). */
   @state() private query = '';
   @state() private items: PickerItem[] = [];
-  // @ts-ignore will be used by Task 2 (inline search logic)
+  // @ts-expect-error TS6133 - will be used by Task 2
   @state() private loading = false;
   @state() private activeIndex = -1;
   @state() private error = false;
 
   @state() private dialogQuery = '';
   @state() private dialogItems: PickerItem[] = [];
-  // @ts-ignore will be used by Task 3 (dialog search logic)
   @state() private dialogLoading = false;
   @state() private pendingId: string | null = null;
   @state() private dialogError = false;
