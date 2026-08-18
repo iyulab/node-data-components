@@ -73,6 +73,15 @@ describe('URecordPicker — inline typeahead', () => {
     expect(el.shadowRoot!.querySelector('u-spinner')).toBeTruthy();
     expect(el.shadowRoot!.querySelectorAll('u-option').length).toBe(0);
 
+    // The spinner is only useful if the popover holding it is actually open — u-popover
+    // stays invisible until .show() flips its reflected `open` attribute. That flip happens
+    // asynchronously (floating-ui position calc), so poll a few fake-timer ticks for it.
+    const popover = el.shadowRoot!.querySelector('u-popover')!;
+    for (let i = 0; i < 10 && !popover.hasAttribute('open'); i++) {
+      await vi.advanceTimersByTimeAsync(0);
+    }
+    expect(popover.hasAttribute('open')).toBe(true);
+
     resolveSearch([{ id: '1', label: 'Acme Corp' }]);
     await settle(el);
 
@@ -80,6 +89,29 @@ describe('URecordPicker — inline typeahead', () => {
     const options = el.shadowRoot!.querySelectorAll('u-option');
     expect(options.length).toBe(1);
     expect(options[0].textContent?.trim()).toBe('Acme Corp');
+  });
+
+  it('clearing the input mid-flight cancels a pending search (no silent reopen)', async () => {
+    let resolveSearch!: (items: PickerItem[]) => void;
+    const search = vi.fn(() => new Promise<PickerItem[]>((resolve) => { resolveSearch = resolve; }));
+    el = await mount(search);
+
+    await type(el, 'ac');
+    await vi.advanceTimersByTimeAsync(250);
+    await el.updateComplete;
+    expect(search).toHaveBeenCalledTimes(1);
+
+    await type(el, '');
+
+    resolveSearch([{ id: '1', label: 'Acme Corp' }]);
+    await settle(el);
+
+    expect(el.shadowRoot!.querySelectorAll('u-option').length).toBe(0);
+    const popover = el.shadowRoot!.querySelector('u-popover')!;
+    for (let i = 0; i < 10 && popover.hasAttribute('open'); i++) {
+      await vi.advanceTimersByTimeAsync(0);
+    }
+    expect(popover.hasAttribute('open')).toBe(false);
   });
 
   it('a later keystroke supersedes a slower in-flight search (no stale overwrite)', async () => {

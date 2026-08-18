@@ -161,6 +161,7 @@ export class URecordPicker extends UFormControlElement<string> {
     window.clearTimeout(this.inlineDebounceTimer);
 
     if (!this.query) {
+      this.inlineSearchSeq++;
       this.items = [];
       this.popoverEl?.hide();
       return;
@@ -175,6 +176,7 @@ export class URecordPicker extends UFormControlElement<string> {
     const seq = ++this.inlineSearchSeq;
     this.loading = true;
     this.error = false;
+    this.popoverEl?.show(this.containerEl!);
     try {
       const results = await this.search(query);
       if (seq !== this.inlineSearchSeq) return; // superseded by a newer keystroke
