@@ -13,13 +13,11 @@ import '../../src/components/simple-sheet/USimpleSheet';
  *
  * ## 재현 대상
  *
- * `ISSUE-data-components-20260811-simple-sheet-fixed-height.md`(소비앱 `online-tools`) —
- * `<u-simple-sheet rows="15">` 와 `rows="5">` 가 rows 값과 무관하게 똘같이 400px 로
+ * `<u-simple-sheet rows="15">` 와 `rows="5">` 가 rows 값과 무관하게 똑같이 400px 로
  * 렌더됐고, 소비자가 높이를 조정할 정식 수단이 없었다.
  *
  * ⚠**이 토큰은 "자연 높이로 줄어든다"를 열지 않는다 — 의도적으로.** rows 는 데이터
- * 격자의 최소 용량이지 표시 개수가 아니라서, 자연 높이 옵트인은 별도 설계가 필요하다
- * (`TRIAGE-data-components-20260817-simple-sheet-fixed-height.md` §착상 검토 참조).
+ * 격자의 최소 용량이지 표시 개수가 아니라서, 자연 높이 옵트인은 별도 설계가 필요하다.
  * 여기서 여는 것은 "소비자가 상한을 명시할 수 있다"뿐이고, 아래 마지막 테스트가
  * 정확히 그 경계를 고정한다.
  */
