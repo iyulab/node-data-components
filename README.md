@@ -9,8 +9,13 @@
 - **URichTable** — 정렬/필터/편집/페이지네이션 지원 테이블 (Lit)
 
 > **UDataGrid (DevExtreme)는 v0.4.0에서 제거되었습니다.**
-> OData 서버 사이드 그리드가 필요하면 `@iyulab/flex-table`을 사용하세요.
 > → [마이그레이션 가이드](./docs/migrating-from-datagrid.md)
+
+**`URichTable`과 `@iyulab/flex-table` 중 무엇을 쓸지**는 OData 연동 여부가 아니라 데이터
+규모와 상호작용 축으로 가릅니다 — 둘 다 OData 등 외부 데이터 소스를 소비할 수 있습니다.
+
+- **`URichTable`** — 중소 규모 데이터, 행 단위 CRUD, selection/필터 UX 중심의 목록·상세 화면
+- **`@iyulab/flex-table`** — 대량 데이터, 셀 단위 편집, 엑셀급 상호작용이 필요한 화면
 
 ## Installation
 
