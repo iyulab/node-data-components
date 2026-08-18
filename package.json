@@ -39,7 +39,8 @@
     },
     "./simple-sheet": "./src/components/simple-sheet/USimpleSheet.js",
     "./data-view": "./src/components/data-view/UDataView.js",
-    "./u-rich-table": "./src/components/u-rich-table/URichTable.js"
+    "./u-rich-table": "./src/components/u-rich-table/URichTable.js",
+    "./u-record-picker": "./src/components/u-record-picker/URecordPicker.js"
   },
   "sideEffects": [
     "./dist/components/data-view/UDataView.js",
@@ -48,6 +49,8 @@
     "./src/components/simple-sheet/USimpleSheet.ts",
     "./dist/components/u-rich-table/URichTable.js",
     "./src/components/u-rich-table/URichTable.ts",
+    "./dist/components/u-record-picker/URecordPicker.js",
+    "./src/components/u-record-picker/URecordPicker.ts",
     "./dist/index.js",
     "./src/index.ts",
     "./dist/init.js",

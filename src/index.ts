@@ -9,6 +9,7 @@ import './utilities/shadowDomProtection';
 export * from './components/data-view/UDataView';
 export * from './components/simple-sheet/USimpleSheet';
 export * from './components/u-rich-table/URichTable';
+export * from './components/u-record-picker/URecordPicker';
 
 /**
  * `URichTable` 의 공개 API 가 요구하는 타입.
@@ -28,3 +29,4 @@ export type {
   FilterState,
   RichTableEventMap,
 } from './components/u-rich-table/types';
+export type { PickerItem } from './components/u-record-picker/types';
