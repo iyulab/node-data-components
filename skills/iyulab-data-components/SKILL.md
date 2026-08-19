@@ -1,15 +1,15 @@
 ---
 name: iyulab-data-components
-description: Data-oriented web components built on Lit — a server-paged rich table with inline editing and cross-page selection, a spreadsheet-like grid, and a multi-layout data viewer. Use when working with @iyulab/data-components package.
+description: Data-oriented web components built on Lit — a server-paged rich table with inline editing and cross-page selection, a spreadsheet-like grid, a multi-layout data viewer, and a remote-search record picker. Use when working with @iyulab/data-components package.
 license: MIT
 metadata:
   author: iyulab
-  version: "0.13.0"
+  version: "0.18.0"
 ---
 
 # @iyulab/data-components
 
-Three custom elements for displaying and editing tabular data. Built on
+Four custom elements for displaying and editing tabular data. Built on
 [Lit](https://lit.dev/); usable from any framework or plain HTML.
 
 ## Install
@@ -25,6 +25,7 @@ npm install @iyulab/data-components
 | `u-rich-table` | The rows come from a **server** — paging, sorting and filtering are the app's job, and you need selection, inline editing or expandable detail rows | [rich-table.md](references/components/rich-table.md) |
 | `u-simple-sheet` | The data is a **free-form grid** of cells the user types into, spreadsheet-style (fill handle, ranges, clipboard) | [simple-sheet.md](references/components/simple-sheet.md) |
 | `u-data-view` | You are **displaying** records and want to switch between grid / list / table layouts without rebuilding markup | [data-view.md](references/components/data-view.md) |
+| `u-record-picker` | The user needs to **pick one record** from a remote-searched list — an inline typeahead dropdown or a modal lookup dialog, sharing one `search` callback | [record-picker.md](references/components/record-picker.md) |
 
 `u-rich-table` and `u-simple-sheet` overlap only superficially. The table is
 **record-oriented** (a row is an object with named columns, and the app owns the
