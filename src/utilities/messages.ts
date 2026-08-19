@@ -25,7 +25,8 @@ import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
  */
 export type DataMessageKey =
   | 'empty' | 'loading' | 'filterPlaceholder' | 'filterAll' | 'addRow' | 'pageInfo'
-  | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage';
+  | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage'
+  | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
 
@@ -40,6 +41,11 @@ messages.register('en', {
   selected: '{count} selected',
   selectedAcrossPages: '{count} selected ({onPage} on this page)',
   rowsPerPage: '{size} rows',
+  pickerDialogTitle: 'Select a record',
+  pickerFind: 'Find',
+  pickerCancel: 'Cancel',
+  pickerConfirm: 'Confirm',
+  pickerSearchError: 'Search failed. Try again.',
 });
 
 messages.register('ko', {
@@ -53,4 +59,9 @@ messages.register('ko', {
   selected: '{count}건 선택됨',
   selectedAcrossPages: '{count}건 선택됨 (이 페이지 {onPage}건)',
   rowsPerPage: '{size}행',
+  pickerDialogTitle: '레코드 선택',
+  pickerFind: '찾기',
+  pickerCancel: '취소',
+  pickerConfirm: '확인',
+  pickerSearchError: '검색에 실패했습니다. 다시 시도해 주세요.',
 });
