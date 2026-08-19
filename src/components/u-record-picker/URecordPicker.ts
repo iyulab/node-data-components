@@ -67,6 +67,9 @@ export class URecordPicker extends UFormControlElement<string> {
   private inlineDebounceTimer?: number;
   private inlineSearchSeq = 0;
 
+  private dialogDebounceTimer?: number;
+  private dialogSearchSeq = 0;
+
   @state() private dialogQuery = '';
   @state() private dialogItems: PickerItem[] = [];
   @state() private dialogLoading = false;
@@ -106,6 +109,7 @@ export class URecordPicker extends UFormControlElement<string> {
           <u-button class="suffix-item find-btn" variant="ghost"
             ?disabled=${this.disabled}
             aria-label=${messages.text('pickerFind')}
+            @click=${this.openDialog}
           >
             <u-icon lib="internal" name="search"></u-icon>
           </u-button>
@@ -128,11 +132,13 @@ export class URecordPicker extends UFormControlElement<string> {
               `)}
       </u-popover>
 
-      <u-dialog placement="center">
+      <u-dialog placement="center" @hide=${this.handleDialogHide}>
         <span slot="header">${this.dialogTitle ?? messages.text('pickerDialogTitle')}</span>
         <slot name="header"></slot>
         <div class="dialog-search">
-          <input type="text" .value=${live(this.dialogQuery)} />
+          <input type="text" .value=${live(this.dialogQuery)}
+            @input=${this.handleDialogSearchInput}
+          />
         </div>
         ${this.dialogError
           ? html`<div class="dialog-error">${messages.text('pickerSearchError')}</div>`
@@ -142,12 +148,16 @@ export class URecordPicker extends UFormControlElement<string> {
             .columns=${this.columns}
             .data=${this.dialogItems.map(item => ({ ...item, _id: item.id }))}
             .loading=${this.dialogLoading}
+            @row-activate=${this.handleRowActivate}
+            @dblclick=${this.handleRowDblClick}
           ></u-rich-table>
         </div>
         <slot name="footer">
           <div class="dialog-footer">
-            <u-button variant="ghost">${messages.text('pickerCancel')}</u-button>
+            <u-button variant="ghost" @click=${() => this.dialogEl?.hide()}
+            >${messages.text('pickerCancel')}</u-button>
             <u-button color="primary" ?disabled=${!this.pendingId}
+              @click=${this.confirmDialogSelection}
             >${messages.text('pickerConfirm')}</u-button>
           </div>
         </slot>
@@ -209,6 +219,11 @@ export class URecordPicker extends UFormControlElement<string> {
   }
 
   private handleInlineKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && this.items.length === 0) {
+      e.preventDefault();
+      this.openDialog();
+      return;
+    }
     if (this.items.length === 0) return;
 
     switch (e.key) {
@@ -222,7 +237,11 @@ export class URecordPicker extends UFormControlElement<string> {
         break;
       case 'Enter':
         e.preventDefault();
-        if (this.activeIndex >= 0) this.commitInline(this.items[this.activeIndex]);
+        if (this.activeIndex >= 0) {
+          this.commitInline(this.items[this.activeIndex]);
+        } else {
+          this.openDialog();
+        }
         break;
       case 'Escape':
         e.preventDefault();
@@ -230,6 +249,74 @@ export class URecordPicker extends UFormControlElement<string> {
         this.popoverEl?.hide();
         break;
     }
+  };
+
+  private openDialog = async (): Promise<void> => {
+    this.dialogQuery = this.query;
+    this.pendingId = null;
+    this.popoverEl?.hide();
+    await this.dialogEl?.show();
+    this.runDialogSearch(this.dialogQuery);
+  };
+
+  private handleDialogSearchInput = (e: InputEvent) => {
+    this.dialogQuery = (e.target as HTMLInputElement).value;
+    window.clearTimeout(this.dialogDebounceTimer);
+    this.dialogDebounceTimer = window.setTimeout(() => {
+      this.runDialogSearch(this.dialogQuery);
+    }, this.debounce);
+  };
+
+  private async runDialogSearch(query: string): Promise<void> {
+    const seq = ++this.dialogSearchSeq;
+    this.dialogLoading = true;
+    this.dialogError = false;
+    try {
+      const results = await this.search(query);
+      if (seq !== this.dialogSearchSeq) return;
+      this.dialogItems = results;
+    } catch {
+      if (seq !== this.dialogSearchSeq) return;
+      this.dialogItems = [];
+      this.dialogError = true;
+    } finally {
+      if (seq === this.dialogSearchSeq) this.dialogLoading = false;
+    }
+  }
+
+  /** Single click / focused-row Enter on a non-editable cell — preview only, never closes. */
+  private handleRowActivate = (e: CustomEvent<{ id: string }>) => {
+    this.pendingId = e.detail.id;
+  };
+
+  private handleRowDblClick = (e: MouseEvent) => {
+    const path = e.composedPath();
+    const tr = path.find(
+      (node): node is HTMLElement => node instanceof HTMLElement && node.tagName === 'TR'
+    );
+    if (!tr) return;
+    const rows = Array.from(this.tableEl!.shadowRoot!.querySelectorAll('tbody tr'));
+    const index = rows.indexOf(tr);
+    const item = this.dialogItems[index];
+    if (item) this.commitFromDialog(item);
+  };
+
+  private confirmDialogSelection = (): void => {
+    const item = this.dialogItems.find((i) => i.id === this.pendingId);
+    if (item) this.commitFromDialog(item);
+  };
+
+  private commitFromDialog(item: PickerItem): void {
+    this._selectedItem = item;
+    this.query = item.label;
+    const changed = this.value !== item.id;
+    this.value = item.id;
+    this.dialogEl?.hide();
+    if (changed) this.emitChange();
+  }
+
+  private handleDialogHide = (): void => {
+    this.pendingId = null;
   };
 
   private emitChange(): void {
