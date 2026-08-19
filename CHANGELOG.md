@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.18.0] - 2026-08-19
+
+### Added
+
+- **`u-record-picker`** — a form control for picking one record from a remote-searched list.
+  Typing filters an inline dropdown; Enter (with nothing highlighted) or a trailing find button
+  opens a modal lookup dialog (search bar + `u-rich-table`). A single click on a dialog row only
+  previews it — Confirm or a row double-click commits the pick, so a stray click in a long
+  result list can't accidentally close the dialog.
+
 ## [0.17.0] - 2026-08-17
 
 ### Added
