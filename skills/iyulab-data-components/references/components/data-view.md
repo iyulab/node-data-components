@@ -54,6 +54,18 @@ When the user needs to act on rows — selection, inline edit, server paging —
 | `renderCard` | `(item, index) => TemplateResult` | — | | Replaces card content in `grid` / `list` |
 | `renderCell` | `(item, column, index) => TemplateResult \| string` | — | | Replaces cell content in `table` |
 
+## CSS Custom Properties
+
+| Property | Description |
+|----------|-------------|
+| `--dc-muted-color` | Secondary text/labels (default `--u-txt-color-weak`) |
+| `--dc-header-color` | Column/row headers in `mode="table"` (default `--u-txt-color-weak`) |
+| `--dc-empty-color` | Empty-state message (default `--u-txt-color-weak`) |
+
+⚠ Grid gap and card min-width are set via the `gap`/`gridMinWidth` properties (applied as
+inline styles), not custom properties — a stylesheet override of `--gap`/`--min-width` would
+lose to them.
+
 ## DataColumn
 
 | Field | Type | Description |

@@ -207,6 +207,15 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `bulk-actions` | Toolbar area shown while rows are selected |
 | `toolbar-end` | Trailing toolbar area, always shown |
 
+## CSS Custom Properties
+
+| Property | Description |
+|----------|-------------|
+| `--dc-font-size` | Body cell / edit input font size, shared with the edit control so the size doesn't jump on entering edit mode (default `--u-density`, `13px`) |
+| `--dc-muted-color` | Secondary text — pager caption, disabled affordances (default `--u-txt-color-weak`) |
+| `--dc-icon-color` | Sort indicator, expander, row-menu icon color (default `--u-txt-color-weak`) |
+| `--dc-empty-color` | Empty-state message color (default `--u-txt-color-weak`) |
+
 ## Keyboard
 
 | Keys | Action |

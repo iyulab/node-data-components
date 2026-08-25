@@ -82,3 +82,9 @@ before any selection.
 |------|-------------|
 | `header` | Extra content above the dialog's search bar |
 | `footer` | Replaces the dialog's default Cancel/Confirm buttons |
+
+## CSS Custom Properties
+
+| Property | Description |
+|----------|-------------|
+| `--record-picker-popover-max-height` | Max height of the inline dropdown (default `50vh`) |

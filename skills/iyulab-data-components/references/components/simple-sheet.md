@@ -48,6 +48,20 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `noMatchMessage` | `string` | `''` | | Text shown when a `strict` dropdown has no match (falls back to the locale string) |
 | `theme` | `'light'\|'dark'` | — | ✓ | Forces a theme. Unset follows the ancestor `theme`/`data-theme` context (`:host-context`, Chromium only) |
 
+## CSS Custom Properties
+
+| Property | Description |
+|----------|-------------|
+| `--dc-sheet-height` | Host height (default `400px`) |
+| `--dc-row-height` | Row height, also used as cell `line-height` (default `24px`) |
+| `--dc-cell-padding-block` / `--dc-cell-padding-inline` | Cell and edit-input padding (default `0px` / `6px`) |
+| `--dc-font-size` | Body cell / edit input / dropdown item font size (default `--u-density`, `13px`) |
+| `--dc-header-font-size` | Column header font size (default `12px` — independent of `--dc-font-size`/`--u-density` by design) |
+| `--dc-header-font-weight` | Column header font weight (default `600`) |
+| `--dc-header-color` | Column/row header text color (default `--u-txt-color-weak`) |
+| `--dc-empty-color` | Empty-state message color (default `--u-txt-color-weak`) |
+| `--dc-readonly-color` | Read-only cell text color (default `--u-txt-color-weak`) |
+
 ## Methods
 
 | Method | Description |
