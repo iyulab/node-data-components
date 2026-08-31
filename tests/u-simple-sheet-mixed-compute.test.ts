@@ -92,4 +92,31 @@ describe('USimpleSheet 행 단위 compute/readonly (docket #161)', () => {
     // fill-down이 시도돼도 1행은 compute가 소유 — 여전히 'computed'
     expect(el.getData()[1][0]).toBe('computed');
   });
+
+  it('compute가 예외를 던지는 행은 undefined 반환과 다르게 계산 대상(readonly)으로 남는다', async () => {
+    const columns: SheetColumn[] = [
+      {
+        key: 'value',
+        compute: (r) => {
+          if (r === 0) throw new Error('boom');
+          return r === 1 ? 'ok' : undefined;
+        },
+      },
+    ];
+    const el = sheet = new USimpleSheet();
+    el.columns = columns;
+    el.data = [['stale'], [''], ['user-input']];
+    document.body.appendChild(el);
+    await el.updateComplete;
+
+    // 예외 행: _recompute 계약대로 빈 문자열로 지워지고, readonly/computed로 표시된다
+    // (undefined 반환처럼 편집 가능한 것으로 잘못 보이면 다음 재계산에서 조용히 지워진다)
+    expect(el.getData()[0][0]).toBe('');
+    expect(cell(el, 0, 0).className).toContain('cell-readonly');
+    expect(cell(el, 0, 0).className).toContain('cell-computed');
+
+    // undefined 반환 행은 여전히 입력 그대로, 편집 가능
+    expect(el.getData()[2][0]).toBe('user-input');
+    expect(cell(el, 2, 0).className).not.toContain('cell-readonly');
+  });
 });

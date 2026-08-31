@@ -1105,14 +1105,19 @@ export class USimpleSheet extends UElement {
     return readonly || this._isColComputed(row, col);
   }
 
-  /** compute가 이 (row, col)에 대해 실제로 계산값을 내는지 — undefined 반환은 "계산 대상 아님" */
+  /**
+   * compute가 이 (row, col)에 대해 실제로 계산값을 내는지 — undefined 반환만 "계산 대상
+   * 아님"이다. 예외는 다르게 취급한다: _recompute()는 예외가 나도 그 셀을 ''로 계속 덮어
+   * 쓰므로(문서화된 계약), 여기서도 readonly/computed로 판정해야 편집 가능처럼 보이는데
+   * 다음 재계산에서 조용히 지워지는 불일치가 생기지 않는다.
+   */
   private _isColComputed(row: number, col: number): boolean {
     const fn = this.columns?.[col]?.compute;
     if (typeof fn !== 'function') return false;
     try {
       return fn(row, this._data) !== undefined;
     } catch {
-      return false;
+      return true;
     }
   }
 
