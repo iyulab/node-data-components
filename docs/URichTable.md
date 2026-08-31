@@ -77,6 +77,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `filterable` | `boolean` | `false` | 헤더 아래 필터 입력 줄 |
 | `expandable` | `boolean` | `false` | 행 펼치기 (`detailRenderer` 필요) |
 | `detailRenderer` | `(row) => TemplateResult` | `undefined` | 펼친 행의 내용 |
+| `rowActions` | `RowAction[]` | `undefined` | 액션 셀의 버튼 구성 (`0.20.0~`, 아래 참조) |
 
 ### UI 문구
 
@@ -179,6 +180,33 @@ interface ColumnDef {
 
 `validator`는 **오류 문구를 반환**하고, 통과하면 `null`을 반환합니다.
 
+## 액션 셀 · `rowActions` (`0.20.0~`)
+
+각 행 우측 끝(액션 셀)은 기본으로 "⋯" 버튼 하나만 있고, 클릭하면 `row-delete`를 냅니다.
+삭제 외에 다른 액션(수정 등)이 필요하면 `rowActions`로 구성하세요 — 지정하지 않으면
+종전 동작(단일 "⋯" → `row-delete`) 그대로입니다.
+
+```typescript
+interface RowAction {
+  event: string;   // 클릭 시 dispatch할 커스텀 이벤트 이름
+  label: string;   // 버튼 라벨(접근 가능한 이름으로도 쓰입니다)
+  icon?: string;   // 버튼에 표시할 아이콘/기호. 생략하면 label의 첫 글자
+}
+```
+
+```typescript
+table.rowActions = [
+  { event: 'row-edit', label: 'Edit', icon: '✎' },
+  { event: 'row-archive', label: 'Archive', icon: '🗄' },
+];
+table.addEventListener('row-edit', (e) => editRow(e.detail.row));
+table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
+```
+
+각 액션은 `{ detail: { row } }`(bubbles·composed)로 자기 `event` 이름의 커스텀 이벤트만
+냅니다 — `row-delete`로 새지 않습니다. 삭제도 필요하면 목록에 `{ event: 'row-delete', ... }`
+를 직접 포함하세요.
+
 ## 이벤트
 
 전부 `bubbles: true, composed: true` 입니다.
@@ -189,7 +217,7 @@ interface ColumnDef {
 | `select-all` | `{ checked, pageRowIds }` — 전체선택 체크박스 조작. `selection-change`와 함께 발생 |
 | `row-create` | `{ row }` |
 | `row-update` | `{ row, field, value, oldValue }` |
-| `row-delete` | `{ row }` |
+| `row-delete` | `{ row }` — `rowActions`를 지정하지 않았을 때 액션 셀 "⋯" 클릭 시 |
 | `row-expand` | `{ row, expanded }` |
 | `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |
 | `filter-change` | `{ filters }` |

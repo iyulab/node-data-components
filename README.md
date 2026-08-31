@@ -133,6 +133,33 @@ export function MySheet() {
 `URichTableReact`는 `RichTableEventMap`의 모든 이벤트(`onRowUpdate`, `onSortChange`,
 `onSelectionChange` 등)를 타입드 props로 노출합니다. `UDataViewReact`도 동일하게 제공됩니다.
 
+### React 셀 렌더러 (`URichTableReact` 전용, `0.20.0~`)
+
+vanilla `URichTable`의 `ColumnDef.render`는 `string | HTMLElement`만 반환할 수 있지만,
+`URichTableReact`는 `ReactNode`도 받습니다 — React 컴포넌트를 그대로 셀 콘텐츠로 넘기면
+내부적으로 React root에 마운트해 줍니다(같은 셀은 재렌더 사이에 root를 재사용하므로 로컬
+상태가 유지됩니다).
+
+```tsx
+import { URichTableReact, type ColumnDefReact } from '@iyulab/data-components/react';
+
+const columns: ColumnDefReact[] = [
+  { key: 'name', label: 'Name' },
+  {
+    key: 'actions',
+    label: '',
+    render: (_v, row) => (
+      <button onClick={() => editRow(row)}>Edit</button>
+    ),
+  },
+];
+
+<URichTableReact columns={columns} data={rows} />
+```
+
+vanilla `URichTable`(`import { URichTable } from '@iyulab/data-components'`)은 이 계약에
+영향받지 않습니다 — `render`는 여전히 `string | HTMLElement`만 반환해야 합니다.
+
 타입스크립트만 필요하다면 래퍼 없이도 엘리먼트 클래스와 `HTMLElementTagNameMap` 증강이
 메인 엔트리에서 제공됩니다:
 

@@ -331,6 +331,16 @@ export const richTableStyles = css`
     color: var(--dc-icon-color);
   }
 
+  .row-action {
+    cursor: pointer;
+    color: var(--dc-icon-color);
+    padding: 0 3px;
+  }
+
+  .row-action + .row-action {
+    margin-left: 4px;
+  }
+
   .row-error-cell {
     padding: 2px 8px;
     background: var(--u-danger-bg-color, #FFEBEE);

@@ -138,6 +138,7 @@ forever.
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |
 | `expandable` | `boolean` | `false` | | Renders the expander column; pair with `detailRenderer` |
 | `detailRenderer` | `(row) => TemplateResult` | — | | Renders the expanded detail row |
+| `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 
 ## Methods
 
@@ -174,7 +175,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `page-change` | `{ page, pageSize }` | The pager or page-size selector moved |
 | `row-update` | `{ row, field, value, oldValue }` | An inline edit was committed |
 | `row-create` | `{ row }` | The add-row control produced a row |
-| `row-delete` | `{ row }` | A row was deleted |
+| `row-delete` | `{ row }` | The action cell's default "⋯" was clicked (only when `rowActions` is unset — see *RowAction*) |
 | `row-expand` | `{ row, expanded }` | A detail row was opened or closed |
 | `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). Independent of `selectable` — selection is "what to act on", activation is "what to view" |
 | `paste` | `{ rows }` | TSV was pasted into the grid |
@@ -200,6 +201,28 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `render` | `(value, row) => string \| HTMLElement` | Custom cell rendering |
 | `clipboardParse` | `(text) => unknown` | Parses a pasted cell |
 | `clipboardFormat` | `(value) => string` | Formats a copied cell |
+
+## RowAction
+
+Configures the action cell (right edge of each row). Without `rowActions`, it's a single "⋯"
+that fires `row-delete`. Set it to replace that with your own buttons:
+
+| Field | Type | Description |
+|---|---|---|
+| `event` | `string` | Custom event name dispatched on click (`{ detail: { row } }`, bubbles + composed) |
+| `label` | `string` | Button label, also used as the accessible name |
+| `icon` | `string` | Symbol shown on the button — defaults to `label`'s first character |
+
+```ts
+table.rowActions = [
+  { event: 'row-edit', label: 'Edit', icon: '✎' },
+  { event: 'row-archive', label: 'Archive', icon: '🗄' },
+];
+table.addEventListener('row-edit', (e) => editRow(e.detail.row));
+```
+
+Each action fires only its own `event` — none of them fall back to `row-delete`. Include
+`{ event: 'row-delete', ... }` yourself if you still want a delete action.
 
 ## Slots
 

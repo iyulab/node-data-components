@@ -4,7 +4,7 @@ import { messages } from '../../utilities/messages.js';
 import { html, LitElement, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
-import type { ColumnDef, CellPosition, SortState, FilterState } from './types.js';
+import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
 import { parseTSV, toTSV } from './utils/clipboard.js';
 
 @customElement('u-rich-table')
@@ -41,6 +41,11 @@ export class URichTable extends LitElement {
   @property({ type: Boolean }) filterable = false;
   @property({ type: Boolean }) expandable = false;
   @property({ attribute: false }) detailRenderer?: (row: Record<string, unknown>) => TemplateResult;
+  /**
+   * 액션 셀에 렌더할 커스텀 액션 목록. 생략하면 종전대로 단일 "⋯" 버튼이 `row-delete`
+   * 를 쏜다(하위호환). 지정하면 각 액션이 자기 `event` 이름으로 커스텀 이벤트를 쏜다.
+   */
+  @property({ type: Array }) rowActions?: RowAction[];
 
   // --- Internal State ---
   @state() private selectedIds = new Set<string>();
@@ -283,7 +288,12 @@ export class URichTable extends LitElement {
           ` : ''}
           ${this.columns.map((col, colIdx) => this._renderCell(row, rowIdx, col, colIdx))}
           <td class="actions-cell">
-            <span class="row-menu" @click=${() => this._onRowMenu(row)}>⋯</span>
+            ${this.rowActions && this.rowActions.length > 0
+              ? html`${this.rowActions.map(action => html`
+                  <span class="row-action" title=${action.label} aria-label=${action.label}
+                    @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</span>
+                `)}`
+              : html`<span class="row-menu" @click=${() => this._onRowMenu(row)}>⋯</span>`}
           </td>
         </tr>
         ${isExpanded && this.detailRenderer ? html`
@@ -644,6 +654,13 @@ export class URichTable extends LitElement {
 
   private _onRowMenu(row: Record<string, unknown>): void {
     this.dispatchEvent(new CustomEvent('row-delete', {
+      detail: { row },
+      bubbles: true, composed: true
+    }));
+  }
+
+  private _onRowAction(action: RowAction, row: Record<string, unknown>): void {
+    this.dispatchEvent(new CustomEvent(action.event, {
       detail: { row },
       bubbles: true, composed: true
     }));

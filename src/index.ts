@@ -28,5 +28,7 @@ export type {
   SortState,
   FilterState,
   RichTableEventMap,
+  RowAction,
+  RowActionEventDetail,
 } from './components/u-rich-table/types';
 export type { PickerItem } from './components/u-record-picker/types';

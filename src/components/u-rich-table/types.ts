@@ -19,9 +19,28 @@ export interface ColumnDef {
   clipboardFormat?: (value: unknown) => string;
 }
 
+/**
+ * 액션 셀(행 우측 끝)에 렌더할 커스텀 액션 하나. `URichTable.rowActions` 로 배열을
+ * 주면 기존 단일 "⋯"(항상 `row-delete` 를 쏘는) 버튼 대신 이 목록으로 대체된다 —
+ * `rowActions` 를 주지 않으면 종전 동작 그대로다(하위호환).
+ */
+export interface RowAction {
+  /** 클릭 시 dispatch할 커스텀 이벤트 이름(예: 'row-edit', 'row-archive') */
+  event: string;
+  /** 버튼 라벨(접근 가능한 이름으로도 쓰인다 — title/aria-label) */
+  label: string;
+  /** 버튼에 표시할 아이콘/기호. 생략하면 label의 첫 글자를 쓴다 */
+  icon?: string;
+}
+
 export interface CellPosition {
   rowIndex: number;
   colIndex: number;
+}
+
+/** `RowAction.event` 로 지정한 이벤트가 실제로 dispatch될 때의 detail 형태 */
+export interface RowActionEventDetail {
+  row: Record<string, unknown>;
 }
 
 export interface SortState {

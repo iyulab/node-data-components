@@ -38,6 +38,7 @@ export default defineConfig({
         /^lit.*/,
         /^@lit\/react/,
         /^react(\/|$)/,
+        /^react-dom(\/|$)/,
       ],
       output: {
         preserveModules: true,
