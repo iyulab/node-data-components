@@ -437,7 +437,7 @@ export class USimpleSheet extends UElement {
       if (e.key === 'c' || e.key === 'C') {
         if (this._sel) {
           e.preventDefault();
-          void navigator.clipboard.writeText(this._selectionToTSV());
+          void this._copySelection();
         }
         return;
       }
@@ -445,7 +445,7 @@ export class USimpleSheet extends UElement {
       if (e.key === 'v' || e.key === 'V') {
         if (!this.readonly && this._sel) {
           e.preventDefault();
-          void navigator.clipboard.readText().then(text => this._pasteFromText(text));
+          void this._pasteFromClipboard();
         }
         return;
       }
@@ -828,6 +828,26 @@ export class USimpleSheet extends UElement {
   // ──────────────────────────────────────────
   // 클립보드 (copy/paste)
   // ──────────────────────────────────────────
+
+  /** Ctrl+C 경로 전용 — 권한 거부·비보안 컨텍스트 등으로 Clipboard API가 실패해도
+   * 조용히 죽지 않고 `clipboard-error`를 낸다(flex-table의 동일 패턴 참조). */
+  private async _copySelection(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this._selectionToTSV());
+    } catch (err) {
+      this.fire('clipboard-error', { detail: { action: 'copy', error: err } });
+    }
+  }
+
+  /** Ctrl+V 경로 전용 — 위와 동일한 이유로 실패를 흡수한다. */
+  private async _pasteFromClipboard(): Promise<void> {
+    try {
+      const text = await navigator.clipboard.readText();
+      this._pasteFromText(text);
+    } catch (err) {
+      this.fire('clipboard-error', { detail: { action: 'paste', error: err } });
+    }
+  }
 
   private _onCopy = (e: ClipboardEvent) => {
     if (!this._sel || this._editing) return; // 편집 중엔 input 기본 복사 허용

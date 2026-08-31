@@ -89,4 +89,17 @@ describe('USimpleSheet 클립보드 (docket #150)', () => {
 
     expect(writeText).not.toHaveBeenCalled();
   });
+
+  it('Clipboard API가 거부(권한 등)되면 조용히 죽지 않고 clipboard-error를 낸다', async () => {
+    const el = sheet = mount();
+    const container = await focusContainer(el);
+    writeText.mockRejectedValue(new DOMException('Denied', 'NotAllowedError'));
+    const handler = vi.fn();
+    el.addEventListener('clipboard-error', handler);
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
+
+    expect(handler.mock.calls[0][0].detail.action).toBe('copy');
+  });
 });
