@@ -432,6 +432,23 @@ export class USimpleSheet extends UElement {
         if (!this.readonly && this._sel) this._fillRight();
         return;
       }
+      // Ctrl+C: 복사 — 셀 선택은 실제 브라우저 텍스트 선택(Range)을 만들지 않으므로
+      // 네이티브 `copy` 이벤트(_onCopy)에 기대지 않고 Clipboard API를 직접 호출한다.
+      if (e.key === 'c' || e.key === 'C') {
+        if (this._sel) {
+          e.preventDefault();
+          void navigator.clipboard.writeText(this._selectionToTSV());
+        }
+        return;
+      }
+      // Ctrl+V: 붙여넣기 — 같은 이유로 Clipboard API를 직접 호출한다.
+      if (e.key === 'v' || e.key === 'V') {
+        if (!this.readonly && this._sel) {
+          e.preventDefault();
+          void navigator.clipboard.readText().then(text => this._pasteFromText(text));
+        }
+        return;
+      }
     }
 
     // ── 삭제 ──
