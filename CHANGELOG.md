@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.20.0] - 2026-09-01
+
+### Added
+
+- **`URichTableReact`'s `columns[].render` can now return a `ReactNode`**, not just
+  `string | HTMLElement`. Mount it into a cached React root keyed by (column key, row
+  `_id`) so a component's local state survives across re-renders; roots are cleaned up
+  when a row or column drops out. Vanilla `URichTable`'s `render` contract is unchanged.
+- **`URichTable.rowActions`** — configure the action cell (row's trailing "⋯") with any
+  number of custom buttons, each dispatching its own named event. Leaving it unset keeps
+  the previous single "⋯" → `row-delete` behavior.
+
 ## [0.19.0] - 2026-08-31
 
 ### Fixed
