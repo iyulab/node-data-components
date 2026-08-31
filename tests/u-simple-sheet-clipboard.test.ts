@@ -79,6 +79,18 @@ describe('USimpleSheet 클립보드 (docket #150)', () => {
     expect(el.getData()[0].slice(0, 2)).toEqual(['a', 'b']);
   });
 
+  it('열 단위 readonly(readonly: true) 컬럼은 Ctrl+V로도 덮어써지지 않는다 (docket #160)', async () => {
+    const el = sheet = mount();
+    el.columns = [{ readonly: true }, {}];
+    const container = await focusContainer(el); // (0,0)이 앵커 — 0번 컬럼은 readonly
+    readText.mockResolvedValue('x\ty');
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(el.getData()[0][1]).toBe('y'));
+
+    expect(el.getData()[0][0]).toBe('a');
+  });
+
   it('선택이 없으면 Ctrl+C가 아무것도 복사하지 않는다', async () => {
     const el = sheet = mount();
     await el.updateComplete;

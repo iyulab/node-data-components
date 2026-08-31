@@ -95,10 +95,10 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `key` | `string` | Object key used by `getDataAsObjects()` |
 | `label` | `string` | Header text |
 | `width` | `number` | Column width in px |
-| `readonly` | `boolean` | Column cannot be edited |
+| `readonly` | `boolean \| ((rowIndex: number) => boolean)` | Column cannot be edited — either the whole column, or per row via a callback |
 | `options` | `string[] \| ((row, col) => string[])` | Dropdown choices, static or per cell |
 | `strict` | `boolean` | Only listed options may be entered (default: free text) |
-| `compute` | `(rowIndex, data) => string` | Derived value. Makes the column read-only; evaluated left→right, top→bottom |
+| `compute` | `(rowIndex, data) => string \| undefined` | Derived value; makes that cell read-only. Return `undefined` for a row to leave it as plain user input (e.g. input rows mixed with computed rows in one column). Evaluated left→right, top→bottom |
 | `format` | `Intl.NumberFormatOptions \| ((value, rowIndex) => string)` | Display formatting only — the stored value is untouched |
 
 ## Keyboard

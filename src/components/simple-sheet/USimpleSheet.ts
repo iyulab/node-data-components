@@ -13,14 +13,19 @@ export interface SheetColumn {
   label?: string;
   /** 열 너비 (px) */
   width?: number;
-  /** 읽기 전용 열 */
-  readonly?: boolean;
+  /** 읽기 전용 열. 행별로 다르게 지정하려면 `(rowIndex) => boolean` 콜백을 전달. */
+  readonly?: boolean | ((rowIndex: number) => boolean);
   /** 선택 가능한 옵션 목록 (정적 배열 또는 동적 콜백) */
   options?: string[] | ((row: number, col: number) => string[]);
   /** true이면 목록에 있는 값만 입력 가능 (기본: false = 자유 입력 허용) */
   strict?: boolean;
-  /** 자동 계산 함수. 설정 시 해당 열은 자동 readonly. 열 순서(좌→우), 행 순서(위→아래)로 계산. */
-  compute?: (rowIndex: number, data: string[][]) => string;
+  /**
+   * 자동 계산 함수. 결과를 반환한 셀은 자동 readonly로 계산값을 표시한다.
+   * `undefined`를 반환하면 그 행은 계산 대상이 아니라는 뜻이며, 셀은 그대로 사용자 입력으로
+   * 남는다 — 같은 열 안에 원천 입력 행과 계산 행이 섞인 레이아웃을 표현할 때 쓴다.
+   * 열 순서(좌→우), 행 순서(위→아래)로 계산.
+   */
+  compute?: (rowIndex: number, data: string[][]) => string | undefined;
   /** 표시 포맷. Intl.NumberFormatOptions(숫자) 또는 커스텀 콜백. 원본 데이터는 유지. */
   format?: Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);
 }
@@ -320,8 +325,8 @@ export class USimpleSheet extends UElement {
     const isAnchor = this._isAnchor(r, c);
     const value = this._data[r]?.[c] ?? '';
 
-    const isColReadonly = this._isColReadonly(c);
-    const isComputed = this._isColComputed(c);
+    const isColReadonly = this._isColReadonly(r, c);
+    const isComputed = this._isColComputed(r, c);
     const hasIntlFormat = this.columns?.[c]?.format && typeof this.columns[c].format !== 'function';
     const isNumeric = hasIntlFormat || this._isNumeric(value);
     const classes = [
@@ -461,7 +466,7 @@ export class USimpleSheet extends UElement {
     // ── 편집 시작 (F2) ──
     if (e.key === 'F2') {
       e.preventDefault();
-      if (!this.readonly && !this._isColReadonly(anchor.col)) {
+      if (!this.readonly && !this._isColReadonly(anchor.row, anchor.col)) {
         this._startEdit(anchor.row, anchor.col);
       }
       return;
@@ -557,7 +562,7 @@ export class USimpleSheet extends UElement {
     }
 
     // ── 일반 문자 입력 → 편집 시작 ──
-    if (!this.readonly && !this._isColReadonly(anchor.col)
+    if (!this.readonly && !this._isColReadonly(anchor.row, anchor.col)
         && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       this._startEdit(anchor.row, anchor.col, e.key);
@@ -729,7 +734,7 @@ export class USimpleSheet extends UElement {
 
   private _onTableDblClick = (e: MouseEvent) => {
     const cell = this._getCellFromEvent(e);
-    if (!cell || this.readonly || this._isColReadonly(cell.col)) return;
+    if (!cell || this.readonly || this._isColReadonly(cell.row, cell.col)) return;
     this._startEdit(cell.row, cell.col);
   };
 
@@ -909,7 +914,7 @@ export class USimpleSheet extends UElement {
       for (let ci = 0; ci < pasteRows[ri].length; ci++) {
         const r = anchor.row + ri;
         const c = anchor.col + ci;
-        if (r < newData.length && c < (newData[r]?.length ?? 0) && !this._isColComputed(c)) {
+        if (r < newData.length && c < (newData[r]?.length ?? 0) && !this._isColReadonly(r, c)) {
           newData[r][c] = pasteRows[ri][ci];
         }
       }
@@ -935,7 +940,7 @@ export class USimpleSheet extends UElement {
     for (let c = minCol; c <= maxCol; c++) {
       const fillVal = newData[minRow]?.[c] ?? '';
       for (let r = minRow + 1; r <= maxRow; r++) {
-        if (newData[r] && c < newData[r].length && !this._isColReadonly(c)) {
+        if (newData[r] && c < newData[r].length && !this._isColReadonly(r, c)) {
           newData[r][c] = fillVal;
         }
       }
@@ -956,7 +961,7 @@ export class USimpleSheet extends UElement {
     for (let r = minRow; r <= maxRow; r++) {
       const fillVal = newData[r]?.[minCol] ?? '';
       for (let c = minCol + 1; c <= maxCol; c++) {
-        if (newData[r] && c < newData[r].length && !this._isColReadonly(c)) {
+        if (newData[r] && c < newData[r].length && !this._isColReadonly(r, c)) {
           newData[r][c] = fillVal;
         }
       }
@@ -1056,7 +1061,7 @@ export class USimpleSheet extends UElement {
     const newData = this._data.map(r => [...r]);
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
-        if (!this._isColReadonly(c)) newData[r][c] = '';
+        if (!this._isColReadonly(r, c)) newData[r][c] = '';
       }
     }
     this._data = newData;
@@ -1094,12 +1099,21 @@ export class USimpleSheet extends UElement {
     return { row, col };
   }
 
-  private _isColReadonly(col: number): boolean {
-    return (this.columns?.[col]?.readonly ?? false) || this._isColComputed(col);
+  private _isColReadonly(row: number, col: number): boolean {
+    const ro = this.columns?.[col]?.readonly;
+    const readonly = typeof ro === 'function' ? ro(row) : (ro ?? false);
+    return readonly || this._isColComputed(row, col);
   }
 
-  private _isColComputed(col: number): boolean {
-    return typeof this.columns?.[col]?.compute === 'function';
+  /** compute가 이 (row, col)에 대해 실제로 계산값을 내는지 — undefined 반환은 "계산 대상 아님" */
+  private _isColComputed(row: number, col: number): boolean {
+    const fn = this.columns?.[col]?.compute;
+    if (typeof fn !== 'function') return false;
+    try {
+      return fn(row, this._data) !== undefined;
+    } catch {
+      return false;
+    }
   }
 
   private _isNumeric(value: string): boolean {
@@ -1132,7 +1146,8 @@ export class USimpleSheet extends UElement {
       if (!fn) continue;
       for (let r = 0; r < this._rowCount; r++) {
         try {
-          this._data[r][c] = fn(r, this._data);
+          const result = fn(r, this._data);
+          if (result !== undefined) this._data[r][c] = result;
         } catch {
           this._data[r][c] = '';
         }

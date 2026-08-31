@@ -106,10 +106,10 @@ interface SheetColumn {
   key?:      string;   // getDataAsObjects() 반환 시 객체 키
   label?:    string;   // 헤더 표시 텍스트
   width?:    number;   // 열 초기 너비 (px)
-  readonly?: boolean;  // 해당 열만 읽기 전용
+  readonly?: boolean | ((rowIndex: number) => boolean);  // 열 전체 또는 행별 읽기 전용
   options?:  string[] | ((row: number, col: number) => string[]);  // 드롭다운 옵션 목록
   strict?:   boolean;  // 목록 값만 입력 허용 (기본: false)
-  compute?:  (rowIndex: number, data: string[][]) => string;  // 자동 계산 함수
+  compute?:  (rowIndex: number, data: string[][]) => string | undefined;  // 자동 계산 함수. undefined 반환 시 그 행은 계산 대상 아님(사용자 입력 유지)
   format?:   Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);  // 표시 포맷
 }
 ```
@@ -353,14 +353,42 @@ const columns: SheetColumn[] = [
 }
 ```
 
+### 행 단위 혼합 레이아웃
+
+`compute`가 특정 행에서 `undefined`를 반환하면 그 행은 계산 대상이 아니라는 뜻이며,
+셀은 사용자 입력값을 그대로 유지합니다. 값 열 안에 원천 입력 행과 자동계산 행이 섞인
+"항목/값" 시트(회계·예산 시뮬레이션류)에서, 컬럼 전체를 `readonly`로 만들지 않고도
+계산 행만 선택적으로 자동화할 수 있습니다.
+
+```typescript
+const columns: SheetColumn[] = [
+  { key: 'label' },  // 항목명 (총지출·가정수·결손금액 등)
+  { key: 'value',
+    // 2행(결손금액)만 계산 대상 — 나머지 행(0·1행)은 사용자가 직접 입력
+    compute: (r, data) => r === 2
+      ? String((Number(data[0][1]) || 0) - (Number(data[1][1]) || 0))
+      : undefined,
+  },
+];
+```
+
+행 단위로 읽기 전용만 필요하고 계산은 필요 없다면(예: 라벨 행 보호) `readonly`에
+콜백을 전달합니다.
+
+```typescript
+{ key: 'value', readonly: (r) => r === 0 }  // 0행만 읽기 전용, 나머지는 편집 가능
+```
+
 ### 동작 규칙
 
-- **자동 readonly**: compute 열은 사용자가 직접 편집할 수 없습니다
-- **시각적 구분**: compute 셀은 이탤릭체 + 파란 배경으로 표시됩니다
+- **자동 readonly**: compute가 값을 반환한 셀은 사용자가 직접 편집할 수 없습니다.
+  `undefined`를 반환한 셀은 편집 가능한 일반 입력 셀입니다
+- **시각적 구분**: 계산값이 채워진 셀은 이탤릭체 + 파란 배경으로 표시됩니다
 - **계산 순서**: 열 순서(좌→우), 행 순서(위→아래)로 계산. 열 정의 순서가 곧 의존성 순서입니다
 - **에러 처리**: compute 함수에서 예외 발생 시 빈 문자열로 표시됩니다
-- **클립보드**: 복사 시 계산값 포함, 붙여넣기 시 compute 열은 건너뜁니다
-- **Fill Down/Right**: compute 열은 건너뜁니다
+- **클립보드**: 복사 시 계산값 포함, 붙여넣기 시 readonly 셀(열 전체 readonly·행별
+  readonly·compute가 값을 반환한 셀)은 건너뜁니다
+- **Fill Down/Right**: 같은 readonly 셀은 건너뜁니다
 - **getData()**: 계산된 값이 포함되어 반환됩니다
 
 ## 표시 포맷 (format)
