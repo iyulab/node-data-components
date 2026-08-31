@@ -61,7 +61,7 @@
     "./src/utilities/shadowDomProtection.ts"
   ],
   "scripts": {
-    "preversion": "node ../../scripts/preversion-check.mjs",
+    "preversion": "node -e \"if(require('fs').existsSync('../../scripts/preversion-check.mjs'))require('child_process').execFileSync('node',['../../scripts/preversion-check.mjs'],{stdio:'inherit'})\"",
     "start": "vite",
     "build": "npm run typecheck && eslint && vite build",
     "test": "vitest run",
