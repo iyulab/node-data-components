@@ -86,6 +86,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | Event | `detail` | Fired when |
 |---|---|---|
 | `change` | `{ data: string[][] }` | Any edit, paste, fill or `setCell()` committed a value |
+| `clipboard-error` | `{ action: 'copy' \| 'paste', error: unknown }` | `Ctrl`/`Cmd` + `C`/`V` called the Clipboard API and it rejected (denied permission, insecure context) |
 
 ## SheetColumn
 
