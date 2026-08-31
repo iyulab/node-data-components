@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.19.0] - 2026-08-31
+
+### Fixed
+
+- 🔴**`u-simple-sheet`: `Ctrl`/`Cmd` + `C` never copied anything.** Cell selection is internal
+  state, not a real browser text selection (`Range`), so the native `copy` DOM event this
+  component relied on never fired — every browser requires an actual selection for that event to
+  exist. The copy logic itself (TSV serialization, `clipboardData.setData`) was fully implemented
+  and correctly bound; it was simply unreachable from the keyboard. `Ctrl`/`Cmd` + `C`/`V` now
+  detect the key combination explicitly and call the Clipboard API directly, matching the sibling
+  `u-rich-table`'s existing pattern. The native `copy`/`paste` listeners stay as a fallback for an
+  actual text-selection scenario.
+
+### Added
+
+- **`u-simple-sheet` and `u-rich-table` gained a `clipboard-error` event**
+  (`{ action: 'copy' | 'paste', error }`) — a denied clipboard permission or an insecure context
+  previously failed the operation silently (an unhandled promise rejection, no signal to the
+  consumer). Both components now fire this event instead, matching `flex-table`'s existing
+  pattern for the same case.
+
 ## [0.18.0] - 2026-08-19
 
 ### Added
