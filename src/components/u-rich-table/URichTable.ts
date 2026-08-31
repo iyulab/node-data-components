@@ -777,12 +777,28 @@ export class URichTable extends LitElement {
     const rows = this.getSelectedRows();
     if (rows.length === 0) return;
     const tsv = toTSV(rows, this.columns);
-    await navigator.clipboard.writeText(tsv);
+    try {
+      await navigator.clipboard.writeText(tsv);
+    } catch (err) {
+      this.dispatchEvent(new CustomEvent('clipboard-error', {
+        detail: { action: 'copy', error: err },
+        bubbles: true, composed: true
+      }));
+    }
   }
 
   private async _handlePaste(): Promise<void> {
     if (this.editingCell) return; // 편집 중이면 브라우저 기본 동작
-    const text = await navigator.clipboard.readText();
+    let text: string;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch (err) {
+      this.dispatchEvent(new CustomEvent('clipboard-error', {
+        detail: { action: 'paste', error: err },
+        bubbles: true, composed: true
+      }));
+      return;
+    }
     if (!text.trim()) return;
     const parsedRows = parseTSV(text, this.columns);
 

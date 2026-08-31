@@ -178,6 +178,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `row-expand` | `{ row, expanded }` | A detail row was opened or closed |
 | `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). Independent of `selectable` — selection is "what to act on", activation is "what to view" |
 | `paste` | `{ rows }` | TSV was pasted into the grid |
+| `clipboard-error` | `{ action: 'copy' \| 'paste', error }` | `Ctrl`/`Cmd` + `C`/`V` called the Clipboard API and it rejected (denied permission, insecure context) |
 
 ## ColumnDef
 
