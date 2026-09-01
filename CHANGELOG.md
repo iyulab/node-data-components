@@ -1,5 +1,60 @@
 # Changelog
 
+## [0.22.0] - 2026-09-01
+
+### Added
+
+- **`SheetColumn` gained `required` and `validator`.** `required` marks an
+  empty cell with a visual indicator; `validator` runs a callback and returns
+  a message string (or `null` to pass) — same shape as the existing `compute`
+  callback (row index + the whole grid), not a row object like the sibling
+  `URichTable.ColumnDef.validator`, since this component's data model is a
+  plain 2D array. A failing cell gets an inset border and a `title` tooltip.
+  `getValidationErrors()` reads every failing cell across the whole grid at
+  once, which `URichTable` doesn't currently offer.
+
+### Fixed
+
+- **Paste bypassed `strict`+`options` validation.** Typing a value outside
+  the option list into a `strict` column was rejected on commit, but pasting
+  the same value wrote it straight through — the same column enforced
+  different rules depending on how the value arrived. A pasted value outside
+  the option list is now skipped (existing value kept), matching a rejected
+  manual edit, and a new `paste-rejected` event reports which cells were
+  skipped.
+
+## [0.21.1] - 2026-09-01
+
+### Fixed
+
+- **A throwing `compute()` rendered its cell as plain editable input that
+  silently reverted to empty on the next unrelated edit.** Recompute already
+  blanks a computed cell on every pass per its documented error contract, but
+  the "is this cell computed" check treated a thrown error the same as an
+  explicit `undefined` return (the documented way to opt a row out of
+  computation) — so a throwing row looked editable right up until the next
+  edit anywhere in the sheet wiped it. A throw is no longer treated as
+  opting out; the cell now renders read-only, consistent with what recompute
+  actually does to it.
+
+## [0.21.0] - 2026-09-01
+
+### Added
+
+- **`readonly` and `compute` now accept per-row control**, not just a
+  whole-column flag. `readonly` accepts a `(rowIndex) => boolean` callback;
+  `compute` may return `undefined` for a row to leave it as plain user
+  input. This lets one column mix input rows and derived rows (e.g. a
+  budgeting sheet where a subtotal row is computed but the rest are entered
+  by hand) without giving up `readonly`/`compute` for the whole column.
+
+### Fixed
+
+- **Pasting into a `readonly` column overwrote it.** `Ctrl`/`Cmd`+`V` only
+  checked whether a column was `compute`-derived, while clearing and
+  fill-down/fill-right already respected a plain `readonly` flag — the same
+  column enforced different rules depending on the operation.
+
 ## [0.20.0] - 2026-09-01
 
 ### Added
