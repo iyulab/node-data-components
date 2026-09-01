@@ -4,6 +4,7 @@ import { property, customElement } from 'lit/decorators.js';
 import '@iyulab/components/dist/components/icon/UIcon.js';
 import '@iyulab/components/dist/components/button/UButton.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
+import { messages } from '../../utilities/messages.js';
 import { styles } from './UDataView.styles';
 
 export type ViewMode = 'grid' | 'list' | 'table';
@@ -61,12 +62,12 @@ export class UDataView extends UElement {
     return html`
       <div class="toolbar">
         <div class="view-toggles">
-          ${this.renderViewButton('grid', 'grid-3x3-gap', 'Grid')}
-          ${this.renderViewButton('list', 'list-ul', 'List')}
-          ${this.renderViewButton('table', 'table', 'Table')}
+          ${this.renderViewButton('grid', 'grid-3x3-gap', messages.text('viewGrid'))}
+          ${this.renderViewButton('list', 'list-ul', messages.text('viewList'))}
+          ${this.renderViewButton('table', 'table', messages.text('viewTable'))}
         </div>
         <div class="info">
-          ${this.items.length} items
+          ${messages.text('itemCount', { count: this.items.length })}
         </div>
       </div>
     `;
@@ -99,7 +100,7 @@ export class UDataView extends UElement {
 
   private renderContent() {
     if (!this.items?.length) {
-      return html`<div class="empty">No data available</div>`;
+      return html`<div class="empty">${messages.text('empty')}</div>`;
     }
 
     switch (this.mode) {
