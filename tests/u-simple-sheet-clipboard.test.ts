@@ -91,6 +91,69 @@ describe('USimpleSheet 클립보드 (docket #150)', () => {
     expect(el.getData()[0][0]).toBe('a');
   });
 
+  it('strict+options 컬럼은 옵션에 없는 값이 붙여넣기로 들어오면 그 셀만 건너뛴다 (docket #166)', async () => {
+    const el = sheet = mount();
+    el.columns = [{ options: ['1', '2'], strict: true }, {}];
+    const container = await focusContainer(el); // (0,0)이 앵커 — 0번 컬럼이 strict+options
+    readText.mockResolvedValue('3\ty'); // '3'은 옵션에 없음, 'y'는 자유 입력 컬럼
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(el.getData()[0][1]).toBe('y'));
+
+    expect(el.getData()[0][0]).toBe('a'); // 옵션에 없는 '3'은 거부되고 기존 값 유지
+  });
+
+  it('strict+options 컬럼은 옵션에 있는 값의 붙여넣기를 정상 반영한다', async () => {
+    const el = sheet = mount();
+    el.columns = [{ options: ['1', '2'], strict: true }, {}];
+    const container = await focusContainer(el);
+    readText.mockResolvedValue('2\ty');
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(el.getData()[0][0]).toBe('2'));
+
+    expect(el.getData()[0][1]).toBe('y');
+  });
+
+  it('strict+options 컬럼에 거부된 셀이 있으면 paste-rejected 이벤트로 위치를 알린다', async () => {
+    const el = sheet = mount();
+    el.columns = [{ options: ['1', '2'], strict: true }, {}];
+    const container = await focusContainer(el);
+    readText.mockResolvedValue('3\ty');
+    const handler = vi.fn();
+    el.addEventListener('paste-rejected', handler);
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(handler).toHaveBeenCalledTimes(1));
+
+    expect(handler.mock.calls[0][0].detail.cells).toEqual([{ row: 0, col: 0 }]);
+  });
+
+  it('strict+options 컬럼이라도 빈 값 붙여넣기는 거부되지 않는다(기존 계약 유지)', async () => {
+    const el = sheet = mount();
+    el.columns = [{ options: ['1', '2'], strict: true }, {}];
+    const container = await focusContainer(el);
+    readText.mockResolvedValue('\ty');
+    const handler = vi.fn();
+    el.addEventListener('paste-rejected', handler);
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(el.getData()[0][1]).toBe('y'));
+
+    expect(el.getData()[0][0]).toBe('');
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('options만 있고 strict가 없으면(자유 입력) 붙여넣기가 그대로 반영된다', async () => {
+    const el = sheet = mount();
+    el.columns = [{ options: ['1', '2'] }, {}]; // strict 미지정
+    const container = await focusContainer(el);
+    readText.mockResolvedValue('anything\ty');
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(el.getData()[0][0]).toBe('anything'));
+  });
+
   it('선택이 없으면 Ctrl+C가 아무것도 복사하지 않는다', async () => {
     const el = sheet = mount();
     await el.updateComplete;

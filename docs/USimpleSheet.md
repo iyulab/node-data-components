@@ -119,6 +119,7 @@ interface SheetColumn {
 | 이벤트 | 페이로드 | 설명 |
 |--------|----------|------|
 | `change` | `{ data: string[][] }` | 셀 값이 변경될 때마다 발생 |
+| `paste-rejected` | `{ cells: { row: number; col: number }[] }` | 붙여넣기 중 `strict`+`options` 검증에 걸려 건너뛴 셀이 있을 때 발생(아래 참조) |
 
 ```javascript
 sheet.addEventListener('change', (e) => {
@@ -181,7 +182,16 @@ sheet.canRedo: boolean
 ```
 
 `strict: true`이면 목록에 있는 값만 입력(선택)할 수 있습니다. 빈 값은 항상 허용됩니다.
-Ctrl+V 붙여넣기는 strict 제한 없이 허용됩니다.
+Ctrl+V 붙여넣기도 동일하게 검증됩니다 — 옵션에 없는 값이 붙여넣기로 들어오면 해당
+셀만 건너뛰고(기존 값 유지) `paste-rejected` 이벤트로 어떤 셀이 건너뛰어졌는지
+알립니다. 수동 편집에서 옵션에 없는 값을 입력하면 커밋이 거부되어 기존 값이
+남는 것과 동일한 규칙입니다.
+
+```javascript
+sheet.addEventListener('paste-rejected', (e) => {
+  console.log(e.detail.cells); // [{ row, col }, ...]
+});
+```
 
 ### 동적 옵션
 

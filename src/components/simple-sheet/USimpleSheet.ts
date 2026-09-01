@@ -910,12 +910,22 @@ export class USimpleSheet extends UElement {
       }
     }
 
+    // strict+options 컬럼은 옵션에 없는 값이 붙여넣기로 들어오면 해당 셀만
+    // 건너뛴다(기존 값 유지) — 수동 편집에서 옵션에 없는 값을 입력하면 커밋이
+    // 거부되어 기존 값이 남는 것과 같은 시맨틱(docket #166, `_isValidCellValue`
+    // 참조). 어떤 셀이 건너뛰어졌는지는 `paste-rejected`로 알린다.
+    const rejectedCells: Array<{ row: number; col: number }> = [];
     for (let ri = 0; ri < pasteRows.length; ri++) {
       for (let ci = 0; ci < pasteRows[ri].length; ci++) {
         const r = anchor.row + ri;
         const c = anchor.col + ci;
         if (r < newData.length && c < (newData[r]?.length ?? 0) && !this._isColReadonly(r, c)) {
-          newData[r][c] = pasteRows[ri][ci];
+          const val = pasteRows[ri][ci];
+          if (this._isValidCellValue(r, c, val)) {
+            newData[r][c] = val;
+          } else {
+            rejectedCells.push({ row: r, col: c });
+          }
         }
       }
     }
@@ -924,6 +934,9 @@ export class USimpleSheet extends UElement {
     this._recompute();
     this._pushHistory();
     this._emitChange();
+    if (rejectedCells.length > 0) {
+      this.fire('paste-rejected', { detail: { cells: rejectedCells } });
+    }
     this.requestUpdate();
   }
 
@@ -1012,23 +1025,32 @@ export class USimpleSheet extends UElement {
     });
   }
 
+  /**
+   * strict+options 컬럼의 셀 쓰기 검증 — 수동 편집(`_commitEdit`)과 붙여넣기
+   * (`_pasteFromText`) 양쪽이 같은 규칙을 따르게 하는 공용 관문(docket #166:
+   * 붙여넣기가 이 검증을 우회해 "타이핑하면 막히고 붙여넣으면 그냥 들어가는"
+   * 비대칭이 있었다). 빈 문자열은 strict 컬럼에서도 항상 허용(기존 계약 유지).
+   */
+  private _isValidCellValue(row: number, col: number, value: string): boolean {
+    const colDef = this.columns?.[col];
+    if (!colDef?.strict || !colDef?.options || value === '') return true;
+    const allOptions = this._getColOptions(row, col) ?? [];
+    return allOptions.includes(value);
+  }
+
   private _commitEdit() {
     if (!this._editing) return;
     const { row, col } = this._editing;
 
     // strict 모드 검증: 옵션 목록에 없고 빈 문자열이 아니면 커밋 무시
-    const colDef = this.columns?.[col];
-    if (colDef?.strict && colDef?.options && this._editVal !== '') {
-      const allOptions = this._getColOptions(row, col) ?? [];
-      if (!allOptions.includes(this._editVal)) {
-        this._editing = null;
-        this._dropdownItems = [];
-        this._dropdownIndex = -1;
-        this._isDropdownClick = false;
-        this.requestUpdate();
-        this._containerEl?.focus();
-        return;
-      }
+    if (!this._isValidCellValue(row, col, this._editVal)) {
+      this._editing = null;
+      this._dropdownItems = [];
+      this._dropdownIndex = -1;
+      this._isDropdownClick = false;
+      this.requestUpdate();
+      this._containerEl?.focus();
+      return;
     }
 
     const prevVal = this._data[row]?.[col] ?? '';
