@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.22.1] - 2026-09-01
+
+### Fixed
+
+- **`UDataView` never localized its own text.** Unlike its sibling table
+  components, it didn't import the package's message registry at all — the
+  view-toggle button labels ("Grid"/"List"/"Table"), the item-count string
+  ("N items"), and the empty state ("No data available") stayed English
+  literals regardless of `Locale.set(...)`. Routed all three through
+  `messages.text()`, reusing the existing `empty` key rather than adding a
+  near-duplicate.
+
 ## [0.22.0] - 2026-09-01
 
 ### Added
