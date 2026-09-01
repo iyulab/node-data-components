@@ -339,6 +339,13 @@ const baseStyles = css`
     background: var(--u-primary-bg-color, #E3F2FD);
   }
 
+  /* Invalid cell (required column is empty, or validator returned a message) —
+     inset box-shadow instead of border so it doesn't disturb the cell's own
+     border-right/border-bottom layout (box-shadow never affects box size). */
+  .cell.cell-invalid {
+    box-shadow: inset 0 0 0 1.5px var(--u-danger-color, #D32F2F);
+  }
+
   /* Readonly mode (whole sheet) */
   :host([readonly]) .cell {
     cursor: default;

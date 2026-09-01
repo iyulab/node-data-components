@@ -111,6 +111,31 @@ interface SheetColumn {
   strict?:   boolean;  // 목록 값만 입력 허용 (기본: false)
   compute?:  (rowIndex: number, data: string[][]) => string | undefined;  // 자동 계산 함수. undefined 반환 시 그 행은 계산 대상 아님(사용자 입력 유지)
   format?:   Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);  // 표시 포맷
+  required?: boolean;  // 필수 입력. 비어 있으면 셀에 시각 표시(테두리)
+  validator?: (value: string, rowIndex: number, data: string[][]) => string | null;  // 셀 검증. 문제 있으면 메시지, 통과하면 null
+}
+```
+
+### 필수 입력 · 검증 (required / validator)
+
+```html
+<u-simple-sheet
+  .columns=${[
+    { key: 'name', label: '이름', required: true },
+    { key: 'age', label: '나이',
+      validator: (value) => (value && Number(value) < 0) ? '나이는 0 이상이어야 합니다' : null },
+  ]}
+></u-simple-sheet>
+```
+
+`required`가 `true`인 열은 값이 비어 있으면, `validator`가 문자열을 반환하면 그
+셀에 테두리 표시가 붙고 호버 시 메시지가 보입니다. 시트 전체를 한 번에 검사하려면
+`getValidationErrors()`를 씁니다(예: 저장 버튼 클릭 시).
+
+```javascript
+const errors = sheet.getValidationErrors(); // { row, col, message }[]
+if (errors.length > 0) {
+  alert(`${errors.length}개 셀에 문제가 있습니다`);
 }
 ```
 
@@ -150,6 +175,9 @@ sheet.getSelection(): { minRow, maxRow, minCol, maxCol } | null
 // Undo/Redo 가능 여부
 sheet.canUndo: boolean
 sheet.canRedo: boolean
+
+// required/validator 검증에 실패한 셀 전체를 반환
+sheet.getValidationErrors(): { row: number; col: number; message: string }[]
 ```
 
 ## 드롭다운 셀렉터

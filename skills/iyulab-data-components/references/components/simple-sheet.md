@@ -73,6 +73,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `getSelection(): { minRow, maxRow, minCol, maxCol } \| null` | Current range, normalized |
 | `setSelection(range): void` | Select a range programmatically (clamped to the grid) |
 | `selectAll(): void` | Select every cell |
+| `getValidationErrors(): { row, col, message }[]` | Every cell currently failing `required`/`validator`, computed fresh over the whole grid |
 
 ## Getters
 
@@ -101,6 +102,8 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `strict` | `boolean` | Only listed options may be entered (default: free text) |
 | `compute` | `(rowIndex, data) => string \| undefined` | Derived value; makes that cell read-only. Return `undefined` for a row to leave it as plain user input (e.g. input rows mixed with computed rows in one column). Evaluated left→right, top→bottom |
 | `format` | `Intl.NumberFormatOptions \| ((value, rowIndex) => string)` | Display formatting only — the stored value is untouched |
+| `required` | `boolean` | Empty value gets a visual marker (inset border) on the cell |
+| `validator` | `(value, rowIndex, data) => string \| null` | Same shape as `compute` (row index + whole grid, not a row object like `URichTable.ColumnDef.validator`) — return a message to mark the cell invalid, `null` to pass |
 
 ## Keyboard
 

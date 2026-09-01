@@ -1,8 +1,10 @@
 import { messages } from '../../utilities/messages.js';
 import { html, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { ref } from 'lit/directives/ref.js';
 
+import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
 
@@ -28,6 +30,17 @@ export interface SheetColumn {
   compute?: (rowIndex: number, data: string[][]) => string | undefined;
   /** 표시 포맷. Intl.NumberFormatOptions(숫자) 또는 커스텀 콜백. 원본 데이터는 유지. */
   format?: Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);
+  /** 필수 입력 열. 값이 비어 있으면 셀에 시각적 표시(테두리)가 붙는다. */
+  required?: boolean;
+  /**
+   * 셀 값 검증 콜백. `compute`와 같은 시그니처(`rowIndex`, 전체 `data`)를 받아
+   * 문제가 있으면 표시할 메시지 문자열을, 통과하면 `null`을 반환한다.
+   * (형제 컴포넌트 `URichTable.ColumnDef.validator`는 행을 객체로 받지만, 이
+   * 컴포넌트의 내부 데이터 모델 자체가 2D 배열이라 `compute`와 동일한 형태를
+   * 그대로 따른다 — 두 콜백을 나란히 쓰는 소비자가 배울 것은 "행 접근 방식이
+   * 하나"라는 점이다.)
+   */
+  validator?: (value: string, rowIndex: number, data: string[][]) => string | null;
 }
 
 interface CellPos {
@@ -329,6 +342,7 @@ export class USimpleSheet extends UElement {
     const isComputed = this._isColComputed(r, c);
     const hasIntlFormat = this.columns?.[c]?.format && typeof this.columns[c].format !== 'function';
     const isNumeric = hasIntlFormat || this._isNumeric(value);
+    const validationError = this._cellValidationError(r, c);
     const classes = [
       'cell',
       isSelected ? 'selected' : '',
@@ -337,6 +351,7 @@ export class USimpleSheet extends UElement {
       isColReadonly ? 'cell-readonly' : '',
       isComputed ? 'cell-computed' : '',
       isNumeric ? 'cell-numeric' : '',
+      validationError ? 'cell-invalid' : '',
     ].filter(Boolean).join(' ');
 
     const hasOptions = isEditing && this._getColOptions(r, c) !== null;
@@ -349,6 +364,7 @@ export class USimpleSheet extends UElement {
         class=${classes}
         data-row=${r}
         data-col=${c}
+        title=${ifDefined(validationError ?? undefined)}
       >
         ${isEditing ? html`
           <input
@@ -1143,6 +1159,31 @@ export class USimpleSheet extends UElement {
     }
   }
 
+  /**
+   * `required`/`validator` 검증 — `_isColComputed`와 같은 이유로 렌더마다 계산하고
+   * 별도 캐시 상태를 두지 않는다(사용자 콜백이라 예외 가능성도 같은 방식으로 가드).
+   * 통과하면 `null`, 실패하면 표시할 메시지를 반환한다.
+   */
+  private _cellValidationError(row: number, col: number): string | null {
+    const colDef = this.columns?.[col];
+    if (!colDef) return null;
+    const value = this._data[row]?.[col] ?? '';
+    if (colDef.required && value === '') {
+      return Locale.getValue('valueMissing');
+    }
+    if (colDef.validator) {
+      try {
+        return colDef.validator(value, row, this._data);
+      } catch {
+        // `_isColComputed`와 같은 방향의 선택 — 예외를 "통과"로 삼키면 소비자의
+        // 검증 콜백 버그가 조용히 숨는다. 렌더는 깨지면 안 되므로 잡되, 실패
+        // 쪽으로 fail-safe한다(무해 보다 가시성).
+        return 'Validator threw an error';
+      }
+    }
+    return null;
+  }
+
   private _isNumeric(value: string): boolean {
     if (!value || !value.trim()) return false;
     return !isNaN(Number(value.replace(/,/g, '')));
@@ -1272,6 +1313,24 @@ export class USimpleSheet extends UElement {
       focus: { row: this._rowCount - 1, col: this._colCount - 1 },
     };
     this.requestUpdate();
+  }
+
+  /**
+   * 현재 데이터 전체를 `required`/`validator`로 검사해 실패한 셀 목록을 반환한다.
+   * (형제 컴포넌트 `URichTable`은 편집 커밋 시점에만 내부 상태로 검증하고 공개
+   * 조회 수단이 없다 — `USimpleSheet`는 붙여넣기·채우기로 여러 셀이 한 번에
+   * 바뀌므로 "지금 시트 전체가 유효한가"를 한 번에 물을 수 있는 공개 메서드가
+   * 필요하다.)
+   */
+  getValidationErrors(): { row: number; col: number; message: string }[] {
+    const errors: { row: number; col: number; message: string }[] = [];
+    for (let r = 0; r < this._data.length; r++) {
+      for (let c = 0; c < (this._data[r]?.length ?? 0); c++) {
+        const message = this._cellValidationError(r, c);
+        if (message) errors.push({ row: r, col: c, message });
+      }
+    }
+    return errors;
   }
 
   /** Undo 가능 여부 */
