@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.22.2] - 2026-09-02
+
+### Fixed
+
+- **`docs/UDataView.md` referenced a `Column` type that doesn't exist** — the
+  actually-exported type is `DataColumn` (`UDataView.ts`). The field list
+  itself was accurate; only the name was wrong, so a consumer following the
+  doc's `import type { Column } from '@iyulab/data-components'` pattern
+  would get a "no exported member" error. Fixed in both the property table
+  and the type reference heading.
+
 ## [0.22.1] - 2026-09-01
 
 ### Fixed
