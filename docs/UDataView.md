@@ -25,16 +25,16 @@ import '@iyulab/data-components';
 |------|------|--------|------|
 | `items` | `any[]` | `[]` | 표시할 데이터 배열 |
 | `mode` | `'grid' \| 'list' \| 'table'` | `'grid'` | 뷰 모드 |
-| `columns` | `Column[]` | `undefined` | 컬럼 정의. 미설정 시 첫 번째 아이템의 키로 자동 감지 |
+| `columns` | `DataColumn[]` | `undefined` | 컬럼 정의. 미설정 시 첫 번째 아이템의 키로 자동 감지 |
 | `gridMinWidth` | `string` | `'200px'` | Grid 모드 아이템 최소 너비 |
 | `gap` | `string` | `'1rem'` | 아이템 간격 |
 | `renderCard` | `(item, index) => TemplateResult` | `undefined` | 카드 커스텀 렌더 함수 |
 | `renderCell` | `(item, column, index) => TemplateResult \| string` | `undefined` | 테이블 셀 커스텀 렌더 함수 |
 
-## Column 타입
+## DataColumn 타입
 
 ```typescript
-interface Column {
+interface DataColumn {
   key:     string;   // 데이터 객체의 키
   label?:  string;   // 헤더 표시 텍스트 (미설정 시 key를 camelCase → Title Case 변환)
   width?:  string;   // 열 너비 (CSS 값, 예: '120px', '20%')
