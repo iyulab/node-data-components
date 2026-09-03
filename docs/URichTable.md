@@ -29,6 +29,21 @@ table.addEventListener('sort-change', (e) => {
 `totalCount`는 **전체 건수**입니다(현재 페이지 길이가 아닙니다). 이 값이 `0`이면
 페이지네이션 영역이 렌더되지 않습니다.
 
+⚠**가상 스크롤이 없습니다 — `data`에 넣은 행 수만큼 그대로 `<tr>`을 만듭니다.**
+이미 전체 데이터를 메모리에 갖고 있어도 `data`에는 한 페이지 분량만 넣고 나머지는
+클라이언트에서 직접 자르세요:
+
+```typescript
+table.data = allRows.slice((page - 1) * pageSize, page * pageSize);
+table.totalCount = allRows.length;
+```
+
+수만 행을 그대로 `data`에 넣으면 그만큼의 `<tr>`을 한 번에 만드는 동안 브라우저 탭이
+멈춥니다. 페이지 전환 없이 수만~수십만 행을 스크롤로 훑어보는 화면이 필요하다면 이
+컴포넌트가 아니라 **`@iyulab/flex-table`**을 쓰세요 — 가상 스크롤로 10만 행 이상을
+지원합니다. `URichTable`은 중소 규모 CRUD 목록·상세 화면을 대상으로 합니다([README
+비교](../README.md) 참조).
+
 ### 2. 각 행에 `_id`를 주세요
 
 선택·확장·행 오류 상태가 전부 `_id`로 추적됩니다.

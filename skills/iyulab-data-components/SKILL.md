@@ -22,7 +22,7 @@ npm install @iyulab/data-components
 
 | Tag | Use it when | Reference |
 |---|---|---|
-| `u-rich-table` | The rows come from a **server** — paging, sorting and filtering are the app's job, and you need selection, inline editing or expandable detail rows | [rich-table.md](references/components/rich-table.md) |
+| `u-rich-table` | The rows come from a **server** — paging, sorting and filtering are the app's job, and you need selection, inline editing or expandable detail rows. Small-to-medium result sets only — it doesn't virtualize, so it isn't for rendering tens of thousands of rows at once (use `@iyulab/flex-table` for that scale) | [rich-table.md](references/components/rich-table.md) |
 | `u-simple-sheet` | The data is a **free-form grid** of cells the user types into, spreadsheet-style (fill handle, ranges, clipboard) | [simple-sheet.md](references/components/simple-sheet.md) |
 | `u-data-view` | You are **displaying** records and want to switch between grid / list / table layouts without rebuilding markup | [data-view.md](references/components/data-view.md) |
 | `u-record-picker` | The user needs to **pick one record** from a remote-searched list — an inline typeahead dropdown or a modal lookup dialog, sharing one `search` callback | [record-picker.md](references/components/record-picker.md) |

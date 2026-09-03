@@ -57,6 +57,21 @@ table.addEventListener('filter-change', e => load({ filters: e.detail.filters })
 `totalCount` is what the pager counts — not `data.length`. Setting `data` alone
 produces a table that believes it holds every matching record.
 
+The component doesn't virtualize, either — it puts one `<tr>` in the DOM per
+entry in `data`. If you already hold the full result set in memory, slice it
+yourself before assigning `data`:
+
+```ts
+table.data = allRows.slice((page - 1) * pageSize, page * pageSize);
+table.totalCount = allRows.length;
+```
+
+Binding tens of thousands of rows straight to `data` renders that many `<tr>`s
+in one pass and freezes the tab while it does. If the screen actually needs to
+scroll through that many rows without paging clicks, `u-rich-table` is the
+wrong component — use `@iyulab/flex-table`, which virtualizes rendering for
+100,000+ rows.
+
 ## Sizing: give the host a height
 
 The component manages its own vertical layout. Constrain the host and the row
