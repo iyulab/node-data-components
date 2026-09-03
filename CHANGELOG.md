@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.22.3] - 2026-09-03
+
+### Docs
+
+- **`u-rich-table` didn't say it renders one `<tr>` per row with no
+  virtualization.** The README's component-selection table had this, but
+  neither the skill reference an agent opens for `u-rich-table` nor the
+  standalone docs page did — so an agent following only those two had no way
+  to know binding a large in-memory result set straight to `data` freezes the
+  tab, or that `@iyulab/flex-table` exists for that scale. Documented in
+  `docs/URichTable.md`, the skill reference, and the skill's component-picker
+  table, with a slice-yourself example.
+
 ## [0.22.2] - 2026-09-02
 
 ### Fixed
