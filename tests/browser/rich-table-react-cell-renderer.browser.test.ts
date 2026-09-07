@@ -1,8 +1,20 @@
 import { describe, it, afterEach, expect, vi } from 'vitest';
 import React, { act, useState, useEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { URichTableReact } from '../../src/react';
+import { URichTableReact, type ColumnDefReact } from '../../src/react';
 import type { URichTable } from '../../src/components/u-rich-table/URichTable';
+import type { ColumnDef } from '../../src/components/u-rich-table/types';
+
+/**
+ * 컴파일 시간 단언 — `wrapColumnsForReact` 는 `string`·`HTMLElement`·React 노드 셋을
+ * 모두 분기해 처리하므로 **vanilla `ColumnDef[]` 를 그대로 넘기는 것이 유효**해야 한다.
+ * 종전에는 `ColumnDefReact.render` 가 `ReactNode` 만 선언해 이 대입이 `TS2322` 로
+ * 막혔다 — 런타임은 되는데 타입이 거부하는 «선언 ≠ 동작» 이었고, 실제로 한 소비앱의
+ * CI 를 빨갛게 만들었다. 이 단언은 `tests/**` 가 `tsconfig.include` 에 있어
+ * `npm run typecheck`(= `build` 게이트)에서 돈다 — 브라우저 러너를 켜지 않아도 잰다.
+ */
+const _vanillaColumnsAreAcceptable: ColumnDefReact[] = [] as ColumnDef[];
+void _vanillaColumnsAreAcceptable;
 
 /**
  * docket `#155` — React 셀 렌더러 부재.

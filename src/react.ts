@@ -93,9 +93,15 @@ const BaseURichTableReact = createComponent({
  * `ColumnDef.render`(`URichTable`, `types.ts`)는 `string | HTMLElement`만 반환하는
  * 계약을 그대로 유지한다 — 이 타입은 **React 래퍼(`URichTableReact`)에서만** 쓰며,
  * `render`가 `ReactNode`도 반환할 수 있게 넓힌다.
+ *
+ * ⚠`HTMLElement`도 함께 선언하는 것은 «넓힘»이 아니라 **아래 `wrapColumnsForReact` 가
+ * 이미 하고 있는 일을 그대로 적는 것**이다 — 그 함수는 `string`·`HTMLElement`·React
+ * 노드 셋을 모두 분기해 처리한다. `ReactNode` 만 선언하면 vanilla 계약대로 쓴
+ * `ColumnDef[]`(예: Lit 화면과 React 화면이 컬럼 정의를 공유하는 경우)이 **런타임에는
+ * 동작하는데 타입에서 거부**된다.
  */
 export interface ColumnDefReact extends Omit<ColumnDef, 'render'> {
-  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
+  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode | HTMLElement;
 }
 
 interface ReactCellRoot { container: HTMLElement; root: Root; rowId: string }

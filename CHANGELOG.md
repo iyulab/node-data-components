@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.4] - 2026-09-07
+
+### Fixed
+
+- **`ColumnDefReact.render` rejected a return type the React wrapper already
+  accepts at runtime.** `URichTableReact` routes a cell renderer's result
+  through three branches — a string, an `HTMLElement`, or a React node — but
+  the type only declared `React.ReactNode`. A column set written against the
+  vanilla `ColumnDef` contract (the shape a Lit view and a React view share
+  when they reuse one column definition) therefore failed to compile with
+  `TS2322`, even though passing it worked. The declaration now names
+  `React.ReactNode | HTMLElement`, matching what the implementation does. A
+  compile-time assertion in the React cell-renderer suite keeps the two
+  aligned; it runs under `npm run typecheck`, so `npm run build` gates it.
+
 ## [0.22.3] - 2026-09-03
 
 ### Docs
