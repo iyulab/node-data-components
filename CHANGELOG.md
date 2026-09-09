@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.23.0] - 2026-09-10
+
+### Changed
+
+- **`@iyulab/components` moved from `dependencies` to `peerDependencies`.** It owns
+  process-global state — the custom element registry and module-level singletons — and must
+  resolve to a single copy; two in one install tree split that state silently. Consumers
+  already installing `@iyulab/components` are unaffected.
+
+### Fixed
+
+- **Two pointer targets in the rich table were below the 24×24 CSS px minimum** (WCAG 2.2
+  SC 2.5.8): the toolbar button measured 77×22 and the row-selection checkboxes 13×13. A native
+  checkbox cannot be resized without the browser scaling its check glyph too, so each is now
+  wrapped in a label that carries the floor. What is visible is unchanged.
+
 ## [0.22.4] - 2026-09-07
 
 ### Fixed
