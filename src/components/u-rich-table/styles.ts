@@ -90,6 +90,13 @@ export const richTableStyles = css`
     border-radius: 4px;
     font-size: 12px;
     cursor: pointer;
+    /* WCAG 2.2 SC 2.5.8 — 실측 77x22 라 높이가 2px 모자랐다. 배경을 가진 «보이는» 버튼이라
+       히트 영역만 넓히는 처방이 성립하지 않는다 ⇒ 버튼 자체를 하한까지 올린다(글자 크기·
+       좌우 여백은 그대로). inline-flex 인 이유는 버튼의 세로 중앙 정렬이 브라우저마다
+       갈리기 때문이다. */
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 24px;
     /* 예외 — "색 배경 위의 글자" 역할 토큰이 없다. --u-txt-color-inverse 는
        다크에서 neutral-100(#121212) 이라 파랑/초록 버튼 위에서 읽히지 않는다.
        버튼 배경은 두 테마 모두 유채색이므로 흰 글자가 맞다. */
@@ -209,6 +216,17 @@ export const richTableStyles = css`
   .checkbox-cell {
     width: 40px;
     text-align: center;
+  }
+
+  /* 🔴포인터 타깃은 13x13 네이티브 입력이 아니라 «이 라벨»이다(WCAG 2.2 SC 2.5.8).
+     라벨을 누르면 네이티브가 토글하므로 보이는 체크 글리프는 그대로다. */
+  .checkbox-hit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    cursor: pointer;
   }
 
   .expand-cell {

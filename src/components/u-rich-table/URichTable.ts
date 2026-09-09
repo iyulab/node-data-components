@@ -193,10 +193,12 @@ export class URichTable extends LitElement {
       <div class="toolbar">
         ${this.selectable ? html`
           <div class="selection-info">
-            <input type="checkbox"
-              .checked=${this.data.length > 0 && onPage === this.data.length}
-              .indeterminate=${onPage > 0 && onPage < this.data.length}
-              @change=${this._onSelectAll} />
+            <label class="checkbox-hit">
+              <input type="checkbox"
+                .checked=${this.data.length > 0 && onPage === this.data.length}
+                .indeterminate=${onPage > 0 && onPage < this.data.length}
+                @change=${this._onSelectAll} />
+            </label>
             ${total > 0 ? html`<span>${crossesPages
               ? messages.text('selectedAcrossPages', { count: total, onPage })
               : messages.text('selected', { count: total })}</span>` : ''}
@@ -276,9 +278,15 @@ export class URichTable extends LitElement {
         <tr class="${isSelected ? 'selected' : ''} ${hasError ? 'error' : ''} ${this.editingCell?.rowIndex === rowIdx ? 'editing' : ''}">
           ${this.selectable ? html`
             <td class="checkbox-cell">
-              <input type="checkbox" .checked=${isSelected}
-                @change=${() => this._onRowSelect(rowId)}
-                @click=${(e: MouseEvent) => e.shiftKey && this._onShiftSelect(rowIdx)} />
+              <!-- ⚠라벨은 «장식»이 아니라 포인터 타깃이다 — 네이티브 체크박스는 13x13 이라
+                   WCAG 2.2 SC 2.5.8 의 24px 하한에 못 미치는데, 입력 자체에 치수를 주면
+                   브라우저가 체크 글리프를 함께 키워 시각이 바뀐다. 라벨을 누르면 네이티브가
+                   토글해 주므로 «보이는 것은 그대로, 잡히는 영역만 24px» 이 된다. -->
+              <label class="checkbox-hit">
+                <input type="checkbox" .checked=${isSelected}
+                  @change=${() => this._onRowSelect(rowId)}
+                  @click=${(e: MouseEvent) => e.shiftKey && this._onShiftSelect(rowIdx)} />
+              </label>
             </td>
           ` : ''}
           ${this.expandable ? html`
