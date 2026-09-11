@@ -8,7 +8,9 @@ import '@iyulab/data-components/dist/components/u-record-picker/URecordPicker.js
 
 Form control that picks one record from a remote-searched list. Typing filters an inline
 dropdown; Enter (with nothing highlighted) or the trailing find button opens a modal lookup
-dialog backed by [`u-rich-table`](./rich-table.md). Form-associated.
+dialog backed by [`u-rich-table`](./rich-table.md). Form-associated. Inside a `<form>`, Enter in
+the field looks up or picks — it does not submit the form (unlike `u-input`, where Enter submits
+as in a native text field); submit with the form's submit button.
 
 ```html
 <u-record-picker label="Owner" placeholder="Search people…" clearable></u-record-picker>
