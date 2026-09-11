@@ -82,6 +82,28 @@ export class URecordPicker extends UFormControlElement<string> {
     return this._selectedItem;
   }
 
+  /**
+   * 지우기 버튼. `reset()` 은 폼 리셋 경로라 이벤트를 내지 않으므로, 사용자 동작인 여기서는
+   * 선택을 확정하는 경로와 같은 `change` 를 낸다. 형태는 `u-input` 의 지우기 버튼을 따른다.
+   */
+  private handleClearClick = (e: Event): void => {
+    e.stopImmediatePropagation();
+    const hadValue = !!this.value;
+    window.clearTimeout(this.inlineDebounceTimer);
+    this.items = [];
+    this.popoverEl?.hide();
+    this.reset();
+    if (hadValue) this.emitChange();
+    // 지우면 이 버튼이 숨는다 — 포커스를 입력칸으로 옮기지 않으면 문서 맨 앞으로 떨어진다.
+    this.inputEl?.focus();
+  };
+
+  private handleClearKeydown = (e: KeyboardEvent): void => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    this.handleClearClick(e);
+  };
+
   render() {
     return html`
       <u-field part="field"
@@ -102,9 +124,14 @@ export class URecordPicker extends UFormControlElement<string> {
             @input=${this.handleInlineInput}
             @keydown=${this.handleInlineKeydown}
           />
-          <u-icon class="suffix-item"
+          <u-icon class="suffix-item clear-btn"
             ?hidden=${!this.clearable || !this.value || this.disabled || this.readonly}
+            role="button"
+            tabindex="0"
+            aria-label=${Locale.getValue('clear')}
             lib="internal" name="x"
+            @click=${this.handleClearClick}
+            @keydown=${this.handleClearKeydown}
           ></u-icon>
           <u-button class="suffix-item find-btn" variant="ghost"
             ?disabled=${this.disabled}

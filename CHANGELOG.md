@@ -11,6 +11,13 @@
 
 ### Fixed
 
+- **The record picker's clear button now clears.** With `clearable` set and a value selected,
+  the "x" was drawn but had no click handler, no button role and no accessible name, so neither
+  a pointer nor a keyboard could use it. It now clears the selection on click, Enter or Space,
+  emits `change` the same way the other selection paths do, and returns focus to the input. Its
+  name comes from the shared `clear` message in `@iyulab/components`, so it is localised with
+  the other controls.
+
 - **Column headers, row numbers, empty-state text and read-only cells now meet WCAG AA 4.5:1
   in the light theme.** They are drawn with `--u-txt-color-weak` over a raised header surface,
   where the previous value measured 4.41:1 (row numbers) and 4.23:1 (sheet column headers). The
