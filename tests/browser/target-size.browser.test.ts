@@ -114,6 +114,16 @@ const INLINE_PROSE = new Set<string>([]);
 
 interface Fixture {
   html: string;
+  /**
+   * 🔴**상태 이름** — 한 태그가 «열린 상태에서만 렌더되는 타깃» 을 가지면 상태마다 픽스처를 둔다
+   * (`FIXTURES` 값이 배열). `components`·`chat-components` 게이트와 같은 형태다(§D-56·57).
+   */
+  state?: string;
+  /**
+   * 재기 전에 **사용자 경로로** 상태를 연다(더블클릭·입력 등). 여는 데 실패하면 **던진다** —
+   * 닫힌 채 숨은 타깃을 재고 초록이 되는 것이 이 부류의 조용한 미탐이다.
+   */
+  prepare?: (host: Element) => Promise<void>;
   /** 이 픽스처 안의 «타깃»들. 생략하면 태그 자신. */
   targets?: (tag: string) => Element[];
   /**
@@ -125,8 +135,8 @@ interface Fixture {
   settle?: number;
 }
 
-/** 실제로 재는 것 — 대표 픽스처와 그 안의 타깃. */
-const FIXTURES: Record<string, Fixture> = {
+/** 실제로 재는 것 — 대표 픽스처와 그 안의 타깃. 상태가 여럿이면 배열. */
+const FIXTURES: Record<string, Fixture | Fixture[]> = {
   'u-rich-table': {
     // ⚠`addable`·`selectable` 을 켜야 «추가» 버튼과 선택 체크박스가 렌더된다 — 끄면 그
     //   타깃들이 아예 없고, 그것을 «통과»로 읽으면 미탐이다(cycle-485~486 의 함정).
@@ -143,18 +153,45 @@ const FIXTURES: Record<string, Fixture> = {
     },
     settle: 200,
   },
-  'u-simple-sheet': {
-    // 시트의 셀·헤더는 서로 **붙어 있어** 크기로만 재면 정당한 격자에 발화한다 ⇒ 간격
-    // 예외를 켠다(그 예외가 실제로 일하는 자리다 — cycle-496 이 세운 기준).
-    html: `<u-simple-sheet style="width:420px" rows="3"
-      data='[["1","2"],["3","4"]]'></u-simple-sheet>`,
-    targets: () => {
-      const sheet = document.querySelector('u-simple-sheet')!;
-      return [...inShadow(sheet, 'th'), ...inShadow(sheet, 'td')];
+  'u-simple-sheet': [
+    {
+      state: '기본',
+      // 시트의 셀·헤더는 서로 **붙어 있어** 크기로만 재면 정당한 격자에 발화한다 ⇒ 간격
+      // 예외를 켠다(그 예외가 실제로 일하는 자리다 — cycle-496 이 세운 기준).
+      html: `<u-simple-sheet style="width:420px" rows="3"
+        data='[["1","2"],["3","4"]]'></u-simple-sheet>`,
+      targets: () => {
+        const sheet = document.querySelector('u-simple-sheet')!;
+        return [...inShadow(sheet, 'th'), ...inShadow(sheet, 'td')];
+      },
+      spacingIsOurs: true,
+      settle: 200,
     },
-    spacingIsOurs: true,
-    settle: 200,
-  },
+    {
+      state: '드롭다운',
+      // `options` 가 있는 열의 셀을 편집(더블클릭)하면 셀 아래에 선택 목록(`.dropdown-item` — 자체 `mousedown`)이 뜬다.
+      // ⚠편집 시작 값으로 옵션을 **거른다**(`_startEdit` → `_filterOptions`) — 셀이 비어 있어야 옵션 전부가 보인다.
+      // ⚠`columns` 는 속성이 아니라 **프로퍼티**로 준다 — 함수형 `options` 도 받는 자리라 JSON 속성에 기대지 않는다.
+      // 항목은 편집 중에만 렌더된다 ⇒ «항목이 나타날 때까지» 가 열림 신호다 — 안 나타나면 던진다.
+      // 목록은 이 컴포넌트가 배치하지만 항목끼리는 붙어 있지 않다 — 크기로만 판정한다.
+      html: `<u-simple-sheet style="width:420px" rows="3"
+        data='[["","x"],["","y"]]'></u-simple-sheet>`,
+      prepare: async (host) => {
+        const sheet = host as HTMLElement & { columns: unknown; updateComplete: Promise<boolean> };
+        sheet.columns = [{ options: ['Apple', 'Banana', 'Cherry'] }, {}];
+        await sheet.updateComplete;
+        const cell = sheet.shadowRoot!.querySelector('td[data-row="0"][data-col="0"]') as HTMLElement | null;
+        if (!cell) throw new Error('편집할 셀(0,0)을 찾지 못했다');
+        cell.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, composed: true }));
+        for (let i = 0; i < 50 && inShadow(sheet, '.dropdown-item').length === 0; i++) {
+          await new Promise((r) => setTimeout(r, 20));
+        }
+        if (inShadow(sheet, '.dropdown-item').length === 0) throw new Error('셀 편집 드롭다운이 열리지 않았다 — 닫힌 채 재면 미탐이다');
+      },
+      targets: () => inShadow(document.querySelector('u-simple-sheet')!, '.dropdown-item'),
+      settle: 200,
+    },
+  ],
 };
 
 async function mount(html: string, settle = 0): Promise<void> {
@@ -242,13 +279,15 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
 
     it('📌커버리지를 보고한다 — 「미판정」은 통과가 아니다', () => {
       const unjudged = [...NEEDS_FIXTURE].sort();
+      // 🔴상태 수를 함께 센다 — 태그만 세면 한 태그의 열린 상태를 빠뜨려도 이 줄이 변하지 않는다.
+      const states = Object.values(FIXTURES).flat().length;
       // ⚠이 단언은 «미판정이 늘지 않았는가»를 지킨다. 픽스처를 쓰면 이 수가 줄고 그때 이
       //   줄을 함께 고치는 것이 그 작업의 완료 신호다. 숫자를 문자열로 고정하는 이유는
       //   `components` 쪽과 같다 — 분류를 바꾸면 반드시 여기도 손대게 만든다.
       expect(
-        `판정 ${Object.keys(FIXTURES).length} · 미판정 ${unjudged.length}(${unjudged.join(' ')})` +
+        `판정 ${Object.keys(FIXTURES).length}(${states}상태) · 미판정 ${unjudged.length}(${unjudged.join(' ')})` +
         ` · 대상아님 ${NOT_A_TARGET.size} · 인라인예외 ${INLINE_PROSE.size}`,
-      ).toBe('판정 2 · 미판정 0() · 대상아님 2 · 인라인예외 0');
+      ).toBe('판정 2(3상태) · 미판정 0() · 대상아님 2 · 인라인예외 0');
     });
 
     it('규칙 표에 «등록되지 않은» 이름이 남아 있지 않다 (표가 낡지 않게)', () => {
@@ -260,7 +299,9 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
   });
 
   describe('실측 — 픽스처를 가진 모든 타깃', () => {
-    for (const [tag, fixture] of Object.entries(FIXTURES)) {
+    const CASES = Object.entries(FIXTURES).flatMap(([tag, entry]) =>
+      (Array.isArray(entry) ? entry : [entry]).map((fixture) => ({ tag, fixture })));
+    for (const { tag, fixture } of CASES) {
       const pinned = UNDERSIZED_PINS.has(tag);
       const inline = INLINE_PROSE.has(tag);
       const label = pinned
@@ -268,8 +309,10 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
         : inline
           ? '「인라인」 예외 — 크기 하한을 적용하지 않되 실측은 보고한다'
           : 'SC 2.5.8 을 만족한다';
-      it(`${tag}: ${label}`, async () => {
+      const name = `${tag}${fixture.state ? ` [${fixture.state}]` : ''}`;
+      it(`${name}: ${label}`, async () => {
         await mount(fixture.html, fixture.settle);
+        if (fixture.prepare) await fixture.prepare(document.querySelector(tag)!);
         const targets = (fixture.targets ? fixture.targets(tag) : [document.querySelector(tag)!])
           .map(resolveTarget)
           .map(measure);
