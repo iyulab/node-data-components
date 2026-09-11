@@ -164,6 +164,7 @@ export class URecordPicker extends UFormControlElement<string> {
         <slot name="header"></slot>
         <div class="dialog-search">
           <input type="text" .value=${live(this.dialogQuery)}
+            aria-label=${messages.text('pickerSearch')}
             @input=${this.handleDialogSearchInput}
           />
         </div>

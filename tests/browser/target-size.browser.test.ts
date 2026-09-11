@@ -79,10 +79,11 @@ function resolveTarget(el: Element): Element {
  */
 const NOT_A_TARGET = new Set<string>([
   // 🔴**타깃이 «형제 컴포넌트»인 것 — 그 크기는 `@iyulab/components` 의 계약이다.**
-  //   `u-data-view` 는 모드 전환 `u-button` 들을, `u-record-picker` 는 찾기·확인·취소
-  //   `u-button` 을 «놓을» 뿐 치수를 정하지 않는다. 여기서 또 재면 판정이 두 곳으로 갈려
-  //   드리프트하고, 우리가 고칠 수 없는 미달이 이 스위트를 빨갛게 만든다.
-  'u-data-view', 'u-record-picker',
+  //   `u-data-view` 는 모드 전환 `u-button` 들을 «놓을» 뿐 치수를 정하지 않는다. 여기서 또 재면
+  //   판정이 두 곳으로 갈려 드리프트하고, 우리가 고칠 수 없는 미달이 이 스위트를 빨갛게 만든다.
+  //   🔴(cycle-549 정정) `u-record-picker` 는 여기 있었으나 **틀렸다** — 입력칸·지우기(cycle-537 이 역할·
+  //   핸들러를 준 우리 타깃)·대화상자 검색칸을 스스로 가진다. `FIXTURES` 로 옮겼다.
+  'u-data-view',
 ]);
 
 /**
@@ -192,6 +193,41 @@ const FIXTURES: Record<string, Fixture | Fixture[]> = {
       settle: 200,
     },
   ],
+  'u-record-picker': [
+    {
+      state: '값 있음',
+      // 우리 타깃: 입력칸(`.main-input`)과 지우기(`.clear-btn` — 이 컴포넌트가 역할·핸들러·치수를 준다, cycle-537).
+      // 찾기(`.find-btn`)와 제안 항목(`u-option`)은 형제 컴포넌트라 재지 않는다. 지우기는 값이 있을 때만 보인다.
+      html: '<u-record-picker clearable style="width:260px"></u-record-picker>',
+      prepare: async (host) => {
+        const p = host as HTMLElement & { search: unknown; columns: unknown; value?: string; updateComplete: Promise<unknown> };
+        p.search = async () => [{ id: '1', label: 'Acme Corp' }];
+        p.columns = [{ key: 'label', label: 'Name' }];
+        p.value = '1';
+        await p.updateComplete;
+        const clear = p.shadowRoot!.querySelector('.clear-btn') as HTMLElement | null;
+        if (!clear || clear.hidden) throw new Error('값이 있는데 지우기 버튼이 보이지 않는다 — 없는 타깃을 통과로 세면 미탐이다');
+      },
+      targets: () => inShadow(document.querySelector('u-record-picker')!, '.main-input, .clear-btn'),
+    },
+    {
+      state: '대화상자',
+      // 조회 대화상자의 검색칸(`.dialog-search input`)은 우리 타깃이다. 행은 `u-rich-table` 의, 하단 버튼은 형제 `u-button` 의 계약이다.
+      html: '<u-record-picker style="width:260px"></u-record-picker>',
+      prepare: async (host) => {
+        const p = host as HTMLElement & { search: unknown; columns: unknown; updateComplete: Promise<unknown> };
+        p.search = async () => [{ id: '1', label: 'Acme Corp' }];
+        p.columns = [{ key: 'label', label: 'Name' }];
+        await p.updateComplete;
+        (p.shadowRoot!.querySelector('.find-btn') as HTMLElement).click();
+        const dialog = p.shadowRoot!.querySelector('u-dialog')!;
+        for (let i = 0; i < 50 && !dialog.hasAttribute('open'); i++) await new Promise((r) => setTimeout(r, 20));
+        if (!dialog.hasAttribute('open')) throw new Error('조회 대화상자가 열리지 않았다');
+      },
+      targets: () => inShadow(document.querySelector('u-record-picker')!, '.dialog-search input'),
+      settle: 100,
+    },
+  ],
 };
 
 async function mount(html: string, settle = 0): Promise<void> {
@@ -287,7 +323,7 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
       expect(
         `판정 ${Object.keys(FIXTURES).length}(${states}상태) · 미판정 ${unjudged.length}(${unjudged.join(' ')})` +
         ` · 대상아님 ${NOT_A_TARGET.size} · 인라인예외 ${INLINE_PROSE.size}`,
-      ).toBe('판정 2(3상태) · 미판정 0() · 대상아님 2 · 인라인예외 0');
+      ).toBe('판정 3(5상태) · 미판정 0() · 대상아님 1 · 인라인예외 0');
     });
 
     it('규칙 표에 «등록되지 않은» 이름이 남아 있지 않다 (표가 낡지 않게)', () => {

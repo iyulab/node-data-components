@@ -11,6 +11,17 @@
 
 ### Fixed
 
+- **The record picker's lookup dialog search field had no accessible name** — no label,
+  placeholder or `aria-label` — so assistive technology announced an unnamed text field
+  (WCAG 4.1.2). It is now named by the new message `pickerSearch` ("Search"). The message is
+  this package's own rather than `@iyulab/components`' newer `search`, so the name holds on every
+  `@iyulab/components` release the peer range allows.
+
+- **The record picker's clear button was a 16×16 pointer target** (WCAG 2.2 SC 2.5.8). It now
+  takes the pointer across 24×24 while the glyph stays 16×16; the extra area comes from the gaps
+  on either side, so it meets the text field and the find button without covering them, and
+  nothing visible moves.
+
 - **The record picker's clear button now clears.** With `clearable` set and a value selected,
   the "x" was drawn but had no click handler, no button role and no accessible name, so neither
   a pointer nor a keyboard could use it. It now clears the selection on click, Enter or Space,

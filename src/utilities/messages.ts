@@ -26,7 +26,7 @@ import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 export type DataMessageKey =
   | 'empty' | 'loading' | 'filterPlaceholder' | 'filterAll' | 'addRow' | 'pageInfo'
   | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage'
-  | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError'
+  | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError' | 'pickerSearch'
   | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
@@ -47,6 +47,7 @@ messages.register('en', {
   pickerCancel: 'Cancel',
   pickerConfirm: 'Confirm',
   pickerSearchError: 'Search failed. Try again.',
+  pickerSearch: 'Search',
   viewGrid: 'Grid',
   viewList: 'List',
   viewTable: 'Table',
@@ -69,6 +70,7 @@ messages.register('ko', {
   pickerCancel: '취소',
   pickerConfirm: '확인',
   pickerSearchError: '검색에 실패했습니다. 다시 시도해 주세요.',
+  pickerSearch: '검색',
   viewGrid: '그리드',
   viewList: '목록',
   viewTable: '표',

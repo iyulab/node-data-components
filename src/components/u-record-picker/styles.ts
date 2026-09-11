@@ -26,6 +26,16 @@ export const styles = css`
     flex: none;
   }
 
+  /* The clear icon is a 1em glyph; the box that takes the pointer is 24x24 (WCAG 2.2 SC 2.5.8).
+     content-box keeps the glyph at 1em whatever the icon's own box-sizing; the negative margin
+     gives back exactly the container's 0.25rem gap on each side, so the box meets the text field
+     and the find button without covering either, and nothing visible moves. */
+  .clear-btn {
+    box-sizing: content-box;
+    padding: 0.25rem;
+    margin: -0.25rem;
+  }
+
   u-popover {
     display: block;
     max-height: var(--record-picker-popover-max-height, 50vh);
