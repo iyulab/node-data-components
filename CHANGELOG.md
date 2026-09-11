@@ -11,6 +11,14 @@
 
 ### Fixed
 
+- **Column headers, row numbers, empty-state text and read-only cells now meet WCAG AA 4.5:1
+  in the light theme.** They are drawn with `--u-txt-color-weak` over a raised header surface,
+  where the previous value measured 4.41:1 (row numbers) and 4.23:1 (sheet column headers). The
+  fix is in the shared token (`@iyulab/components` 1.40.0), so these follow it without any
+  change on your side; the fallback literals used when that stylesheet is absent are updated to
+  match. To tune them for one table only, set `--dc-header-color`, `--dc-empty-color` or
+  `--dc-readonly-color` on the element itself (a `:root` declaration does not reach inside).
+
 - **Two pointer targets in the rich table were below the 24×24 CSS px minimum** (WCAG 2.2
   SC 2.5.8): the toolbar button measured 77×22 and the row-selection checkboxes 13×13. A native
   checkbox cannot be resized without the browser scaling its check glyph too, so each is now

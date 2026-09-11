@@ -34,9 +34,9 @@ const baseStyles = css`
        ⚠**이 컴포넌트가 «읽는» 단만 선언한다.** 다섯을 어디서나 선언하면 소비자가
        바꿔도 아무 일이 없는 자리가 생긴다 — 이 리포가 반복해서 본 «토큰 존재 ≠ 배선»
        이다. 어느 단이 어디에 있는지는 README 의 표가 정본이다. */
-    --dc-muted-color:    var(--u-txt-color-weak, #757575);   /* 보조 텍스트 · 라벨 */
-    --dc-header-color:   var(--u-txt-color-weak, #757575);   /* 열 머리 · 행 머리 */
-    --dc-empty-color:    var(--u-txt-color-weak, #757575);   /* 빈 상태 안내문 */
+    --dc-muted-color:    var(--u-txt-color-weak, #616161);   /* 보조 텍스트 · 라벨 */
+    --dc-header-color:   var(--u-txt-color-weak, #616161);   /* 열 머리 · 행 머리 */
+    --dc-empty-color:    var(--u-txt-color-weak, #616161);   /* 빈 상태 안내문 */
     display: block;
     width: 100%;
   }

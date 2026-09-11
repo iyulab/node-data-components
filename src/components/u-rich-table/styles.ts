@@ -14,9 +14,9 @@ export const richTableStyles = css`
        ⚠**다크 블록에 다시 선언하지 않는다.** --u-txt-color-weak 자체가 테마 변형이므로
        시트가 있으면 따라온다. 이 패키지의 다크 블록이 «비어 있는 것»이 목표 상태다.
        ⚠**폴백 리터럴은 라이트 시트 값의 복제다**(루트 tokens:sync 가 대조한다). */
-    --dc-muted-color: var(--u-txt-color-weak, #757575);   /* 보조 텍스트 · 라벨 */
-    --dc-icon-color:  var(--u-txt-color-weak, #757575);   /* 정렬 표시 · 확장 · 행 메뉴 */
-    --dc-empty-color: var(--u-txt-color-weak, #757575);   /* 빈 상태 안내문 */
+    --dc-muted-color: var(--u-txt-color-weak, #616161);   /* 보조 텍스트 · 라벨 */
+    --dc-icon-color:  var(--u-txt-color-weak, #616161);   /* 정렬 표시 · 확장 · 행 메뉴 */
+    --dc-empty-color: var(--u-txt-color-weak, #616161);   /* 빈 상태 안내문 */
     /* ── 소비자 조절점 — 본문 타이포 ──
        ★USimpleSheet와 같은 이름 --dc-font-size 를 그대로 쓴다 — 이 패키지의 표 컴포넌트가
        공유하는 관용(위 색 축과 같은 이유: --dc-muted-color 도 세 컴포넌트가 공유한다).
