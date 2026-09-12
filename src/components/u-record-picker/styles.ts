@@ -14,6 +14,10 @@ export const styles = css`
   .container input {
     flex: 1;
     min-width: 0;
+    /* The text field is a pointer target (WCAG 2.2 SC 2.5.8, 24x24). Its natural height is the
+       inherited font's line box, which is a font-metric value — 24px with Windows fonts, 20px
+       with the default Linux fonts — so the floor is declared rather than assumed. */
+    min-block-size: 24px;
     border: none;
     outline: none;
     background: transparent;

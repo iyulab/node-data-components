@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.23.1] - 2026-09-12
+
+### Fixed
+
+- **`u-record-picker`'s text field could fall under the 24px pointer-target minimum.** Its height
+  came from the inherited font's line box — 24px with Windows fonts, 20px with the default Linux
+  fonts — so the WCAG 2.2 SC 2.5.8 floor held on one platform and not the other. The field now
+  declares `min-block-size: 24px`; on platforms where it already measured 24px nothing moves.
+
 ## [0.23.0] - 2026-09-10
 
 ### Changed
