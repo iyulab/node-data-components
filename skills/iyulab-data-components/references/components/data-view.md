@@ -42,6 +42,25 @@ view.renderCell = (item, column) => column.key === 'size' ? formatBytes(item.siz
 When the user needs to act on rows — selection, inline edit, server paging — use
 [`u-rich-table`](./rich-table.md).
 
+## Sizing
+
+Content-sized by default: leave the height off and the component grows with the items, and the
+page scrolls. Constrain the host and the **content area** is what scrolls — the toolbar keeps its
+position above it:
+
+```css
+u-data-view { height: calc(100vh - 280px); }
+```
+
+This holds in **all three modes**. `mode="table"` also scrolls horizontally when the columns are
+wider than the host.
+
+⚠ Because the content area is a scroll container, a card's hover lift and shadow are clipped at
+that container's edges — the cost of keeping the content reachable when a height is given.
+
+[`u-rich-table`](./rich-table.md) follows the same contract, so a layout transfers between them
+unchanged.
+
 ## Properties
 
 | Property | Type | Default | Reflect | Description |

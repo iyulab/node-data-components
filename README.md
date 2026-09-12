@@ -99,6 +99,16 @@ npx skills add ./node_modules/@iyulab/data-components/skills/iyulab-data-compone
 ></u-data-view>
 ```
 
+**크기 (`0.23.0~`)**: 기본은 **내용 크기**입니다 — 높이를 주지 않으면 항목 수에 따라 늘어나고 페이지가 스크롤됩니다.
+호스트에 높이를 주면 **콘텐츠 영역만** 스크롤하고 툴바는 자리를 지킵니다 — `grid`·`list`·`table` **세 모드 모두 동일**합니다.
+
+```css
+u-data-view { height: calc(100vh - 280px); }
+```
+
+⚠콘텐츠 영역이 스크롤 컨테이너이므로 카드의 호버 들림·그림자는 그 컨테이너 가장자리에서 잘립니다 — 높이를 준 경우 내용을 닿을 수 있게 유지하는 대가입니다.
+`u-rich-table` 도 같은 계약이라 레이아웃이 그대로 옮겨집니다.
+
 ## React
 
 `@lit/react` 기반 일급 래퍼를 `/react` 서브패스로 제공합니다. rich property(`data`, `columns` 등)를

@@ -75,8 +75,19 @@ const baseStyles = css`
     font-weight: 500;
   }
 
+  /* ── 세로 레이아웃 — 콘텐츠 영역만 스크롤한다 ──
+     🔴고정 높이를 준 소비자에게 «모드에 따라 다른 결과» 가 나오고 있었다(실측 · 호스트 300px · 40건):
+     table 은 올바르게 스크롤(넘침 0)인데 grid 는 2002px, list 는 2909px 가 호스트 밖으로 흘렀다.
+     기전: 세 컨테이너의 flex(0 1 auto)와 min-height(auto)는 동일하고 «계산된 overflow» 하나로 갈렸다 —
+     flex 아이템의 자동 최소 크기는 스크롤 컨테이너일 때만 0 으로 풀린다. table 이 맞았던 것은
+     가로 스크롤용 overflow-x: auto 가 계산상 세로까지 auto 로 만든 «우연» 이었다.
+     ⚠높이를 주지 않는 사용은 그대로다 — flex: 1 1 auto 는 제약이 없으면 내용 높이를 따르고
+     overflow: auto 는 넘치지 않으면 스크롤바를 만들지 않는다(형제 u-rich-table 이 같은 근거를 적어 둔다). */
   /* Grid Layout */
   .grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--min-width, 200px), 1fr));
     gap: var(--gap, 1rem);
@@ -84,6 +95,9 @@ const baseStyles = css`
 
   /* List Layout */
   .list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
     display: flex;
     flex-direction: column;
     gap: var(--gap, 1rem);
@@ -144,7 +158,9 @@ const baseStyles = css`
 
   /* Table */
   .table-wrapper {
-    overflow-x: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
     border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
   }

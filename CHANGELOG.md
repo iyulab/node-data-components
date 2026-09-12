@@ -11,6 +11,16 @@
 
 ### Fixed
 
+- **A fixed height on `u-data-view` now works in every mode.** Constraining the host is the
+  documented way to keep a toolbar and a scrolling content area in one screen, and it did work in
+  `mode="table"` — but in `grid` and `list` the cards and rows ran past the bottom of the component
+  instead of scrolling inside it, overlapping whatever followed on the page, because the component
+  does not clip. `grid` is the default mode, so the default use was the broken one. All three
+  content areas are now scroll regions: the toolbar keeps its position and the content scrolls under
+  it at any height. Leaving the height off is unchanged — the component is still content-sized with
+  no inner scrollbar. One visual consequence of the fix: a card's hover lift and its shadow are
+  clipped at the edges of the content area.
+
 - **The record picker's lookup dialog search field had no accessible name** — no label,
   placeholder or `aria-label` — so assistive technology announced an unnamed text field
   (WCAG 4.1.2). It is now named by the new message `pickerSearch` ("Search"). The message is
