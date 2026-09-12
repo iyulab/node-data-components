@@ -161,11 +161,35 @@ export class URichTable extends LitElement {
   }
 
   // --- Rendering ---
+
+  /**
+   * 선언된 열 폭을 **그대로 지킬 수 있는가** — `table-layout: fixed` 로 전환할 조건.
+   *
+   * 🔴**게이트가 필수이고 느슨하게 할 수 없다.** `fixed` 는 폭을 선언하지 않은 열을 **0 으로
+   * 만든다**(실측: 17열 중 8열만 선언한 표에서 나머지 8열이 사라졌다). 그래서 «전 열» 을 요구한다.
+   *
+   * ⚠**퍼센트는 제외한다.** 퍼센트는 컨테이너 기준이라 «합이 넘친다» 가 성립하지 않고,
+   * `fixed` 로 전환하면 표가 오히려 컨테이너 폭에 갇혀 가로 스크롤이 사라진다(실측).
+   * 절대 길이만 «합이 컨테이너를 넘으면 스크롤» 이라는 모델이 성립한다.
+   *
+   * ⚠**숫자만 준 값(`width: 150`)은 CSS 로 무효**라 여기서도 통과하지 못한다 — 인라인 style 이
+   * `width: 150` 이 되어 브라우저가 버린다. 단위를 요구하는 것이 곧 그 실수를 막는다.
+   *
+   * 계약은 `tests/browser/rich-table-column-width.browser.test.ts` 가 고정한다.
+   */
+  private get _fixedColumnWidths(): boolean {
+    const ABSOLUTE = /^\s*\d+(\.\d+)?(px|rem|em|ch|pt|pc|cm|mm|in|Q)\s*$/;
+    return (
+      this.columns.length > 0 &&
+      this.columns.every((c) => typeof c.width === 'string' && ABSOLUTE.test(c.width))
+    );
+  }
+
   render(): TemplateResult {
     return html`
       ${this._renderToolbar()}
       <div class="table-wrap">
-        <table>
+        <table class=${this._fixedColumnWidths ? 'fixed-cols' : ''}>
           ${this._renderHeader()}
           <tbody>
             ${this.filterable ? this._renderFilterRow() : ''}

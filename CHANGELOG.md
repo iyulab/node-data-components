@@ -11,6 +11,19 @@
 
 ### Fixed
 
+- **`u-rich-table` now honours declared column widths when every column declares one.** Widths went
+  into the header cells only, while the table itself sized columns from content — so with more
+  columns than fit, the declarations lost. Measured at 600px wide with 17 columns declared `120px`
+  each, they rendered at 71px: cells wrapped and right-aligned figures broke across lines. When
+  every column carries an absolute width the table now uses those widths exactly and the row area
+  scrolls sideways past the edge, with the toolbar, header row and pager staying where they are.
+  - The condition is deliberate rather than incidental. Honouring partial declarations would
+    collapse the undeclared columns to zero width, and percentage widths resolve against the
+    component, so "wider than the container" cannot arise for them — both keep the previous
+    behaviour. A width given as a bare number (`150`) has always been invalid CSS and still is;
+    it needs a unit.
+  - Tables that don't meet the condition, and tables whose widths already fit, are unchanged.
+
 - **A fixed height on `u-data-view` now works in every mode.** Constraining the host is the
   documented way to keep a toolbar and a scrolling content area in one screen, and it did work in
   `mode="table"` — but in `grid` and `list` the cards and rows ran past the bottom of the component

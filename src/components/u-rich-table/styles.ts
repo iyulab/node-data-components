@@ -113,6 +113,25 @@ export const richTableStyles = css`
     border-collapse: collapse;
   }
 
+  /* 🔴**선언한 열 폭을 지키는 모드** — 모든 열이 절대 길이로 폭을 선언했을 때만 켜진다
+     (판정은 URichTable 의 _fixedColumnWidths, 이유도 거기 적혀 있다).
+
+     기본 «auto» 모드에서 열 폭은 *모든 행의 내용*이 함께 정하므로 th 의 인라인 width 는
+     힌트로 강등된다 — 그리고 이 컴포넌트의 td 안에는 필터 행의 input/select(둘 다
+     width:100%)와 새 행의 input 이 함께 들어가 그 경쟁에 참여한다. 실측(600px · 17열 ·
+     각 120px 선언): 열이 71px 로 눌렸다.
+
+     ⚠**border-box 가 함께 있어야 한다.** fixed 만 켜면 th 의 padding 8px 두 쪽이 더해져
+     120px 선언이 136px 로 렌더된다 — 그러면 «선언한 폭을 지킨다» 가 여전히 거짓이다. */
+  table.fixed-cols {
+    table-layout: fixed;
+  }
+
+  table.fixed-cols thead th,
+  table.fixed-cols tbody td {
+    box-sizing: border-box;
+  }
+
   thead th {
     padding: 8px;
     background: var(--u-bg-color-raised, #FAFAFA);

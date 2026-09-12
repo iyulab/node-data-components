@@ -90,6 +90,32 @@ scrollbar, the page scrolls. Both are supported; pick per screen. What you
 should **not** do is wrap it in your own `overflow: auto` container, which puts
 the header and toolbar back inside the scrolling region.
 
+## Column widths
+
+Give **every** column an absolute width and each one is honoured exactly; when they add up to more
+than the component, the row area scrolls sideways and the toolbar, header and pager stay put:
+
+```ts
+columns = [
+  { key: 'id',     label: 'Order',   width: '120px' },
+  { key: 'status', label: 'Status',  width: '140px' },
+  { key: 'total',  label: 'Total',   width: '120px' },
+];
+```
+
+**It has to be every column, and the units have to be absolute** (`px`, `rem`, `em`, `ch`, …).
+That is not a style preference — it is what makes the guarantee possible:
+
+- Leave one column without a width and the table stays in its default sizing mode, where widths are
+  hints that compete with cell content. Measured at 600px wide with 17 columns declared `120px`
+  each, the columns render at **71px** in that mode — the declaration loses.
+- Percentages are resolved against the component, so "the widths add up to more than the container"
+  can never be true for them. They keep the default mode too.
+- A bare number (`width: 150`) is not valid CSS and is dropped by the browser.
+
+Nothing changes for tables that don't meet the condition, and nothing changes for a table whose
+declared widths already fit — there the columns share the leftover space as before.
+
 ## Selection across pages
 
 Two facts are deliberately separate, because in server paging they differ:
@@ -202,7 +228,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 |---|---|---|
 | `key` | `string` | Property read from the row object |
 | `label` | `string` | Header text |
-| `width` | `string` | CSS width |
+| `width` | `string` | CSS width, with a unit (`'120px'`, `'8rem'`). See [Column widths](#column-widths) for when it is honoured exactly. A bare number (`150`) is invalid CSS and is ignored |
 | `type` | `'text'\|'number'\|'date'\|'select'\|'badge'` | Cell renderer and editor |
 | `options` | `{ value, label }[]` | Choices for `type: 'select'` |
 | `badgeColors` | `Record<string, string>` | Value → color for `type: 'badge'` |
