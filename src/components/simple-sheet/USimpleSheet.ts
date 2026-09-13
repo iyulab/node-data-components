@@ -928,7 +928,7 @@ export class USimpleSheet extends UElement {
 
     // strict+options 컬럼은 옵션에 없는 값이 붙여넣기로 들어오면 해당 셀만
     // 건너뛴다(기존 값 유지) — 수동 편집에서 옵션에 없는 값을 입력하면 커밋이
-    // 거부되어 기존 값이 남는 것과 같은 시맨틱(docket #166, `_isValidCellValue`
+    // 거부되어 기존 값이 남는 것과 같은 시맨틱(`_isValidCellValue`
     // 참조). 어떤 셀이 건너뛰어졌는지는 `paste-rejected`로 알린다.
     const rejectedCells: Array<{ row: number; col: number }> = [];
     for (let ri = 0; ri < pasteRows.length; ri++) {
@@ -1043,7 +1043,7 @@ export class USimpleSheet extends UElement {
 
   /**
    * strict+options 컬럼의 셀 쓰기 검증 — 수동 편집(`_commitEdit`)과 붙여넣기
-   * (`_pasteFromText`) 양쪽이 같은 규칙을 따르게 하는 공용 관문(docket #166:
+   * (`_pasteFromText`) 양쪽이 같은 규칙을 따르게 하는 공용 관문(소비자 실측:
    * 붙여넣기가 이 검증을 우회해 "타이핑하면 막히고 붙여넣으면 그냥 들어가는"
    * 비대칭이 있었다). 빈 문자열은 strict 컬럼에서도 항상 허용(기존 계약 유지).
    */

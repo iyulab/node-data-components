@@ -64,7 +64,7 @@ const baseStyles = css`
     gap: 0.25rem;
   }
 
-  /* 선택된 레이아웃 버튼의 표기는 UButton 의 variant+color 가 맡는다(cycle-244).
+  /* 선택된 레이아웃 버튼의 표기는 UButton 의 variant+color 가 맡는다.
      종전의 u-button[active] 규칙은 배경만 바꾸면서 그 위 글자 대비가 3.45~3.68 이라고
      스스로 적고 있었다 — 컴포넌트의 색 계약을 우회하지 않고 그쪽에 위임한다.
      (주석 안 백틱 금지: css 태그드 템플릿을 그 자리에서 끝낸다) */

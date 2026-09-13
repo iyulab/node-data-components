@@ -89,7 +89,7 @@ const BaseURichTableReact = createComponent({
 });
 
 /**
- * React 셀 렌더러 — docket `#155`(요청자 제안대로 레이어 경계 유지). vanilla
+ * React 셀 렌더러 — 레이어 경계는 유지한다. vanilla
  * `ColumnDef.render`(`URichTable`, `types.ts`)는 `string | HTMLElement`만 반환하는
  * 계약을 그대로 유지한다 — 이 타입은 **React 래퍼(`URichTableReact`)에서만** 쓰며,
  * `render`가 `ReactNode`도 반환할 수 있게 넓힌다.
