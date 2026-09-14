@@ -179,6 +179,17 @@ import type { USimpleSheet } from '@iyulab/data-components';
 const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null 로 추론
 ```
 
+## Accessibility
+
+기준판은 **WCAG 2.2** 입니다. 아래는 이 패키지가 **테스트로 재서 보장하는 것**이고, 그 밖의
+성공 기준까지 포함한 전체 준수 선언이 아닙니다.
+
+| 성공 기준 | 보장 | 어디서 재는가 |
+|---|---|---|
+| SC 2.5.8 타깃 크기(최소) | 등록된 모든 컴포넌트의 포인터 타깃(정렬 헤더·선택 체크박스·셀 등 격자 안의 타깃 포함)이 24×24 CSS px 이상이거나 간격 예외(중심 간 24px)를 충족하고, 그 좌표에서 실제로 눌린다 | `tests/browser/target-size.browser.test.ts`(실제 크로미움) |
+
+명암비는 이 패키지가 쓰는 `@iyulab/components` 토큰을 따릅니다 — 그 패키지의 Accessibility 절을 참고하세요.
+
 ## Documentation
 
 - [USimpleSheet](./docs/USimpleSheet.md)
