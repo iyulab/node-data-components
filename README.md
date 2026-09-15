@@ -187,6 +187,7 @@ const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null �
 | 성공 기준 | 보장 | 어디서 재는가 |
 |---|---|---|
 | SC 2.5.8 타깃 크기(최소) | 등록된 모든 컴포넌트의 포인터 타깃(정렬 헤더·선택 체크박스·셀 등 격자 안의 타깃 포함)이 24×24 CSS px 이상이거나 간격 예외(중심 간 24px)를 충족하고, 그 좌표에서 실제로 눌린다 | `tests/browser/target-size.browser.test.ts`(실제 크로미움) |
+| SC 2.1.1 키보드(포인터 커서 검사) | 포인터 커서를 보이면서 상호작용 요소가 아닌 것을 게이트가 찾아낸다 — ⚠**아직 고치지 않은 것이 있다**: `u-rich-table` 정렬 헤더·행 메뉴, `u-simple-sheet` 행 번호·열 머리·모서리·셀 드롭다운 항목(게이트의 `POINTER_ORPHAN_PINS`) | 같은 파일 |
 
 명암비는 이 패키지가 쓰는 `@iyulab/components` 토큰을 따릅니다 — 그 패키지의 Accessibility 절을 참고하세요.
 
