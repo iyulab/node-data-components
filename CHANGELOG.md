@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.24.0] - 2026-09-15
+
+### Added
+
+- **`u-simple-sheet`: Shift+Space selects whole rows and Ctrl+Space whole columns** of the current
+  selection — the spreadsheet convention, and the keyboard equivalents of clicking a row number or a
+  column header (select-all already had Ctrl+A).
+
+### Fixed
+
+- **`u-rich-table` sorting, row expansion and row menus could not be used from the keyboard.** The
+  sortable header, the expand toggle, the `⋯` row menu and the row-action icons were click-only
+  elements. Sortable headers now hold a button that fills the cell (the pointer target is unchanged)
+  and carry `aria-sort`; the expand toggle (with `aria-expanded`), row menu and row actions are
+  buttons with accessible names and a 24×24 CSS px minimum. New locale keys: `deleteRow`,
+  `expandRow`, `collapseRow`. The sort button is exposed as the `sort-button` part.
+- **`u-simple-sheet`'s suggestion list was invisible to assistive technology.** While editing a cell
+  with options, the input is now a `combobox` pointing at a `listbox` of `option`s, with the
+  highlighted option as its active descendant.
+
 ## [0.23.1] - 2026-09-12
 
 ### Fixed
