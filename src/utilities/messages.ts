@@ -27,7 +27,8 @@ export type DataMessageKey =
   | 'empty' | 'loading' | 'filterPlaceholder' | 'filterAll' | 'addRow' | 'pageInfo'
   | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage'
   | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError' | 'pickerSearch'
-  | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount';
+  | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount'
+  | 'deleteRow' | 'expandRow' | 'collapseRow';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
 
@@ -52,6 +53,9 @@ messages.register('en', {
   viewList: 'List',
   viewTable: 'Table',
   itemCount: '{count} items',
+  deleteRow: 'Delete row',
+  expandRow: 'Expand row',
+  collapseRow: 'Collapse row',
 });
 
 messages.register('ko', {
@@ -75,4 +79,7 @@ messages.register('ko', {
   viewList: '목록',
   viewTable: '표',
   itemCount: '{count}개 항목',
+  deleteRow: '행 삭제',
+  expandRow: '행 펼치기',
+  collapseRow: '행 접기',
 });

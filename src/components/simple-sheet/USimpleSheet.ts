@@ -1,5 +1,5 @@
 import { messages } from '../../utilities/messages.js';
-import { html, type TemplateResult } from 'lit';
+import { html, nothing, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { ref } from 'lit/directives/ref.js';
@@ -72,6 +72,7 @@ function normalizeRange(sel: SelectionRange) {
  * - Home/End: 행 처음/끝 (Ctrl+Home/End: 시트 처음/끝)
  * - Page Up/Down: 10행 단위 이동
  * - Ctrl+A: 전체 선택
+ * - Shift+Space / Ctrl+Space: 현재 선택이 걸친 행 / 열 전체 선택(행 번호·열 머리 클릭의 키보드 등가)
  * - Tab 사이클: 마지막 열 → 다음 행 첫 열
  * - Ctrl+D: Fill Down (선택 영역 첫 행 값 아래로 채우기)
  * - Ctrl+R: Fill Right (선택 영역 첫 열 값 오른쪽으로 채우기)
@@ -367,17 +368,27 @@ export class USimpleSheet extends UElement {
         title=${ifDefined(validationError ?? undefined)}
       >
         ${isEditing ? html`
+          <!-- 후보 목록은 입력에서 ↑↓·Enter 로 고른다 — 그 관계를 콤보박스 역할로 드러낸다
+               (포커스는 입력에 남고 강조된 후보를 aria-activedescendant 가 가리킨다). -->
           <input
             class="cell-input"
+            role=${showDropdown ? 'combobox' : nothing}
+            aria-expanded=${showDropdown ? 'true' : nothing}
+            aria-controls=${showDropdown ? 'cell-dropdown' : nothing}
+            aria-autocomplete=${showDropdown ? 'list' : nothing}
+            aria-activedescendant=${showDropdown && this._dropdownIndex >= 0 ? `cell-option-${this._dropdownIndex}` : nothing}
             .value=${this._editVal}
             @input=${this._onInputChange}
             @keydown=${this._onInputKeyDown}
             @blur=${this._onInputBlur}
           />
           ${showDropdown ? html`
-            <div class="cell-dropdown">
+            <div class="cell-dropdown" id="cell-dropdown" role="listbox">
               ${this._dropdownItems.map((item, i) => html`
                 <div
+                  id="cell-option-${i}"
+                  role="option"
+                  aria-selected=${i === this._dropdownIndex ? 'true' : 'false'}
                   class="dropdown-item ${i === this._dropdownIndex ? 'highlighted' : ''}"
                   @mousedown=${(e: MouseEvent) => this._onDropdownItemMouseDown(e, item)}
                 >${item}</div>
@@ -415,6 +426,21 @@ export class USimpleSheet extends UElement {
     if (this._editing) return; // 편집 중이면 input이 처리
 
     const anchor = this._sel?.anchor ?? { row: 0, col: 0 };
+
+    // ── Shift+Space: 행 선택 · Ctrl+Space: 열 선택 ──
+    // 스프레드시트 관례(Excel·Google Sheets)이자 행 번호·열 머리 클릭의 키보드 등가다 — 그 머리들은 포인터로만 눌렸다.
+    // 현재 선택이 걸친 행/열 전체로 넓힌다. (모서리의 «전체 선택» 등가는 아래 Ctrl+A.)
+    if (e.key === ' ' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      const focus = this._sel?.focus ?? anchor;
+      if (e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        this._sel = { anchor: { row: anchor.row, col: 0 }, focus: { row: focus.row, col: this._colCount - 1 } };
+      } else {
+        this._sel = { anchor: { row: 0, col: anchor.col }, focus: { row: this._rowCount - 1, col: focus.col } };
+      }
+      this.requestUpdate();
+      return;
+    }
 
     // ── Undo/Redo ──
     if (e.ctrlKey || e.metaKey) {

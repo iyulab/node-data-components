@@ -285,14 +285,16 @@ const INLINE_PROSE = new Set<string>([]);
 /**
  * 🔴**포인터 고아 핀** — `pointerOrphans` 가 지목했지만 아직 고치지 않은 것(`요소.첫클래스`). 여기 있는 동안 실측 단언이 그것을 건너뛴다.
  * 고치면 빼는 것이 완료 신호다. 새로 넣을 때는 왜 지금 고치지 않는지를 함께 적는다.
+ *
+ * ⚠이 패키지에는 «고치지 않은 것» 이 아니라 **«키보드 등가가 따로 있는 포인터 단축»** 이 남아 있다 — 스프레드시트의 행 번호·열
+ * 머리·모서리는 셀 격자(포커스를 받는 컨테이너)의 키로 같은 선택을 한다. 요소 자체를 버튼으로 만들면 탭 정지가 행·열 수만큼
+ * 늘어 격자 키보드 모델을 해친다. 등가 키는 컴포넌트 테스트가 잰다(아래 파일명). 해소된 것: rich-table 정렬 헤더·행 메뉴(버튼) ·
+ * 시트 후보 목록(`role=option`, 입력이 combobox).
  */
 const POINTER_ORPHAN_PINS = new Set<string>([
-  'th.sortable', //   u-rich-table 정렬 헤더 — 클릭만 받는다(검사 도입 사이클에 발견 · 다음 사이클)
-  'span.row-menu', // u-rich-table 행 메뉴 트리거 — 클릭만 받는다
-  'td.row-num', //    u-simple-sheet 행 번호(행 선택) — 시트 키보드에 등가 경로가 있는지 확인 전
-  'th.col-header', // u-simple-sheet 열 머리(열 선택) — 같은 확인 전
-  'th.corner', //     u-simple-sheet 모서리(전체 선택) — Ctrl+A 등가 확인 전
-  'div.dropdown-item', // u-simple-sheet 셀 드롭다운 항목 — option 역할·키보드 확인 전
+  'td.row-num', //    u-simple-sheet 행 번호 → 등가 Shift+Space (tests/u-simple-sheet-keyboard-select.test.ts)
+  'th.col-header', // u-simple-sheet 열 머리 → 등가 Ctrl+Space (같은 파일)
+  'th.corner', //     u-simple-sheet 모서리 → 등가 Ctrl+A(기존)
 ]);
 
 interface Fixture {
@@ -331,6 +333,8 @@ const FIXTURES: Record<string, Fixture | Fixture[]> = {
       return [
         ...inShadow(t, 'button.btn'),
         ...inShadow(t, 'th'),
+        ...inShadow(t, 'th .sort-button'),
+        ...inShadow(t, 'button.row-menu'),
         ...inShadow(t, 'input[type=checkbox]'),
       ];
     },

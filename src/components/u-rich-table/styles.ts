@@ -152,8 +152,29 @@ export const richTableStyles = css`
     z-index: 1;
   }
 
+  /* 정렬 머리 칸은 버튼이 칸 전체를 채운다 — 여백을 th 가 아니라 버튼이 가져 누를 면이 종전(칸 전체)과 같다. */
   thead th.sortable {
+    padding: 0;
+  }
+
+  .sort-button {
+    all: unset;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    inline-size: 100%;
+    padding: 8px;
+    font: inherit;
+    color: inherit;
     cursor: pointer;
+  }
+
+  .sort-button:focus-visible,
+  .expand-button:focus-visible,
+  .row-menu:focus-visible,
+  .row-action:focus-visible {
+    outline: 2px solid var(--u-primary-color, #1976D2);
+    outline-offset: -2px;
   }
 
   thead th.sortable:hover {
@@ -251,11 +272,26 @@ export const richTableStyles = css`
   .expand-cell {
     width: 30px;
     text-align: center;
+    color: var(--dc-icon-color);
+  }
+
+  /* 펼침 토글 — 글자 하나짜리라 버튼 상자에 24px 하한을 준다(WCAG 2.2 SC 2.5.8). */
+  .expand-button,
+  .row-menu,
+  .row-action {
+    all: unset;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 24px;
+    min-block-size: 24px;
+    border-radius: 4px;
     cursor: pointer;
     color: var(--dc-icon-color);
   }
 
-  .expand-cell:hover {
+  .expand-button:hover {
     color: var(--u-primary-color, #1976D2);
   }
 
@@ -363,14 +399,7 @@ export const richTableStyles = css`
 
   /* 종전에는 아래 셋이 템플릿 안에 style="…#94a3b8" 형태로 박혀 있었다.
      .styles.ts 만 훑는 정리로는 보이지 않는 자리다. */
-  .row-menu {
-    cursor: pointer;
-    color: var(--dc-icon-color);
-  }
-
   .row-action {
-    cursor: pointer;
-    color: var(--dc-icon-color);
     padding: 0 3px;
   }
 

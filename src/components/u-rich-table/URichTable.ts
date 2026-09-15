@@ -1,7 +1,7 @@
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import { messages } from '../../utilities/messages.js';
 // src/components/u-rich-table/URichTable.component.ts
-import { html, LitElement, type TemplateResult } from 'lit';
+import { html, LitElement, nothing, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
@@ -248,11 +248,19 @@ export class URichTable extends LitElement {
             <th
               class=${col.sortable ? 'sortable' : ''}
               style=${col.width ? `width: ${col.width}` : ''}
-              @click=${() => col.sortable && this._onSortClick(col.key)}>
-              ${col.label}
-              ${this.sort?.field === col.key ? html`
-                <span class="sort-indicator">${this.sort.direction === 'asc' ? '▲' : '▼'}</span>
-              ` : ''}
+              aria-sort=${col.sortable
+                ? (this.sort?.field === col.key ? (this.sort.direction === 'asc' ? 'ascending' : 'descending') : 'none')
+                : nothing}>
+              ${col.sortable
+                // 정렬은 머리 칸을 채우는 버튼이다 — 클릭만 받는 th 는 키보드로 닿지 않았다.
+                ? html`<button type="button" class="sort-button" part="sort-button"
+                    @click=${() => this._onSortClick(col.key)}>
+                    ${col.label}
+                    ${this.sort?.field === col.key ? html`
+                      <span class="sort-indicator">${this.sort.direction === 'asc' ? '▲' : '▼'}</span>
+                    ` : ''}
+                  </button>`
+                : col.label}
             </th>
           `)}
           <th class="actions-cell"></th>
@@ -314,18 +322,21 @@ export class URichTable extends LitElement {
             </td>
           ` : ''}
           ${this.expandable ? html`
-            <td class="expand-cell" @click=${() => this._onExpandToggle(rowId)}>
-              ${isExpanded ? '▼' : '▶'}
+            <td class="expand-cell">
+              <button type="button" class="expand-button" aria-expanded=${isExpanded ? 'true' : 'false'}
+                aria-label=${messages.text(isExpanded ? 'collapseRow' : 'expandRow')}
+                @click=${() => this._onExpandToggle(rowId)}>${isExpanded ? '▼' : '▶'}</button>
             </td>
           ` : ''}
           ${this.columns.map((col, colIdx) => this._renderCell(row, rowIdx, col, colIdx))}
           <td class="actions-cell">
             ${this.rowActions && this.rowActions.length > 0
               ? html`${this.rowActions.map(action => html`
-                  <span class="row-action" title=${action.label} aria-label=${action.label}
-                    @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</span>
+                  <button type="button" class="row-action" title=${action.label} aria-label=${action.label}
+                    @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</button>
                 `)}`
-              : html`<span class="row-menu" @click=${() => this._onRowMenu(row)}>⋯</span>`}
+              : html`<button type="button" class="row-menu" aria-label=${messages.text('deleteRow')}
+                  @click=${() => this._onRowMenu(row)}>⋯</button>`}
           </td>
         </tr>
         ${isExpanded && this.detailRenderer ? html`
