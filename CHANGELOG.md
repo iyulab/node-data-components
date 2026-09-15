@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Documentation
+
+- **Printing a table or data view with a host height.** The height applies on print media too, so the
+  scrolling area printed only what fit in it. `rich-table.md`, `data-view.md` and the README now say
+  to give that height inside `@media screen` on screens that can be printed.
+
 ## [0.24.0] - 2026-09-15
 
 ### Added

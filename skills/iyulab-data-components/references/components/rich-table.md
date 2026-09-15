@@ -90,6 +90,19 @@ scrollbar, the page scrolls. Both are supported; pick per screen. What you
 should **not** do is wrap it in your own `overflow: auto` container, which puts
 the header and toolbar back inside the scrolling region.
 
+**Printing.** Paper has no scroll: a height you give the host still applies on
+print media, so the row area prints only what fits in it (measured: a 300px
+table printed 283px of a 2067px row area). Scope the height to the screen when
+the screen can be printed — the table then prints at its content height:
+
+```css
+@media screen {
+  u-rich-table { height: calc(100vh - 280px); }
+}
+```
+
+The same applies to `u-data-view`.
+
 ## Column widths
 
 Give **every** column an absolute width and each one is honoured exactly; when they add up to more

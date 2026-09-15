@@ -61,6 +61,10 @@ that container's edges — the cost of keeping the content reachable when a heig
 [`u-rich-table`](./rich-table.md) follows the same contract, so a layout transfers between them
 unchanged.
 
+A height given to the host also applies when printing, so the content area prints only what fits
+in it. On a screen that can be printed, give the height inside `@media screen { … }` and the
+component prints at its content height.
+
 ## Properties
 
 | Property | Type | Default | Reflect | Description |
