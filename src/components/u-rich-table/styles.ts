@@ -337,11 +337,16 @@ export const richTableStyles = css`
     font-weight: 500;
   }
 
+  /* 좁은 호스트(폰)에서 줄바꿈 경로가 없으면 줄어들 수 있는 유일한 자식인 문구("Showing 1-5 of 12")가
+     수 픽셀 폭까지 눌려 글자 단위로 접히고, 버튼 묶음은 호스트 밖으로 넘친다. 문구를 자기 줄로
+     내리고 버튼 묶음도 줄바꿈되게 한다. 넓을 때는 종전과 같은 한 줄이다. */
   .pagination {
     flex: 0 0 auto;
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: 4px 12px;
     padding: 8px 12px;
     background: var(--u-bg-color-raised, #FAFAFA);
     border-top: 1px solid var(--u-border-color, #E0E0E0);
@@ -351,6 +356,7 @@ export const richTableStyles = css`
 
   .pagination .page-buttons {
     display: flex;
+    flex-wrap: wrap;
     gap: 4px;
     align-items: center;
   }
