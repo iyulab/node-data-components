@@ -194,6 +194,12 @@ forever.
 | `detailRenderer` | `(row) => TemplateResult` | — | | Renders the expanded detail row |
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 
+## CSS Parts
+
+| Part | Description |
+|------|-------------|
+| `sort-button` | A column header's sort toggle |
+
 ## Methods
 
 | Method | Description |

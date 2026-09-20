@@ -85,6 +85,14 @@ before any selection.
 | `header` | Extra content above the dialog's search bar |
 | `footer` | Replaces the dialog's default Cancel/Confirm buttons |
 
+## CSS Parts
+
+| Part | Description |
+|------|-------------|
+| `field` | The inner `u-field` element |
+| `container` | The element wrapping the trigger area |
+| `popover` | The popover showing the candidate list |
+
 ## CSS Custom Properties
 
 | Property | Description |
