@@ -1,6 +1,14 @@
 # Changelog
 
-## [Unreleased]
+## [0.24.1] - 2026-09-20
+
+### Fixed
+
+- **`u-rich-table`'s pagination row overflowed a narrow host.** The row was a single non-wrapping
+  flex line whose only shrinkable child was the page-count text, so on a narrow host that text wrapped
+  one letter per line while the button group ran past the edge of the table. The row and its button
+  group now wrap, which keeps every control reachable and the count readable at any host width; on a
+  wide host the layout is unchanged.
 
 ### Documentation
 

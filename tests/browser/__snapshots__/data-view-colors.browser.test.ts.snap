@@ -46,8 +46,8 @@ exports[`UDataView 계산색 회귀망 > 두 테마의 계산색이 고정 스�
   },
   "dark tbody tr": {
     "background-color": "rgba(0, 0, 0, 0)",
-    "border-bottom-color": "rgb(42, 42, 42)",
-    "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(42, 42, 42)",
+    "border-bottom-color": "rgb(61, 61, 61)",
+    "border-color": "rgb(212, 212, 212) rgb(212, 212, 212) rgb(61, 61, 61)",
     "color": "rgb(212, 212, 212)",
   },
   "dark th": {
