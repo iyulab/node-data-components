@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.24.2] - 2026-09-21
+
+### Documentation
+
+- **The record picker and rich table now list the CSS parts they expose.** Neither reference
+  page had a `CSS Parts` section, so the picker's `field`, `container` and `popover`, and the
+  table's `sort-button`, were styleable but undocumented.
+
 ## [0.24.1] - 2026-09-20
 
 ### Fixed
