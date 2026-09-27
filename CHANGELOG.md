@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.25.0] - 2026-09-27
+
+### Changed
+
+- **`u-rich-table` draws the action column only when the table declares an action.** Without
+  `rowActions`, every table rendered a "⋯" button on every row whose accessible name is "Delete
+  row" — including read-only tables that never handle `row-delete`. The button was in the tab
+  order, did nothing when pressed, and its column took width in narrow layouts. Now the column
+  (header and rows) exists only with `deletable` or `rowActions`.
+  **Migration:** if you listen for `row-delete`, add `deletable` (attribute or property). The
+  `Delete` key on selected rows follows the same switch.
+
+### Added
+
+- **`deletable`** on `u-rich-table` — renders the built-in delete button and enables the `Delete`
+  key. With `rowActions`, the delete button follows your actions.
+
 ## [0.24.2] - 2026-09-21
 
 ### Documentation
