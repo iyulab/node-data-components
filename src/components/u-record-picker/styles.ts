@@ -61,7 +61,7 @@ export const styles = css`
   .dialog-error {
     padding: 0.5rem 0.75rem;
     margin-bottom: 0.5rem;
-    color: var(--u-color-danger, #b91c1c);
+    color: var(--u-danger-color, #D32F2F);
     font-size: 0.875rem;
   }
 
