@@ -55,9 +55,9 @@ const mount = async () => {
   return el;
 };
 
-/** 툴바의 전체선택 체크박스 — 헤더 `<th>` 가 아니라 여기 있다. */
+/** 머리글의 전체선택 체크박스 — 행 체크박스와 같은 열에 있다. */
 const selectAllBox = (el: Table) =>
-  el.shadowRoot!.querySelector('.selection-info input[type=checkbox]') as HTMLInputElement;
+  el.shadowRoot!.querySelector('thead .checkbox-cell input[type=checkbox]') as HTMLInputElement;
 
 const rowBoxes = (el: Table) =>
   [...el.shadowRoot!.querySelectorAll('tbody .checkbox-cell input[type=checkbox]')] as HTMLInputElement[];

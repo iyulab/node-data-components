@@ -56,6 +56,10 @@ export const richTableStyles = css`
     min-height: 0;   /* ⚠flex 아이템의 기본 min-height:auto 는 «줄어들지 않음»이라 이것이 없으면 넘친다 */
   }
 
+  .toolbar.empty {
+    display: none;
+  }
+
   .toolbar {
     flex: 0 0 auto;
     display: flex;
@@ -189,7 +193,8 @@ export const richTableStyles = css`
 
   .filter-row td {
     padding: 4px;
-    background: var(--u-yellow-0, #FFFDE7);
+    /* 필터 행은 머리글의 연장이다 — 머리글과 같은 면. 노랑은 «편집 중인 행» 의 표식이라 두 뜻을 한 색에 싣지 않는다. */
+    background: var(--u-bg-color-raised, #FAFAFA);
     border-bottom: 1px solid var(--u-border-color, #E0E0E0);
   }
 

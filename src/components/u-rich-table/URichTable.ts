@@ -220,23 +220,17 @@ export class URichTable extends LitElement {
     const onPage = this._selectedOnPage;
     const crossesPages = total > onPage;
     return html`
-      <div class="toolbar">
-        ${this.selectable ? html`
+      <div class="toolbar ${this._toolbarIsEmpty ? 'empty' : ''}">
+        ${this.selectable && total > 0 ? html`
           <div class="selection-info">
-            <label class="checkbox-hit">
-              <input type="checkbox"
-                .checked=${this.data.length > 0 && onPage === this.data.length}
-                .indeterminate=${onPage > 0 && onPage < this.data.length}
-                @change=${this._onSelectAll} />
-            </label>
-            ${total > 0 ? html`<span>${crossesPages
+            <span>${crossesPages
               ? messages.text('selectedAcrossPages', { count: total, onPage })
-              : messages.text('selected', { count: total })}</span>` : ''}
+              : messages.text('selected', { count: total })}</span>
           </div>
-          ${total > 0 ? html`<slot name="bulk-actions"></slot>` : ''}
+          <slot name="bulk-actions"></slot>
         ` : ''}
         <div style="flex:1"></div>
-        <slot name="toolbar-end"></slot>
+        <slot name="toolbar-end" @slotchange=${this._onToolbarEndSlotChange}></slot>
         ${this.addable ? html`
           <button class="btn btn-success" @click=${this._onAddRowClick}>${this.addRowLabel || messages.text('addRow')}</button>
         ` : ''}
@@ -244,22 +238,55 @@ export class URichTable extends LitElement {
     `;
   }
 
+  /** `toolbar-end` 에 무엇이 꽂혀 있는가 — 비어 있으면 툴바 줄 자체를 접는다. */
+  @state() private _hasToolbarEnd = false;
+
+  private _onToolbarEndSlotChange = (e: Event) => {
+    this._hasToolbarEnd = (e.target as HTMLSlotElement).assignedNodes({ flatten: true })
+      .some((n) => n.nodeType === Node.ELEMENT_NODE || (n.textContent ?? '').trim() !== '');
+  };
+
+  /**
+   * 보여 줄 것이 없는 툴바는 **빈 띠**가 된다 — 선택형 표에서는 종전에 전체 선택 체크박스 하나만 든 줄이 머리글 위에 떠
+   * 행의 체크박스와 x 가 어긋났다. 그 체크박스는 이제 머리글 칸에 있다(아래).
+   */
+  private get _toolbarIsEmpty(): boolean {
+    return !(this.selectable && this.selectedIds.size > 0) && !this.addable && !this._hasToolbarEnd;
+  }
+
+  /** 열의 `align` 을 머리글에도 — 숫자 열은 머리글과 값이 같은 가장자리에 붙어야 훑어 읽힌다. */
+  private _headerStyle(col: ColumnDef): string {
+    return [col.width ? `width: ${col.width}` : '', col.align ? `text-align: ${col.align}` : '']
+      .filter(Boolean).join('; ');
+  }
+
   private _renderHeader(): TemplateResult {
+    const onPage = this._selectedOnPage;
     return html`
       <thead>
         <tr>
-          ${this.selectable ? html`<th class="checkbox-cell"></th>` : ''}
+          ${this.selectable ? html`<th class="checkbox-cell">
+            <!-- 전체 선택은 행 체크박스와 **같은 열**에 둔다 — 체크 상태는 «이 페이지» 기준이다(툴바 주석 참조). -->
+            <label class="checkbox-hit">
+              <input type="checkbox"
+                aria-label=${messages.text('selectAllOnPage')}
+                .checked=${this.data.length > 0 && onPage === this.data.length}
+                .indeterminate=${onPage > 0 && onPage < this.data.length}
+                @change=${this._onSelectAll} />
+            </label>
+          </th>` : ''}
           ${this.expandable ? html`<th class="expand-cell"></th>` : ''}
           ${this.columns.map((col) => html`
             <th
               class=${col.sortable ? 'sortable' : ''}
-              style=${col.width ? `width: ${col.width}` : ''}
+              style=${this._headerStyle(col)}
               aria-sort=${col.sortable
                 ? (this.sort?.field === col.key ? (this.sort.direction === 'asc' ? 'ascending' : 'descending') : 'none')
                 : nothing}>
               ${col.sortable
                 // 정렬은 머리 칸을 채우는 버튼이다 — 클릭만 받는 th 는 키보드로 닿지 않았다.
                 ? html`<button type="button" class="sort-button" part="sort-button"
+                    style=${col.align === 'right' ? 'justify-content: flex-end' : col.align === 'center' ? 'justify-content: center' : ''}
                     @click=${() => this._onSortClick(col.key)}>
                     ${col.label}
                     ${this.sort?.field === col.key ? html`

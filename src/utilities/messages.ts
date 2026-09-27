@@ -28,7 +28,7 @@ export type DataMessageKey =
   | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage'
   | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError' | 'pickerSearch'
   | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount'
-  | 'deleteRow' | 'expandRow' | 'collapseRow';
+  | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
 
@@ -56,6 +56,7 @@ messages.register('en', {
   deleteRow: 'Delete row',
   expandRow: 'Expand row',
   collapseRow: 'Collapse row',
+  selectAllOnPage: 'Select all rows on this page',
 });
 
 messages.register('ko', {
@@ -82,4 +83,5 @@ messages.register('ko', {
   deleteRow: '행 삭제',
   expandRow: '행 펼치기',
   collapseRow: '행 접기',
+  selectAllOnPage: '이 페이지 전체 선택',
 });

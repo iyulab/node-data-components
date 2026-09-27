@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **A column's `align` now applies to its header too.** `align: 'right'` right-aligned the values
+  and left the header on the left, so a number column's header and its figures sat on opposite
+  edges. The header (including a sortable header's button) now follows the column.
+
+### Changed
+
+- **`u-rich-table`'s select-all checkbox is in the header, in the same column as the row
+  checkboxes.** It used to sit alone in a toolbar strip above the header, offset from the row
+  checkboxes, and without an accessible name; it now has one ("Select all rows on this page").
+  The toolbar shows the selection count and `bulk-actions` once something is selected, and takes
+  no space when it has nothing to show (no selection, no `addable`, nothing in `toolbar-end`).
+- **The filter row uses the header's surface** instead of pale yellow — yellow stays the mark of
+  a row being edited, so the two no longer share one colour.
+
 ## [0.25.0] - 2026-09-27
 
 ### Changed
