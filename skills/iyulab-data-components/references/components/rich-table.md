@@ -192,6 +192,7 @@ forever.
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |
 | `expandable` | `boolean` | `false` | | Renders the expander column; pair with `detailRenderer` |
 | `detailRenderer` | `(row) => TemplateResult` | — | | Renders the expanded detail row |
+| `deletable` | `boolean` | `false` | | Declares a table that handles row deletion: renders the "⋯" delete button (accessible name "Delete row") and enables the `Delete` key (`0.25.0~`) |
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 
 ## CSS Parts
@@ -235,7 +236,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `page-change` | `{ page, pageSize }` | The pager or page-size selector moved |
 | `row-update` | `{ row, field, value, oldValue }` | An inline edit was committed |
 | `row-create` | `{ row }` | The add-row control produced a row |
-| `row-delete` | `{ row }` | The action cell's default "⋯" was clicked (only when `rowActions` is unset — see *RowAction*) |
+| `row-delete` | `{ row }` | The "⋯" delete button was clicked, or `Delete` was pressed on selected rows (only when `deletable`) |
 | `row-expand` | `{ row, expanded }` | A detail row was opened or closed |
 | `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). Independent of `selectable` — selection is "what to act on", activation is "what to view" |
 | `paste` | `{ rows }` | TSV was pasted into the grid |
@@ -264,8 +265,15 @@ type SelectionChange = RichTableEventMap['selection-change'];
 
 ## RowAction
 
-Configures the action cell (right edge of each row). Without `rowActions`, it's a single "⋯"
-that fires `row-delete`. Set it to replace that with your own buttons:
+Configures the action cell (right edge of each row). The action cell exists only when the table
+declares an action (`0.25.0~`): `deletable`, `rowActions`, or both. With neither, there is no
+action column at all — header and rows.
+
+⚠ Up to `0.24.x`, a table without `rowActions` always rendered a "⋯" delete button, so read-only
+tables put a non-working "Delete row" button in the tab order on every row. If you handle
+`row-delete`, add `deletable`.
+
+Set `rowActions` for your own buttons:
 
 | Field | Type | Description |
 |---|---|---|
@@ -281,8 +289,8 @@ table.rowActions = [
 table.addEventListener('row-edit', (e) => editRow(e.detail.row));
 ```
 
-Each action fires only its own `event` — none of them fall back to `row-delete`. Include
-`{ event: 'row-delete', ... }` yourself if you still want a delete action.
+Each action fires only its own `event` — none of them fall back to `row-delete`. Add
+`deletable` if you also want the built-in delete button; it goes after your actions.
 
 ## Slots
 
@@ -309,7 +317,7 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 | `Escape` | Cancel editing |
 | `Tab` | Commit and move to the next cell |
 | `Space` | Toggle selection of the focused row (when `selectable`) |
-| `Delete` | Emit `row-delete` for every selected row |
+| `Delete` | Emit `row-delete` for every selected row (when `deletable`) |
 | `Ctrl`/`Cmd` + `A` | Select every row **on this page** — same scope as the header checkbox |
 | `Ctrl`/`Cmd` + `C` | Copy the selection as TSV |
 | `Ctrl`/`Cmd` + `V` | Paste TSV (emits `paste`) |

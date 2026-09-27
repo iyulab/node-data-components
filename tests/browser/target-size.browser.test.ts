@@ -323,9 +323,9 @@ interface Fixture {
 /** 실제로 재는 것 — 대표 픽스처와 그 안의 타깃. 상태가 여럿이면 배열. */
 const FIXTURES: Record<string, Fixture | Fixture[]> = {
   'u-rich-table': {
-    // ⚠`addable`·`selectable` 을 켜야 «추가» 버튼과 선택 체크박스가 렌더된다 — 끄면 그
+    // ⚠`addable`·`selectable`·`deletable` 을 켜야 «추가» 버튼·선택 체크박스·행 삭제 버튼이 렌더된다 — 끄면 그
     //   타깃들이 아예 없고, 그것을 «통과»로 읽으면 미탐이다(cycle-485~486 의 함정).
-    html: `<u-rich-table addable selectable style="width:520px"
+    html: `<u-rich-table addable selectable deletable style="width:520px"
       columns='[{"key":"a","label":"A","sortable":true},{"key":"b","label":"B"}]'
       data='[{"a":"1","b":"2"},{"a":"3","b":"4"}]'></u-rich-table>`,
     targets: () => {

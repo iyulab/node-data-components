@@ -92,6 +92,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `filterable` | `boolean` | `false` | 헤더 아래 필터 입력 줄 |
 | `expandable` | `boolean` | `false` | 행 펼치기 (`detailRenderer` 필요) |
 | `detailRenderer` | `(row) => TemplateResult` | `undefined` | 펼친 행의 내용 |
+| `deletable` | `boolean` | `false` | 행 삭제를 다루는 표 — 행 끝 "⋯" 삭제 버튼 + `Delete` 키 (`0.25.0~`) |
 | `rowActions` | `RowAction[]` | `undefined` | 액션 셀의 버튼 구성 (`0.20.0~`, 아래 참조) |
 
 ### UI 문구
@@ -195,11 +196,18 @@ interface ColumnDef {
 
 `validator`는 **오류 문구를 반환**하고, 통과하면 `null`을 반환합니다.
 
-## 액션 셀 · `rowActions` (`0.20.0~`)
+## 액션 셀 · `deletable` · `rowActions`
 
-각 행 우측 끝(액션 셀)은 기본으로 "⋯" 버튼 하나만 있고, 클릭하면 `row-delete`를 냅니다.
-삭제 외에 다른 액션(수정 등)이 필요하면 `rowActions`로 구성하세요 — 지정하지 않으면
-종전 동작(단일 "⋯" → `row-delete`) 그대로입니다.
+각 행 우측 끝의 액션 셀은 **동작을 선언했을 때만** 있습니다(`0.25.0~`). 아무것도 선언하지
+않은 표에는 머리글·행 모두 그 칸이 없습니다.
+
+- **`deletable`** — 삭제를 다루는 표. 행 끝에 "⋯" 버튼(접근 이름 「행 삭제」)을 그리고,
+  클릭하면 `row-delete`를 냅니다. 선택 행의 `Delete` 키도 이때만 동작합니다.
+- **`rowActions`** — 삭제 외의 액션(수정 등). `deletable`과 함께 주면 목록 뒤에 삭제 버튼이 붙습니다.
+
+⚠`0.24.x`까지는 `rowActions`가 없으면 "⋯"가 **무조건** 그려졌습니다 — 삭제를 다루지 않는 표에도
+동작하지 않는 「행 삭제」 버튼이 행마다 탭 순서에 있었습니다. `row-delete`를 쓰고 있었다면
+`deletable`을 더하세요.
 
 ```typescript
 interface RowAction {
@@ -219,8 +227,7 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 ```
 
 각 액션은 `{ detail: { row } }`(bubbles·composed)로 자기 `event` 이름의 커스텀 이벤트만
-냅니다 — `row-delete`로 새지 않습니다. 삭제도 필요하면 목록에 `{ event: 'row-delete', ... }`
-를 직접 포함하세요.
+냅니다 — `row-delete`로 새지 않습니다. 삭제도 필요하면 `deletable`을 함께 켜세요.
 
 ## 이벤트
 
@@ -232,7 +239,7 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `select-all` | `{ checked, pageRowIds }` — 전체선택 체크박스 조작. `selection-change`와 함께 발생 |
 | `row-create` | `{ row }` |
 | `row-update` | `{ row, field, value, oldValue }` |
-| `row-delete` | `{ row }` — `rowActions`를 지정하지 않았을 때 액션 셀 "⋯" 클릭 시 |
+| `row-delete` | `{ row }` — `deletable`일 때 액션 셀 "⋯" 클릭 또는 `Delete` 키 |
 | `row-expand` | `{ row, expanded }` |
 | `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |
 | `filter-change` | `{ filters }` |
@@ -251,7 +258,7 @@ React에서는 `URichTableReact`가 이들을 `onSelectionChange` 형태로 노�
 | `Tab` | 확정 후 오른쪽 셀로 |
 | `Escape` | 편집 취소 |
 | `Space` | 포커스된 행 선택 토글 (`selectable`) |
-| `Delete` | **현재 페이지의** 선택된 행마다 `row-delete` 발생 |
+| `Delete` | **현재 페이지의** 선택된 행마다 `row-delete` 발생 (`deletable`) |
 | `Ctrl`/`Cmd` + `C` | 선택 영역을 TSV로 복사 |
 | `Ctrl`/`Cmd` + `V` | TSV 붙여넣기 → `paste` 발생 |
 | `Ctrl`/`Cmd` + `A` | **현재 페이지** 전체 선택 (전체선택 체크박스와 같은 범위) |

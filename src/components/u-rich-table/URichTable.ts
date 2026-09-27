@@ -42,8 +42,14 @@ export class URichTable extends LitElement {
   @property({ type: Boolean }) expandable = false;
   @property({ attribute: false }) detailRenderer?: (row: Record<string, unknown>) => TemplateResult;
   /**
-   * 액션 셀에 렌더할 커스텀 액션 목록. 생략하면 종전대로 단일 "⋯" 버튼이 `row-delete`
-   * 를 쏜다(하위호환). 지정하면 각 액션이 자기 `event` 이름으로 커스텀 이벤트를 쏜다.
+   * 행 삭제를 다루는 표임을 선언한다. 켜면 행 끝에 삭제 버튼(`⋯`, 접근 이름 「행 삭제」)을
+   * 그리고, 선택된 행에서 Delete 키도 `row-delete` 를 쏜다. 기본은 꺼짐 — 삭제를 다루지
+   * 않는 표가 동작하지 않는 삭제 버튼을 행마다 그리지 않게 한다.
+   */
+  @property({ type: Boolean }) deletable = false;
+  /**
+   * 액션 셀에 렌더할 커스텀 액션 목록. 각 액션이 자기 `event` 이름으로 커스텀 이벤트를 쏜다.
+   * `deletable` 과 함께 주면 이 목록 뒤에 삭제 버튼이 붙는다.
    */
   @property({ type: Array }) rowActions?: RowAction[];
 
@@ -263,7 +269,7 @@ export class URichTable extends LitElement {
                 : col.label}
             </th>
           `)}
-          <th class="actions-cell"></th>
+          ${this._hasActionsColumn ? html`<th class="actions-cell"></th>` : ''}
         </tr>
       </thead>
     `;
@@ -288,7 +294,7 @@ export class URichTable extends LitElement {
             ) : ''}
           </td>
         `)}
-        <td></td>
+        ${this._hasActionsColumn ? html`<td></td>` : ''}
       </tr>
     `;
   }
@@ -329,15 +335,14 @@ export class URichTable extends LitElement {
             </td>
           ` : ''}
           ${this.columns.map((col, colIdx) => this._renderCell(row, rowIdx, col, colIdx))}
-          <td class="actions-cell">
-            ${this.rowActions && this.rowActions.length > 0
-              ? html`${this.rowActions.map(action => html`
-                  <button type="button" class="row-action" title=${action.label} aria-label=${action.label}
-                    @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</button>
-                `)}`
-              : html`<button type="button" class="row-menu" aria-label=${messages.text('deleteRow')}
-                  @click=${() => this._onRowMenu(row)}>⋯</button>`}
-          </td>
+          ${this._hasActionsColumn ? html`<td class="actions-cell">
+            ${(this.rowActions ?? []).map(action => html`
+              <button type="button" class="row-action" title=${action.label} aria-label=${action.label}
+                @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</button>
+            `)}
+            ${this.deletable ? html`<button type="button" class="row-menu" aria-label=${messages.text('deleteRow')}
+              @click=${() => this._onRowMenu(row)}>⋯</button>` : ''}
+          </td>` : ''}
         </tr>
         ${isExpanded && this.detailRenderer ? html`
           <tr class="detail-row">
@@ -437,7 +442,7 @@ export class URichTable extends LitElement {
             ` : html`<span></span>`}
           </td>
         `)}
-        <td></td>
+        ${this._hasActionsColumn ? html`<td></td>` : ''}
       </tr>
     `;
   }
@@ -724,8 +729,14 @@ export class URichTable extends LitElement {
   }
 
   // --- Helpers ---
+  /** 행 동작 칸은 소비자가 동작을 선언했을 때만 존재한다(삭제 또는 커스텀 액션). */
+  private get _hasActionsColumn(): boolean {
+    return this.deletable || (this.rowActions?.length ?? 0) > 0;
+  }
+
   private _colSpan(): number {
-    let span = this.columns.length + 1; // +1 for actions
+    let span = this.columns.length;
+    if (this._hasActionsColumn) span++;
     if (this.selectable) span++;
     if (this.expandable) span++;
     return span;
@@ -824,7 +835,7 @@ export class URichTable extends LitElement {
         const rowId = r ? this._rowId(r, this.focusedCell.rowIndex) : undefined;
         if (rowId) this._onRowSelect(rowId);
       }
-      if (e.key === 'Delete' && this.selectedIds.size > 0) {
+      if (e.key === 'Delete' && this.deletable && this.selectedIds.size > 0) {
         // 선택된 행 삭제 (개별 이벤트)
         for (const row of this.getSelectedRows()) {
           this.dispatchEvent(new CustomEvent('row-delete', { detail: { row }, bubbles: true, composed: true }));

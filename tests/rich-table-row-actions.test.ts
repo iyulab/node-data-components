@@ -10,13 +10,16 @@ import type { RowAction } from '../src/components/u-rich-table/types';
  * (`RowMenuConfig` 같은 내부 개념 자체가 없음). 실제 필요는 "메뉴 노출"이 아니라
  * **액션 셀에 삭제 외 액션을 추가 구성**하는 것이라 판단해 `rowActions` 로 조정했다.
  *
- * `rowActions` 를 주지 않으면 종전 단일 "⋯" → `row-delete` 동작 그대로다(하위호환) —
- * 그 계약은 이 파일이 아니라 `rich-table-clipboard-error.test.ts` 등 기존 스위트가
- * 이미 감시하지 않으므로, 첫 두 테스트가 그 회귀 방지 역할까지 겸한다.
+ * 🔴`0.25.0` 부터 동작 칸은 **소비자가 동작을 선언했을 때만** 있다 — `deletable`
+ * (내장 삭제 버튼 `⋯`) 또는 `rowActions`(커스텀). 종전에는 `rowActions` 가 없으면 무조건
+ * `⋯`(접근 이름 「행 삭제」)를 그려, 삭제를 다루지 않는 읽기 전용 표가 행마다 동작하지 않는
+ * 삭제 버튼을 탭 순서에 넣고 있었다.
  */
 
 type Table = HTMLElement & {
   columns: { key: string; label: string }[];
+  deletable?: boolean;
+  selectable?: boolean;
   data: Record<string, unknown>[];
   rowActions?: RowAction[];
   updateComplete: Promise<unknown>;
@@ -33,21 +36,55 @@ const mount = async (data: Record<string, unknown>[] = [{ _id: 'r0', name: 'firs
 
 const actionsCell = (el: Table, rowIdx = 0) =>
   el.shadowRoot!.querySelectorAll('tbody tr')[rowIdx].querySelector('.actions-cell') as HTMLElement;
+const actionHeaders = (el: Table) => el.shadowRoot!.querySelectorAll('thead th.actions-cell').length;
 
 let table: Table | null = null;
 beforeEach(() => { document.body.innerHTML = ''; });
 afterEach(() => { table?.remove(); table = null; document.body.innerHTML = ''; });
 
 describe('URichTable — rowActions', () => {
-  it('하위호환 — rowActions 를 주지 않으면 종전대로 단일 "⋯" 버튼이 렌더된다', async () => {
+  it('🔴아무 동작도 선언하지 않으면 동작 칸 자체가 없다 — 머리글·행 모두', async () => {
     const el = table = await mount();
+    expect(actionsCell(el)).toBeNull();
+    expect(actionHeaders(el)).toBe(0);
+    expect(el.shadowRoot!.querySelector('.row-menu'), '「행 삭제」 버튼이 없다').toBeNull();
+    // 칸 수가 머리글과 행에서 같다 — colspan 이 없는 칸을 세지 않는다.
+    expect(el.shadowRoot!.querySelectorAll('thead th').length)
+      .toBe(el.shadowRoot!.querySelectorAll('tbody tr')[0].querySelectorAll('td').length);
+  });
+
+  it('빈 데이터 행의 colspan 도 동작 칸을 세지 않는다', async () => {
+    const el = table = await mount([]);
+    const td = el.shadowRoot!.querySelector('tbody td') as HTMLTableCellElement;
+    expect(td.colSpan).toBe(1);
+    el.deletable = true;
+    await el.updateComplete;
+    expect((el.shadowRoot!.querySelector('tbody td') as HTMLTableCellElement).colSpan).toBe(2);
+  });
+
+  it('deletable 을 켜면 "⋯" 삭제 버튼이 행 끝에 그려진다', async () => {
+    const el = table = await mount();
+    el.deletable = true;
+    await el.updateComplete;
     const cell = actionsCell(el);
     expect(cell.querySelector('.row-menu')).toBeTruthy();
     expect(cell.querySelector('.row-action')).toBeFalsy();
+    expect(actionHeaders(el)).toBe(1);
   });
 
-  it('하위호환 — rowActions 없이 "⋯" 클릭은 여전히 row-delete 를 쏜다', async () => {
+  it('deletable 속성(attribute)으로도 켜진다', async () => {
+    document.body.innerHTML = '<u-rich-table deletable></u-rich-table>';
+    const el = table = document.querySelector('u-rich-table') as Table;
+    el.columns = [{ key: 'name', label: 'Name' }];
+    el.data = [{ _id: 'r0', name: 'first' }];
+    await el.updateComplete;
+    expect(actionsCell(el).querySelector('.row-menu')).toBeTruthy();
+  });
+
+  it('deletable 의 "⋯" 클릭은 row-delete 를 쏜다', async () => {
     const el = table = await mount();
+    el.deletable = true;
+    await el.updateComplete;
     const handler = vi.fn();
     el.addEventListener('row-delete', handler);
 
@@ -115,11 +152,45 @@ describe('URichTable — rowActions', () => {
     expect(seenOutsideShadow).toBe(true);
   });
 
-  it('빈 배열은 "액션 없음"이 아니라 기본 동작(row-menu)으로 폴백한다', async () => {
+  it('빈 배열은 «액션 없음» 이다 — 동작 칸이 없다', async () => {
     const el = table = await mount();
     el.rowActions = [];
     await el.updateComplete;
 
-    expect(actionsCell(el).querySelector('.row-menu')).toBeTruthy();
+    expect(actionsCell(el)).toBeNull();
+  });
+
+  it('rowActions 와 deletable 을 함께 주면 커스텀 액션 뒤에 삭제 버튼이 붙는다', async () => {
+    const el = table = await mount();
+    el.rowActions = [{ event: 'row-edit', label: 'Edit' }];
+    el.deletable = true;
+    await el.updateComplete;
+
+    const buttons = [...actionsCell(el).querySelectorAll('button')];
+    expect(buttons.map((b) => b.className)).toEqual(['row-action', 'row-menu']);
+  });
+
+  it('🔴선택 행의 Delete 키는 deletable 일 때만 row-delete 를 쏜다', async () => {
+    const el = table = await mount([{ _id: 'r0', name: 'a' }, { _id: 'r1', name: 'b' }]);
+    el.selectable = true;
+    await el.updateComplete;
+    const handler = vi.fn();
+    el.addEventListener('row-delete', handler);
+
+    const press = async () => {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true, bubbles: true }));
+      await el.updateComplete;
+      (el.shadowRoot!.querySelectorAll('tbody tr')[0].querySelectorAll('td')[1] as HTMLElement).click();
+      await el.updateComplete;
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
+    };
+
+    await press();
+    expect(handler, '삭제를 선언하지 않은 표').not.toHaveBeenCalled();
+
+    el.deletable = true;
+    await el.updateComplete;
+    await press();
+    expect(handler).toHaveBeenCalledTimes(2);
   });
 });
