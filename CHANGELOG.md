@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- **`u-record-picker`'s error text follows the theme.** It read a colour token under a name that
+  does not exist, so it always drew its fallback red — the same in dark mode and under a re-brand.
 - **A column's `align` now applies to its header too.** `align: 'right'` right-aligned the values
   and left the header on the left, so a number column's header and its figures sat on opposite
   edges. The header (including a sortable header's button) now follows the column.
