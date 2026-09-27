@@ -252,7 +252,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `type` | `'text'\|'number'\|'date'\|'select'\|'badge'` | Cell renderer and editor |
 | `options` | `{ value, label }[]` | Choices for `type: 'select'` |
 | `badgeColors` | `Record<string, string>` | Value → color for `type: 'badge'` |
-| `align` | `'left'\|'center'\|'right'` | Cell alignment |
+| `align` | `'left'\|'center'\|'right'` | Alignment of the column's cells and its header |
 | `sortable` | `boolean` | Header emits `sort-change` |
 | `editable` | `boolean` | Cell is editable when the table is `editable` |
 | `required` | `boolean` | Empty value fails validation |
