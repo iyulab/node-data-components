@@ -46,7 +46,7 @@ import { UDataGrid } from '@iyulab/data-components';
 ### flex-table (전환 후)
 
 ```tsx
-import { FlexTableReact, useODataSource } from '@iyulab/flex-table/odata';
+import { FlexTableReact, useODataSource } from '@iyulab/flex-table/react';
 import { html } from 'lit';
 
 function ProductList() {
@@ -86,7 +86,7 @@ renderer: (value) => html`<span class="badge--${value}">${value}</span>`
 `useODataSource` 훅과 `FlexTableReact`를 조합합니다.
 
 ```tsx
-import { FlexTableReact, useODataSource } from '@iyulab/flex-table/odata';
+import { FlexTableReact, useODataSource } from '@iyulab/flex-table/react';
 
 const source = useODataSource('/api/odata/items', {
   key: 'Id',
