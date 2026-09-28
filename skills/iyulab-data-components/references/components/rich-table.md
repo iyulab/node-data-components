@@ -195,6 +195,7 @@ forever.
 | `dataMode` | `'client' \| 'server'` | `'server'` | | Who applies the filter row, sorting and paging (attribute `data-mode`) — `'client'`: the table does, over `data` as the whole set (`0.27.0~`) |
 | `loading` | `boolean` | `false` | | Shows the loading message instead of rows |
 | `emptyMessage` | `string` | `''` | | Text shown when there are no rows (falls back to the locale string) |
+| `noMatchMessage` | `string` | `''` | | `data-mode="client"`: text shown when `data` has rows but none pass the filters — a different state from "no data" (falls back to the locale string) |
 | `loadingMessage` | `string` | `''` | | Text shown while `loading` |
 | `filterPlaceholder` | `string` | `''` | | Placeholder of the column filter inputs |
 | `filterAllLabel` | `string` | `''` | | Label of the "all" option in `select` filters |
@@ -230,6 +231,7 @@ forever.
 | Getter | Description |
 |---|---|
 | `selectedRowIds: ReadonlySet<string>` | Snapshot of every selected identifier, across pages |
+| `filteredRowCount: number` | Rows that pass the filter row — the table's own count across pages in `data-mode="client"`, `totalCount` otherwise |
 
 ## Events
 
@@ -246,7 +248,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `selection-change` | `{ selectedRows, selectedIds }` | Selection changed by any route |
 | `select-all` | `{ checked, pageRowIds }` | The header checkbox was toggled |
 | `sort-change` | `{ field, direction }` | A sortable header was clicked (`direction` is `null` when cleared) |
-| `filter-change` | `{ filters }` | A column filter changed |
+| `filter-change` | `{ filters, filteredCount? }` | A column filter changed. `filteredCount` is present in `data-mode="client"` |
 | `page-change` | `{ page, pageSize }` | The pager or page-size selector moved |
 | `row-update` | `{ row, field, value, oldValue }` | An inline edit was committed |
 | `row-create` | `{ row }` | The add-row control produced a row |
@@ -338,6 +340,6 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 
 ## Localization
 
-`emptyMessage`, `loadingMessage`, `filterPlaceholder`, `filterAllLabel` and
+`emptyMessage`, `noMatchMessage`, `loadingMessage`, `filterPlaceholder`, `filterAllLabel` and
 `addRowLabel` default to `''` and fall back to the package's locale strings —
 set them only to override the translation for a specific table.

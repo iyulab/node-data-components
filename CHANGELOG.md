@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`data-mode="client"` reports what the filters left.** `filteredRowCount` (the same name as
+  `flex-table`'s getter) and `filter-change`'s new `filteredCount` give the number of rows that
+  pass the filters across all pages, so a screen can show "12 of 40". When `data` has rows but
+  none pass, the table says so with `noMatchMessage` (locale string "No matching item") instead
+  of the "no data" text — the two states ask the user for different things.
+
 ## [0.27.0] - 2026-09-28
 
 ### Added

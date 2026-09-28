@@ -86,7 +86,8 @@ export interface RichTableEventMap {
    */
   'row-activate': CustomEvent<{ row: Record<string, unknown>; id: string; via: 'click' | 'keyboard' }>;
   'sort-change': CustomEvent<{ field: string; direction: 'asc' | 'desc' | null }>;
-  'filter-change': CustomEvent<{ filters: FilterState }>;
+  /** `filteredCount` is present in `data-mode="client"`: how many rows pass the filters, across all pages. */
+  'filter-change': CustomEvent<{ filters: FilterState; filteredCount?: number }>;
   'page-change': CustomEvent<{ page: number; pageSize: number }>;
   'paste': CustomEvent<{ rows: Record<string, unknown>[] }>;
 }

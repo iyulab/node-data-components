@@ -101,6 +101,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | 속성 | 타입 | 기본값 |
 |------|------|--------|
 | `emptyMessage` | `string` | `'데이터가 없습니다'` |
+| `noMatchMessage` | `string` | `'일치하는 항목 없음'` — `data-mode="client"` 에서 데이터는 있는데 걸러낸 결과가 빌 때 |
 | `loadingMessage` | `string` | `'로딩 중...'` |
 | `filterPlaceholder` | `string` | `'필터...'` |
 | `filterAllLabel` | `string` | `'전체'` |
@@ -243,7 +244,7 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `row-delete` | `{ row }` — `deletable`일 때 액션 셀 "⋯" 클릭 또는 `Delete` 키 |
 | `row-expand` | `{ row, expanded }` |
 | `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |
-| `filter-change` | `{ filters }` |
+| `filter-change` | `{ filters, filteredCount? }` — `filteredCount` 는 `data-mode="client"` 에서만 |
 | `page-change` | `{ page, pageSize }` |
 | `paste` | `{ rows }` |
 

@@ -16,6 +16,9 @@ type Table = HTMLElement & {
   totalCount: number;
   updateComplete: Promise<unknown>;
   selectedRowIds: ReadonlySet<string>;
+  filteredRowCount: number;
+  noMatchMessage: string;
+  emptyMessage: string;
 };
 
 const COLUMNS = [
@@ -116,6 +119,34 @@ describe('u-rich-table dataMode="client"', () => {
       .map((tr) => tr.querySelectorAll('td')[1]?.textContent?.trim());
     expect(checked).toEqual(['Cedar']);
     expect([...el.selectedRowIds]).toEqual(['#2']);
+  });
+
+  it('🔴걸러진 건수를 알린다 — filteredRowCount 와 filter-change 의 filteredCount (페이지와 무관)', async () => {
+    const el = await mount({ dataMode: 'client', pageSize: 1 });
+    expect(el.filteredRowCount).toBe(4);
+    const spy = vi.fn();
+    el.addEventListener('filter-change', spy);
+    await type(el, 0, 'aster');
+    expect(spy.mock.calls[0][0].detail.filteredCount).toBe(2);
+    expect(el.filteredRowCount).toBe(2);
+  });
+
+  it('🔴데이터는 있는데 걸러낸 결과가 비면 «일치 없음», data 가 비면 «데이터 없음»', async () => {
+    const el = await mount({ dataMode: 'client', noMatchMessage: 'No orders match', emptyMessage: 'No orders yet' });
+    await type(el, 0, 'zzz');
+    expect(el.shadowRoot!.querySelector('.empty-message')!.textContent).toBe('No orders match');
+    el.data = [];
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('.empty-message')!.textContent).toBe('No orders yet');
+  });
+
+  it('⚪NEGATIVE — server 모드의 filteredRowCount 는 호스트가 준 totalCount 이고, 이벤트에 filteredCount 가 없다', async () => {
+    const el = await mount({ totalCount: 120 });
+    expect(el.filteredRowCount).toBe(120);
+    const spy = vi.fn();
+    el.addEventListener('filter-change', spy);
+    await type(el, 0, 'x');
+    expect('filteredCount' in spy.mock.calls[0][0].detail).toBe(false);
   });
 
   it('⚪NEGATIVE — 기본(server)은 data 를 받은 대로 그리고 거르지 않는다', async () => {

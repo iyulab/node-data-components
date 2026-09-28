@@ -29,6 +29,8 @@ export class URichTable extends LitElement {
   @property({ attribute: 'data-mode' }) dataMode: 'client' | 'server' = 'server';
   @property({ type: Boolean }) loading = false;
   @property({ type: String }) emptyMessage = '';
+  /** `data-mode="client"` 에서 걸러낸 결과가 비었을 때의 문구 — `data` 자체가 빈 것과 다른 상태다. */
+  @property({ type: String }) noMatchMessage = '';
   /** 로딩 표시 문구 */
   @property({ type: String }) loadingMessage = '';
   /** 필터 입력 placeholder */
@@ -78,6 +80,17 @@ export class URichTable extends LitElement {
   private _viewTotal = 0;
   /** client 모드에서 `_id` 없는 행의 위치는 `data` 안의 위치다 — 거르거나 정렬해도 선택이 그 행을 따라간다. */
   private _dataIndex = new Map<Record<string, unknown>, number>();
+
+  /**
+   * The number of rows that pass the filter row — in `data-mode="client"` the table's own count
+   * across all pages; in the default server mode, `totalCount` (the host's answer). Same name as
+   * `flex-table`'s getter; `filter-change` carries the same number as `filteredCount`.
+   */
+  get filteredRowCount(): number {
+    return this.dataMode === 'client'
+      ? applyFilters(this.data, this.filters, this.columns).length
+      : this.totalCount;
+  }
 
   protected willUpdate(changed: PropertyValues<this>): void {
     super.willUpdate(changed);
@@ -365,7 +378,10 @@ export class URichTable extends LitElement {
       return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div></td></tr>`;
     }
     if (this._view.length === 0) {
-      return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${this.emptyMessage || messages.text('empty')}</div></td></tr>`;
+      // client 모드에서 데이터는 있는데 거른 결과가 비었으면 «일치 없음» — «데이터 없음» 과 다른 다음 행동(조건 완화)을 가리킨다.
+      const noMatch = this.dataMode === 'client' && this.data.length > 0;
+      const text = noMatch ? (this.noMatchMessage || messages.text('noMatch')) : (this.emptyMessage || messages.text('empty'));
+      return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${text}</div></td></tr>`;
     }
     return this._view.map((row, rowIdx) => {
       const rowId = this._rowId(row, rowIdx);
@@ -614,7 +630,9 @@ export class URichTable extends LitElement {
     // 새 조건은 첫 페이지부터 — 결과가 줄었는데 4쪽에 남는 것이 이 자리의 흔한 버그다.
     if (this.dataMode === 'client') this.currentPage = 1;
     this.dispatchEvent(new CustomEvent('filter-change', {
-      detail: { filters: this.filters },
+      detail: this.dataMode === 'client'
+        ? { filters: this.filters, filteredCount: this.filteredRowCount }
+        : { filters: this.filters },
       bubbles: true, composed: true
     }));
   }
