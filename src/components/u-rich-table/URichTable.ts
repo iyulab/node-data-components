@@ -409,6 +409,7 @@ export class URichTable extends LitElement {
                    토글해 주므로 «보이는 것은 그대로, 잡히는 영역만 24px» 이 된다. -->
               <label class="checkbox-hit">
                 <input type="checkbox" .checked=${isSelected}
+                  aria-label=${messages.text('selectRow')}
                   @change=${() => this._onRowSelect(rowId)}
                   @click=${(e: MouseEvent) => e.shiftKey && this._onShiftSelect(rowIdx)} />
               </label>
