@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.29.1] - 2026-09-28
+
+### Fixed
+
+- **Row selection checkboxes in `u-rich-table` have an accessible name.** Only the select-all box
+  in the header had one, so a screen reader announced each row's box as an unnamed checkbox. They
+  are now labelled "Select row" (Korean: "행 선택"), which reads together with the row's cells.
+
 ## [0.29.0] - 2026-09-28
 
 ### Changed
