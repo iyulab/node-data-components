@@ -43,10 +43,10 @@ component falls back to the row's *position* and warns once on the console, but
 position-based identity moves the selection to a different row as soon as the
 data is re-sorted or re-paged.
 
-## Read this second: the app owns the query
+## Read this second: the app owns the query — unless you hand the table the whole set
 
-`u-rich-table` never fetches, sorts, filters or slices. It renders the page you
-give it and tells you what the user asked for:
+By default (`data-mode="server"`) `u-rich-table` never fetches, sorts, filters or
+slices. It renders the page you give it and tells you what the user asked for:
 
 ```ts
 table.addEventListener('page-change',   e => load({ page: e.detail.page, size: e.detail.pageSize }));
@@ -64,6 +64,19 @@ yourself before assigning `data`:
 ```ts
 table.data = allRows.slice((page - 1) * pageSize, page * pageSize);
 table.totalCount = allRows.length;
+```
+
+When the whole list is already loaded and narrowing it is the entire interaction,
+set `data-mode="client"` instead and skip the wiring above: `data` is the full set,
+and the table applies the filter row (`filterType: 'select'` matches the value, text
+matches case-insensitively as a substring), sorting (`type: 'number'` / `'date'`
+columns compare as numbers / dates) and paging itself. `totalCount` is ignored and
+the pager counts the filtered rows; a new filter returns to page 1. The events still
+fire. Rows without an `_id` keep their selection through filtering and sorting,
+because the position used is the row's place in `data`.
+
+```html
+<u-rich-table data-mode="client" filterable .columns=${columns} .data=${allRows}></u-rich-table>
 ```
 
 Binding tens of thousands of rows straight to `data` renders that many `<tr>`s
@@ -179,6 +192,7 @@ forever.
 | `totalCount` | `number` | `0` | | Total rows the query matches, across all pages |
 | `pageSize` | `number` | `25` | | Rows per page |
 | `currentPage` | `number` | `1` | | 1-based page number |
+| `dataMode` | `'client' \| 'server'` | `'server'` | | Who applies the filter row, sorting and paging (attribute `data-mode`) — `'client'`: the table does, over `data` as the whole set (`0.27.0~`) |
 | `loading` | `boolean` | `false` | | Shows the loading message instead of rows |
 | `emptyMessage` | `string` | `''` | | Text shown when there are no rows (falls back to the locale string) |
 | `loadingMessage` | `string` | `''` | | Text shown while `loading` |

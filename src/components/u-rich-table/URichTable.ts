@@ -1,11 +1,12 @@
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import { messages } from '../../utilities/messages.js';
 // src/components/u-rich-table/URichTable.component.ts
-import { html, LitElement, nothing, type TemplateResult } from 'lit';
+import { html, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
 import { parseTSV, toTSV } from './utils/clipboard.js';
+import { applyFilters, sortRows } from './utils/client-data.js';
 
 @customElement('u-rich-table')
 export class URichTable extends LitElement {
@@ -17,6 +18,15 @@ export class URichTable extends LitElement {
   @property({ type: Number }) totalCount = 0;
   @property({ type: Number }) pageSize = 25;
   @property({ type: Number }) currentPage = 1;
+  /**
+   * Who applies the filter row, sorting and paging.
+   * - `'server'` (default): the table emits `filter-change` / `sort-change` / `page-change` and
+   *   shows `data` as given — the host runs the query and passes back one page and `totalCount`.
+   * - `'client'`: `data` is the whole set; the table filters, sorts and pages it itself
+   *   (`totalCount` is ignored, the events still fire). Use it when narrowing an already-loaded
+   *   list is the whole interaction. Same name and values as `flex-table`'s `dataMode`.
+   */
+  @property({ attribute: 'data-mode' }) dataMode: 'client' | 'server' = 'server';
   @property({ type: Boolean }) loading = false;
   @property({ type: String }) emptyMessage = '';
   /** 로딩 표시 문구 */
@@ -61,6 +71,30 @@ export class URichTable extends LitElement {
   @state() private expandedIds = new Set<string>();
   @state() private sort: SortState | null = null;
   @state() private filters: FilterState = {};
+
+  /** 화면에 보이는 행 — server 모드는 `data` 그대로, client 모드는 걸러·정렬·페이지한 결과. */
+  private _view: Record<string, unknown>[] = [];
+  /** client 모드에서 걸러진 전체 건수(페이지 나누기 전). */
+  private _viewTotal = 0;
+  /** client 모드에서 `_id` 없는 행의 위치는 `data` 안의 위치다 — 거르거나 정렬해도 선택이 그 행을 따라간다. */
+  private _dataIndex = new Map<Record<string, unknown>, number>();
+
+  protected willUpdate(changed: PropertyValues<this>): void {
+    super.willUpdate(changed);
+    if (this.dataMode !== 'client') {
+      this._view = this.data;
+      this._dataIndex.clear();
+      return;
+    }
+    this._dataIndex = new Map(this.data.map((row, i) => [row, i]));
+    const filtered = applyFilters(this.data, this.filters, this.columns);
+    const ordered = this.sort ? sortRows(filtered, this.sort, this.columns) : filtered;
+    this._viewTotal = ordered.length;
+    const pages = Math.max(1, Math.ceil(ordered.length / this.pageSize));
+    if (this.currentPage > pages) this.currentPage = pages;
+    const start = (this.currentPage - 1) * this.pageSize;
+    this._view = ordered.slice(start, start + this.pageSize);
+  }
   @state() private validationErrors = new Map<string, string>();
   @state() private rowErrors = new Map<string, string>();
 
@@ -133,7 +167,7 @@ export class URichTable extends LitElement {
     const id = row._id;
     if (id !== undefined && id !== null) return String(id);
     this._warnMissingRowId();
-    return `#${index}`;
+    return `#${this.dataMode === 'client' ? (this._dataIndex.get(row) ?? index) : index}`;
   }
 
   private _warnedMissingRowId = false;
@@ -153,12 +187,12 @@ export class URichTable extends LitElement {
    * 페이지를 가로지르는 선택 집합이 필요하면 {@link selectedRowIds} 를 쓴다.
    */
   getSelectedRows(): Record<string, unknown>[] {
-    return this.data.filter((row, i) => this.selectedIds.has(this._rowId(row, i)));
+    return this._view.filter((row, i) => this.selectedIds.has(this._rowId(row, i)));
   }
 
   /** 이 페이지 행들의 식별자. 전체선택/해제가 «이 페이지» 범위임을 정의하는 값이다. */
   private _pageRowIds(): string[] {
-    return this.data.map((row, i) => this._rowId(row, i));
+    return this._view.map((row, i) => this._rowId(row, i));
   }
 
   /** 현재 페이지에서 선택된 행 수 — 전체선택 체크박스의 «분자». */
@@ -270,8 +304,8 @@ export class URichTable extends LitElement {
             <label class="checkbox-hit">
               <input type="checkbox"
                 aria-label=${messages.text('selectAllOnPage')}
-                .checked=${this.data.length > 0 && onPage === this.data.length}
-                .indeterminate=${onPage > 0 && onPage < this.data.length}
+                .checked=${this._view.length > 0 && onPage === this._view.length}
+                .indeterminate=${onPage > 0 && onPage < this._view.length}
                 @change=${this._onSelectAll} />
             </label>
           </th>` : ''}
@@ -330,10 +364,10 @@ export class URichTable extends LitElement {
     if (this.loading) {
       return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div></td></tr>`;
     }
-    if (this.data.length === 0) {
+    if (this._view.length === 0) {
       return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${this.emptyMessage || messages.text('empty')}</div></td></tr>`;
     }
-    return this.data.map((row, rowIdx) => {
+    return this._view.map((row, rowIdx) => {
       const rowId = this._rowId(row, rowIdx);
       const isSelected = this.selectedIds.has(rowId);
       const isExpanded = this.expandedIds.has(rowId);
@@ -475,14 +509,15 @@ export class URichTable extends LitElement {
   }
 
   private _renderPagination(): TemplateResult {
-    if (this.totalCount <= 0) return html``;
-    const totalPages = Math.ceil(this.totalCount / this.pageSize);
+    const total = this.dataMode === 'client' ? this._viewTotal : this.totalCount;
+    if (total <= 0) return html``;
+    const totalPages = Math.ceil(total / this.pageSize);
     const start = (this.currentPage - 1) * this.pageSize + 1;
-    const end = Math.min(this.currentPage * this.pageSize, this.totalCount);
+    const end = Math.min(this.currentPage * this.pageSize, total);
 
     return html`
       <div class="pagination">
-        <span>${this.pageInfoFormatter(this.totalCount, start, end)}</span>
+        <span>${this.pageInfoFormatter(total, start, end)}</span>
         <div class="page-buttons">
           <button ?disabled=${this.currentPage <= 1} @click=${() => this._onPageChange(this.currentPage - 1)}>◀</button>
           ${this._getPageNumbers(totalPages).map(p => html`
@@ -547,7 +582,7 @@ export class URichTable extends LitElement {
     const end = Math.max(this._lastSelectedIndex, rowIdx);
     const next = new Set(this.selectedIds);
     for (let i = start; i <= end; i++) {
-      next.add(this._rowId(this.data[i], i));
+      next.add(this._rowId(this._view[i], i));
     }
     this.selectedIds = next;
     this._fireSelectionChange();
@@ -576,6 +611,8 @@ export class URichTable extends LitElement {
       const { [field]: _, ...rest } = this.filters;
       this.filters = rest;
     }
+    // 새 조건은 첫 페이지부터 — 결과가 줄었는데 4쪽에 남는 것이 이 자리의 흔한 버그다.
+    if (this.dataMode === 'client') this.currentPage = 1;
     this.dispatchEvent(new CustomEvent('filter-change', {
       detail: { filters: this.filters },
       bubbles: true, composed: true
@@ -594,7 +631,7 @@ export class URichTable extends LitElement {
    * 키보드 경로(Enter)는 `editable` 열에서 이미 편집 진입 신호이므로 그 경우는 내지 않는다.
    */
   private _fireRowActivate(rowIdx: number, via: 'click' | 'keyboard'): void {
-    const row = this.data[rowIdx];
+    const row = this._view[rowIdx];
     if (!row) return;
     this.dispatchEvent(new CustomEvent('row-activate', {
       detail: { row, id: this._rowId(row, rowIdx), via },
@@ -618,10 +655,10 @@ export class URichTable extends LitElement {
       e.preventDefault();
       this._onCellEditConfirm();
       // 다음 행으로 이동
-      if (this.editingCell && this.editingCell.rowIndex < this.data.length - 1) {
+      if (this.editingCell && this.editingCell.rowIndex < this._view.length - 1) {
         const nextRow = this.editingCell.rowIndex + 1;
         const col = this.editingCell.colIndex;
-        const nextValue = this.data[nextRow][this.columns[col].key];
+        const nextValue = this._view[nextRow][this.columns[col].key];
         this._onCellDblClick(nextRow, col, nextValue);
       }
     } else if (e.key === 'Escape') {
@@ -638,7 +675,7 @@ export class URichTable extends LitElement {
     if (!this.editingCell) return;
     const { rowIndex, colIndex } = this.editingCell;
     const col = this.columns[colIndex];
-    const row = this.data[rowIndex];
+    const row = this._view[rowIndex];
     const oldValue = row[col.key];
     let newValue: unknown = this.editValue;
 
@@ -680,7 +717,7 @@ export class URichTable extends LitElement {
     else next.delete(rowId);
     this.expandedIds = next;
     this.dispatchEvent(new CustomEvent('row-expand', {
-      detail: { row: this.data.find((r, i) => this._rowId(r, i) === rowId), expanded },
+      detail: { row: this._view.find((r, i) => this._rowId(r, i) === rowId), expanded },
       bubbles: true, composed: true
     }));
   }
@@ -742,6 +779,7 @@ export class URichTable extends LitElement {
   }
 
   private _onPageChange(page: number): void {
+    if (this.dataMode === 'client') this.currentPage = page;
     this.dispatchEvent(new CustomEvent('page-change', {
       detail: { page, pageSize: this.pageSize },
       bubbles: true, composed: true
@@ -749,6 +787,10 @@ export class URichTable extends LitElement {
   }
 
   private _onPageSizeChange(pageSize: number): void {
+    if (this.dataMode === 'client') {
+      this.pageSize = pageSize;
+      this.currentPage = 1;
+    }
     this.dispatchEvent(new CustomEvent('page-change', {
       detail: { page: 1, pageSize },
       bubbles: true, composed: true
@@ -797,13 +839,13 @@ export class URichTable extends LitElement {
     } else {
       if (currentIdx < editableCols.length - 1) {
         colIndex = editableCols[currentIdx + 1];
-      } else if (rowIndex < this.data.length - 1) {
+      } else if (rowIndex < this._view.length - 1) {
         rowIndex++;
         colIndex = editableCols[0];
       }
     }
 
-    const value = this.data[rowIndex]?.[this.columns[colIndex]?.key];
+    const value = this._view[rowIndex]?.[this.columns[colIndex]?.key];
     this._onCellDblClick(rowIndex, colIndex, value);
   }
 
@@ -850,7 +892,7 @@ export class URichTable extends LitElement {
       if (e.key === 'Enter') {
         const col = this.columns[this.focusedCell.colIndex];
         if (col?.editable) {
-          const value = this.data[this.focusedCell.rowIndex]?.[col.key];
+          const value = this._view[this.focusedCell.rowIndex]?.[col.key];
           this._onCellDblClick(this.focusedCell.rowIndex, this.focusedCell.colIndex, value);
         } else {
           this._fireRowActivate(this.focusedCell.rowIndex, 'keyboard');
@@ -858,7 +900,7 @@ export class URichTable extends LitElement {
       }
       if (e.key === ' ' && this.selectable) {
         e.preventDefault();
-        const r = this.data[this.focusedCell.rowIndex];
+        const r = this._view[this.focusedCell.rowIndex];
         const rowId = r ? this._rowId(r, this.focusedCell.rowIndex) : undefined;
         if (rowId) this._onRowSelect(rowId);
       }
@@ -911,7 +953,7 @@ export class URichTable extends LitElement {
   private _moveFocus(dx: number, dy: number): void {
     if (!this.focusedCell) return;
     const newCol = Math.max(0, Math.min(this.columns.length - 1, this.focusedCell.colIndex + dx));
-    const newRow = Math.max(0, Math.min(this.data.length - 1, this.focusedCell.rowIndex + dy));
+    const newRow = Math.max(0, Math.min(this._view.length - 1, this.focusedCell.rowIndex + dy));
     this.focusedCell = { rowIndex: newRow, colIndex: newCol };
   }
 

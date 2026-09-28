@@ -84,6 +84,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `totalCount` | `number` | `0` | 전체 건수. `0`이면 페이지네이션 미표시 |
 | `pageSize` | `number` | `25` | 페이지당 행 수 (선택 UI: 25 / 50 / 100) |
 | `currentPage` | `number` | `1` | 현재 페이지 (1-based) |
+| `dataMode` | `'client' \| 'server'` | `'server'` | 필터 행·정렬·페이지를 누가 적용하는가 — `'client'` 면 `data` 전체를 표가 직접 거르고 정렬하고 나눈다(`totalCount` 무시, 이벤트는 그대로). 속성명 `data-mode` |
 | `loading` | `boolean` | `false` | 로딩 표시 |
 | `emptyMessage` | `string` | `'데이터가 없습니다'` | 빈 상태 문구 |
 | `selectable` | `boolean` | `false` | 체크박스 선택 열 |

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- **`data-mode="client"` on `u-rich-table`** — when `data` is the whole list, the table applies
+  the filter row, sorting and paging itself (text filters match case-insensitively, `select`
+  filters match the value, `number`/`date` columns sort as numbers/dates, a new filter returns to
+  page 1, the pager counts filtered rows). The default stays `server`: emit events and render
+  `data` as given. The name and values match `flex-table`'s `dataMode`.
+
 ### Fixed
 
 - **The filter row no longer adds a horizontal scrollbar.** Its inputs were 100% of the cell plus
