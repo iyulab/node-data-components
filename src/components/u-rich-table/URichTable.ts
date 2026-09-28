@@ -229,7 +229,7 @@ export class URichTable extends LitElement {
    * `fixed` 로 전환하면 표가 오히려 컨테이너 폭에 갇혀 가로 스크롤이 사라진다(실측).
    * 절대 길이만 «합이 컨테이너를 넘으면 스크롤» 이라는 모델이 성립한다.
    *
-   * 숫자 폭(`width: 150`)은 px 다(`cssWidth`) — 표 두 벌의 어휘를 맞춘 것(cycle-766). 종전에는
+   * 숫자 폭(`width: 150`)은 px 다(`cssWidth`) — flex-table 과 같은 어휘다. 종전에는
    * 인라인 style 이 `width: 150` 이 되어 브라우저가 버렸다.
    *
    * 계약은 `tests/browser/rich-table-column-width.browser.test.ts` 가 고정한다.
