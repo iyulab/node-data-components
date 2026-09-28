@@ -4,7 +4,7 @@ import '../src/components/u-rich-table/URichTable';
 import { effectiveAlign, type ColumnDef } from '../src/components/u-rich-table/types';
 
 /**
- * 열 정렬 어휘 — flex-table 과 같은 말을 쓴다(cycle-766, `DL-765-1`).
+ * 열 정렬 어휘 — flex-table 과 같은 말을 쓴다.
  *
  * 머리글은 값을 따른다: 오른쪽 정렬 숫자 위에 왼쪽 머리글이 얹히면 열이 넓을수록 머리글이
  * 옆 열의 것처럼 읽힌다(소비자 실측 — 한 열 안에서 60px 어긋남). 기본값은 셀의 실효 정렬이고,
