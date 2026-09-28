@@ -137,7 +137,7 @@ That is not a style preference — it is what makes the guarantee possible:
   each, the columns render at **71px** in that mode — the declaration loses.
 - Percentages are resolved against the component, so "the widths add up to more than the container"
   can never be true for them. They keep the default mode too.
-- A bare number (`width: 150`) is not valid CSS and is dropped by the browser.
+- A number (`width: 150`) is pixels, so it counts as absolute.
 
 Nothing changes for tables that don't meet the condition, and nothing changes for a table whose
 declared widths already fit — there the columns share the leftover space as before.
@@ -264,11 +264,12 @@ type SelectionChange = RichTableEventMap['selection-change'];
 |---|---|---|
 | `key` | `string` | Property read from the row object |
 | `label` | `string` | Header text |
-| `width` | `string` | CSS width, with a unit (`'120px'`, `'8rem'`). See [Column widths](#column-widths) for when it is honoured exactly. A bare number (`150`) is invalid CSS and is ignored |
+| `width` | `number\|string` | A number is pixels (as in `@iyulab/flex-table`); a string is a CSS length (`'120px'`, `'8rem'`). See [Column widths](#column-widths) for when it is honoured exactly |
 | `type` | `'text'\|'number'\|'date'\|'select'\|'badge'` | Cell renderer and editor |
 | `options` | `{ value, label }[]` | Choices for `type: 'select'` |
 | `badgeColors` | `Record<string, string>` | Value → color for `type: 'badge'` |
-| `align` | `'left'\|'center'\|'right'` | Alignment of the column's cells and its header |
+| `align` | `'start'\|'center'\|'end'` | Cell alignment — logical, so right-to-left locales mirror. Default: `'end'` for `type: 'number'`, otherwise `'start'` |
+| `headerAlign` | `'start'\|'center'\|'end'` | Header alignment. Default: the cell alignment, so a header sits over its values |
 | `sortable` | `boolean` | Header emits `sort-change` |
 | `editable` | `boolean` | Cell is editable when the table is `editable` |
 | `required` | `boolean` | Empty value fails validation |

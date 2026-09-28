@@ -23,8 +23,8 @@ const mount = async (attrs: string[] = []) => {
   for (const a of attrs) el.setAttribute(a, '');
   el.columns = [
     { key: 'name', label: 'Name', width: '200px' },
-    { key: 'total', label: 'Total', width: '120px', align: 'right' },
-    { key: 'qty', label: 'Qty', width: '120px', align: 'right', sortable: true },
+    { key: 'total', label: 'Total', width: '120px', align: 'end' },
+    { key: 'qty', label: 'Qty', width: '120px', align: 'end', sortable: true },
   ];
   el.data = [{ _id: 'a', name: 'A', total: 1000, qty: 2 }, { _id: 'b', name: 'B', total: 20, qty: 3 }];
   el.style.width = '700px';
@@ -38,10 +38,10 @@ const $ = (el: Table, sel: string) => el.shadowRoot!.querySelector(sel) as HTMLE
 const $$ = (el: Table, sel: string) => [...el.shadowRoot!.querySelectorAll(sel)] as HTMLElement[];
 
 describe('u-rich-table 머리글 배치', () => {
-  it('🔴align:right 열의 머리글 글자가 값과 같은 오른쪽 가장자리에 붙는다(정렬 버튼 포함)', async () => {
+  it('🔴align:end 열의 머리글 글자가 값과 같은 끝 가장자리에 붙는다(정렬 버튼 포함)', async () => {
     const el = await mount();
     const ths = $$(el, 'thead th');
-    expect(getComputedStyle(ths[1]).textAlign).toBe('right');
+    expect(getComputedStyle(ths[1]).textAlign).toBe('end');
     // 정렬 가능한 열 — 머리글은 버튼이 칸을 채우므로 버튼 안의 배치를 본다
     const btn = ths[2].querySelector('.sort-button') as HTMLElement;
     expect(getComputedStyle(btn).justifyContent).toBe('flex-end');

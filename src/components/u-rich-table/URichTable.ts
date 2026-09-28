@@ -5,6 +5,10 @@ import { html, LitElement, nothing, type PropertyValues, type TemplateResult } f
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
+import { effectiveAlign } from './types.js';
+
+/** 열 폭을 CSS 값으로 — 숫자는 px(flex-table 과 같은 어휘), 문자열은 그대로. */
+const cssWidth = (w: number | string | undefined): string => (typeof w === 'number' ? `${w}px` : w ?? '');
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 
@@ -225,8 +229,8 @@ export class URichTable extends LitElement {
    * `fixed` 로 전환하면 표가 오히려 컨테이너 폭에 갇혀 가로 스크롤이 사라진다(실측).
    * 절대 길이만 «합이 컨테이너를 넘으면 스크롤» 이라는 모델이 성립한다.
    *
-   * ⚠**숫자만 준 값(`width: 150`)은 CSS 로 무효**라 여기서도 통과하지 못한다 — 인라인 style 이
-   * `width: 150` 이 되어 브라우저가 버린다. 단위를 요구하는 것이 곧 그 실수를 막는다.
+   * 숫자 폭(`width: 150`)은 px 다(`cssWidth`) — 표 두 벌의 어휘를 맞춘 것(cycle-766). 종전에는
+   * 인라인 style 이 `width: 150` 이 되어 브라우저가 버렸다.
    *
    * 계약은 `tests/browser/rich-table-column-width.browser.test.ts` 가 고정한다.
    */
@@ -234,7 +238,8 @@ export class URichTable extends LitElement {
     const ABSOLUTE = /^\s*\d+(\.\d+)?(px|rem|em|ch|pt|pc|cm|mm|in|Q)\s*$/;
     return (
       this.columns.length > 0 &&
-      this.columns.every((c) => typeof c.width === 'string' && ABSOLUTE.test(c.width))
+      this.columns.every((c) =>
+        typeof c.width === 'number' ? c.width > 0 : typeof c.width === 'string' && ABSOLUTE.test(c.width))
     );
   }
 
@@ -301,9 +306,14 @@ export class URichTable extends LitElement {
     return !(this.selectable && this.selectedIds.size > 0) && !this.addable && !this._hasToolbarEnd;
   }
 
-  /** 열의 `align` 을 머리글에도 — 숫자 열은 머리글과 값이 같은 가장자리에 붙어야 훑어 읽힌다. */
+  /** 머리글 정렬 = `headerAlign`, 없으면 셀의 실효 정렬 — 숫자 열은 머리글과 값이 같은 가장자리에 붙어야 훑어 읽힌다. */
+  private _headerAlign(col: ColumnDef) {
+    return col.headerAlign ?? effectiveAlign(col);
+  }
+
   private _headerStyle(col: ColumnDef): string {
-    return [col.width ? `width: ${col.width}` : '', col.align ? `text-align: ${col.align}` : '']
+    const align = this._headerAlign(col);
+    return [col.width != null ? `width: ${cssWidth(col.width)}` : '', align !== 'start' ? `text-align: ${align}` : '']
       .filter(Boolean).join('; ');
   }
 
@@ -333,7 +343,7 @@ export class URichTable extends LitElement {
               ${col.sortable
                 // 정렬은 머리 칸을 채우는 버튼이다 — 클릭만 받는 th 는 키보드로 닿지 않았다.
                 ? html`<button type="button" class="sort-button" part="sort-button"
-                    style=${col.align === 'right' ? 'justify-content: flex-end' : col.align === 'center' ? 'justify-content: center' : ''}
+                    style=${this._headerAlign(col) === 'end' ? 'justify-content: flex-end' : this._headerAlign(col) === 'center' ? 'justify-content: center' : ''}
                     @click=${() => this._onSortClick(col.key)}>
                     ${col.label}
                     ${this.sort?.field === col.key ? html`
@@ -471,7 +481,7 @@ export class URichTable extends LitElement {
 
     return html`
       <td class=${isFocused ? 'focused-cell' : ''}
-        style=${col.align ? `text-align: ${col.align}` : ''}
+        style=${effectiveAlign(col) !== 'start' ? `text-align: ${effectiveAlign(col)}` : ''}
         @click=${() => this._onCellClick(rowIdx, colIdx)}
         @dblclick=${() => col.editable && this._onCellDblClick(rowIdx, colIdx, value)}>
         ${this._renderCellContent(col, value, row)}

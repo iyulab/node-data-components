@@ -34,7 +34,7 @@ const COLUMNS = [
   { key: 'customer', label: 'Customer', width: '200px', filterable: true },
   { key: 'status', label: 'Status', width: '140px', filterable: true, filterType: 'select',
     options: [{ value: 'pending', label: 'Pending' }] },
-  { key: 'total', label: 'Total', width: '120px', align: 'right', filterable: true },
+  { key: 'total', label: 'Total', width: '120px', align: 'end', filterable: true },
 ];
 
 describe('u-rich-table 필터 행', () => {

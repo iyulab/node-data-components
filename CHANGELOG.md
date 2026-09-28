@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.29.0] - 2026-09-28
+
+### Changed
+
+- 🔴 **Breaking — `align` takes logical values: `'start' | 'center' | 'end'`** (was
+  `'left' | 'center' | 'right'`), the same words `@iyulab/flex-table` uses, so one column list reads
+  the same in either table and right-to-left locales mirror. Migration: `'left'` → `'start'`,
+  `'right'` → `'end'`.
+- **`number` columns align to the end by default**, and **headers follow their cells**: a header's
+  default alignment is its column's cell alignment. Before, a column without `align` was
+  left-aligned even for numbers, and `align` was the only way to move the header.
+
+### Added
+
+- **`headerAlign`** on `ColumnDef` — set it only when the header should differ from its values.
+- **`width` accepts a number of pixels** (`width: 120`), as in `flex-table`. A number counts as an
+  absolute width for the fixed-layout rule. Before, a bare number produced invalid CSS and was
+  dropped.
+
 ## [0.28.0] - 2026-09-28
 
 ### Added

@@ -1,9 +1,19 @@
 // src/components/u-rich-table/types.ts
 
+/** Logical horizontal alignment — `start`/`end` follow the writing direction. */
+export type ColumnAlign = 'start' | 'center' | 'end';
+
+/** The alignment a column's cells render with: `align`, or `end` for `number` columns, else `start`. */
+export function effectiveAlign(col: { align?: ColumnAlign; type?: ColumnDef['type'] }): ColumnAlign {
+  if (col.align) return col.align;
+  return col.type === 'number' ? 'end' : 'start';
+}
+
 export interface ColumnDef {
   key: string;
   label: string;
-  width?: string;
+  /** Column width — a number is pixels (as in `@iyulab/flex-table`), a string is any CSS length (`'8rem'`). */
+  width?: number | string;
   sortable?: boolean;
   editable?: boolean;
   required?: boolean;
@@ -11,7 +21,10 @@ export interface ColumnDef {
   options?: { value: string; label: string }[];
   badgeColors?: Record<string, string>;
   render?: (value: unknown, row: Record<string, unknown>) => string | HTMLElement;
-  align?: 'left' | 'center' | 'right';
+  /** Cell alignment. Logical values, so right-to-left locales mirror. Default: `end` for `number`, else `start`. */
+  align?: ColumnAlign;
+  /** Header alignment. Default: the cell alignment — a header sits over its values. */
+  headerAlign?: ColumnAlign;
   /** Opt-in, like `sortable`: the column gets a filter cell only when this is `true` (and the table is `filterable`). */
   filterable?: boolean;
   filterType?: 'text' | 'select';
