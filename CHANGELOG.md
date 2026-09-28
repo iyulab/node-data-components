@@ -1,5 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **The filter row no longer adds a horizontal scrollbar.** Its inputs were 100% of the cell plus
+  their own padding and border, so the last column's input ran past the table and every
+  filterable table scrolled sideways by a few pixels, however much room it had.
+
+### Changed
+
+- **A column gets a filter cell only when it sets `filterable: true`** — the same opt-in as
+  `sortable`, and what the documentation always said. Columns that did not set it used to get a
+  text filter anyway (including number and currency columns). **Migration:** add
+  `filterable: true` to each column you want filtered. When no column opts in, the filter row is
+  not drawn at all.
+
 ## [0.26.0] - 2026-09-28
 
 ### Fixed

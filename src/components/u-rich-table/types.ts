@@ -12,6 +12,7 @@ export interface ColumnDef {
   badgeColors?: Record<string, string>;
   render?: (value: unknown, row: Record<string, unknown>) => string | HTMLElement;
   align?: 'left' | 'center' | 'right';
+  /** Opt-in, like `sortable`: the column gets a filter cell only when this is `true` (and the table is `filterable`). */
   filterable?: boolean;
   filterType?: 'text' | 'select';
   validator?: (value: unknown, row: Record<string, unknown>) => string | null;

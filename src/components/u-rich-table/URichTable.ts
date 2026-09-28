@@ -198,7 +198,7 @@ export class URichTable extends LitElement {
         <table class=${this._fixedColumnWidths ? 'fixed-cols' : ''}>
           ${this._renderHeader()}
           <tbody>
-            ${this.filterable ? this._renderFilterRow() : ''}
+            ${this.filterable && this.columns.some(c => c.filterable) ? this._renderFilterRow() : ''}
             ${this._renderBody()}
             ${this.addable ? this._renderNewRow() : ''}
           </tbody>
@@ -309,7 +309,7 @@ export class URichTable extends LitElement {
         ${this.expandable ? html`<td></td>` : ''}
         ${this.columns.map(col => html`
           <td>
-            ${col.filterable !== false ? (
+            ${col.filterable ? (
               col.filterType === 'select' && col.options
                 ? html`<select @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
                     <option value="">${this.filterAllLabel || messages.text('filterAll')}</option>

@@ -179,7 +179,7 @@ interface ColumnDef {
 
   sortable?:   boolean;                   // 헤더 클릭 시 sort-change 발생
   editable?:   boolean;                   // 이 열만 편집 허용 (표의 editable과 함께 필요)
-  filterable?: boolean;
+  filterable?: boolean;                   // 이 열만 필터 칸을 받는다 (표의 filterable과 함께 필요)
   filterType?: 'text' | 'select';
   required?:   boolean;
 

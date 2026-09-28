@@ -200,6 +200,8 @@ export const richTableStyles = css`
 
   .filter-row input,
   .filter-row select {
+    /* 칸 폭 100% 에 안쪽 여백·테두리를 포함한다 — content-box 면 마지막 열이 표를 넘어 상시 가로 스크롤바가 생긴다. */
+    box-sizing: border-box;
     width: 100%;
     padding: 2px 6px;
     border: 1px solid var(--u-input-border-color, #E0E0E0);
