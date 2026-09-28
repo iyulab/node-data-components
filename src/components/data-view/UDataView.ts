@@ -1,7 +1,6 @@
-﻿import { html, type TemplateResult } from 'lit';
+﻿import { html, svg, type SVGTemplateResult, type TemplateResult } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 
-import '@iyulab/components/dist/components/icon/UIcon.js';
 import '@iyulab/components/dist/components/button/UButton.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { messages } from '../../utilities/messages.js';
@@ -25,6 +24,16 @@ export interface DataColumn {
   /** Column width — a number is pixels, a string is any CSS length (same as `u-rich-table`). */
   width?: number | string;
 }
+
+/**
+ * 보기 전환 아이콘 — 이 컴포넌트 자신의 크롬이라 직접 그린다. 종전에는 Bootstrap Icons 를
+ * CDN 에서 읽어, 공용 인터넷에 닿지 않는 망에서는 버튼이 비었다.
+ */
+const VIEW_ICONS = {
+  grid: svg`<rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>`,
+  list: svg`<rect x="1" y="2" width="2" height="2" rx="1"/><rect x="5" y="2" width="10" height="2" rx="1"/><rect x="1" y="7" width="2" height="2" rx="1"/><rect x="5" y="7" width="10" height="2" rx="1"/><rect x="1" y="12" width="2" height="2" rx="1"/><rect x="5" y="12" width="10" height="2" rx="1"/>`,
+  table: svg`<path d="M2 1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1Zm0 1v3h12V2H2Zm0 4v3h5V6H2Zm6 0v3h6V6H8Zm-6 4v4h5v-4H2Zm6 0v4h6v-4H8Z" fill-rule="evenodd"/>`,
+};
 
 /**
  * Data View Component
@@ -63,9 +72,9 @@ export class UDataView extends UElement {
     return html`
       <div class="toolbar">
         <div class="view-toggles">
-          ${this.renderViewButton('grid', 'grid-3x3-gap', messages.text('viewGrid'))}
-          ${this.renderViewButton('list', 'list-ul', messages.text('viewList'))}
-          ${this.renderViewButton('table', 'table', messages.text('viewTable'))}
+          ${this.renderViewButton('grid', VIEW_ICONS.grid, messages.text('viewGrid'))}
+          ${this.renderViewButton('list', VIEW_ICONS.list, messages.text('viewList'))}
+          ${this.renderViewButton('table', VIEW_ICONS.table, messages.text('viewTable'))}
         </div>
         <div class="info">
           ${messages.text('itemCount', { count: this.items.length })}
@@ -83,7 +92,7 @@ export class UDataView extends UElement {
    * 를 쓰면 그 대비 계약을 컴포넌트가 책임진다.
    * 접근성은 `aria-pressed` 가 나른다 — 색만으로는 토글 상태가 보조기술에 닿지 않는다.
    */
-  private renderViewButton(mode: ViewMode, icon: string, label: string) {
+  private renderViewButton(mode: ViewMode, icon: SVGTemplateResult, label: string) {
     const selected = this.mode === mode;
     return html`
       <u-button
@@ -94,7 +103,7 @@ export class UDataView extends UElement {
         aria-pressed=${selected ? 'true' : 'false'}
         @click=${() => { this.mode = mode; }}
       >
-        <u-icon lib="bootstrap" name=${icon}></u-icon>
+        <svg viewBox="0 0 16 16" width="1em" height="1em" fill="currentColor" aria-hidden="true">${icon}</svg>
       </u-button>
     `;
   }

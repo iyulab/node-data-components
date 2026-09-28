@@ -59,6 +59,15 @@ describe('u-data-view 툴바', () => {
     expect(grid.getAttribute('variant')).toBe('ghost');
   });
 
+  // 공용 인터넷에 닿지 않는 망에서도 버튼이 비지 않는다 — 아이콘은 컴포넌트가 직접 그린다.
+  it('보기 전환 아이콘은 직접 그린 SVG 다 — 아이콘 라이브러리(CDN)를 요청하지 않는다', async () => {
+    const el = await mount();
+    for (const button of toolbarButtons(el)) {
+      expect(button.querySelector('u-icon')).toBeNull();
+      expect(button.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    }
+  });
+
   it('🔴NEGATIVE — 죽은 표기(`active` 속성)는 더 이상 쓰이지 않는다', async () => {
     // `u-button` 에 `active` 프로퍼티가 없다는 사실이 이 단언의 근거다.
     // 되살아나면 «표시되지 않는 선택 상태»가 조용히 돌아온다.

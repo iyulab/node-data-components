@@ -19,6 +19,12 @@
   absolute width for the fixed-layout rule. Before, a bare number produced invalid CSS and was
   dropped. `u-data-view`'s table columns (`DataColumn.width`) take a number the same way.
 
+### Fixed
+
+- **`u-data-view`'s view switcher no longer fetches icons from a CDN.** Its grid/list/table icons
+  were Bootstrap Icons loaded from `cdn.jsdelivr.net`, so on a network without public internet
+  access the three buttons were blank. The component now draws them itself.
+
 ## [0.28.0] - 2026-09-28
 
 ### Added
