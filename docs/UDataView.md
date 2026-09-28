@@ -37,7 +37,7 @@ import '@iyulab/data-components';
 interface DataColumn {
   key:     string;   // 데이터 객체의 키
   label?:  string;   // 헤더 표시 텍스트 (미설정 시 key를 camelCase → Title Case 변환)
-  width?:  string;   // 열 너비 (CSS 값, 예: '120px', '20%')
+  width?:  number | string; // 열 너비 — 숫자는 px, 문자열은 CSS 값(예: '120px', '20%')
 }
 ```
 

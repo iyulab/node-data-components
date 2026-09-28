@@ -22,7 +22,8 @@ export type DataItem = Record<string, any>;
 export interface DataColumn {
   key: string;
   label?: string;
-  width?: string;
+  /** Column width — a number is pixels, a string is any CSS length (same as `u-rich-table`). */
+  width?: number | string;
 }
 
 /**
@@ -135,7 +136,7 @@ export class UDataView extends UElement {
           <thead>
             <tr>
               ${cols.map(col => html`
-                <th style=${col.width ? `width: ${col.width}` : ''}>
+                <th style=${col.width != null ? `width: ${typeof col.width === 'number' ? `${col.width}px` : col.width}` : ''}>
                   ${col.label || this.formatLabel(col.key)}
                 </th>
               `)}

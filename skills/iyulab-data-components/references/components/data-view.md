@@ -95,4 +95,4 @@ lose to them.
 |---|---|---|
 | `key` | `string` | Property read from the item |
 | `label` | `string` | Header text (defaults to `key`) |
-| `width` | `string` | CSS width |
+| `width` | `number\|string` | A number is pixels; a string is a CSS width |

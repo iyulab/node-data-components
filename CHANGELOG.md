@@ -17,7 +17,7 @@
 - **`headerAlign`** on `ColumnDef` — set it only when the header should differ from its values.
 - **`width` accepts a number of pixels** (`width: 120`), as in `flex-table`. A number counts as an
   absolute width for the fixed-layout rule. Before, a bare number produced invalid CSS and was
-  dropped.
+  dropped. `u-data-view`'s table columns (`DataColumn.width`) take a number the same way.
 
 ## [0.28.0] - 2026-09-28
 
