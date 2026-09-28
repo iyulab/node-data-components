@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { USimpleSheet, type SheetColumn } from '../src/components/simple-sheet/USimpleSheet.js';
 
 /**
- * docket #161 — compute/readonly가 열 전체 단위로만 동작해, "항목/값" 2열 시트에서
+ * compute/readonly가 열 전체 단위로만 동작해, "항목/값" 2열 시트에서
  * 값 열 안에 원천 입력 행과 자동계산 행이 섞인 레이아웃(회계·예산 시뮬레이션류)을
  * 표현할 수 없던 결함의 회귀 테스트.
  *
@@ -16,7 +16,7 @@ function cell(el: USimpleSheet, r: number, c: number): HTMLElement {
   return el.shadowRoot!.querySelector(`td[data-row="${r}"][data-col="${c}"]`) as HTMLElement;
 }
 
-describe('USimpleSheet 행 단위 compute/readonly (docket #161)', () => {
+describe('USimpleSheet 행 단위 compute/readonly', () => {
   let sheet: USimpleSheet | undefined;
 
   afterEach(() => {

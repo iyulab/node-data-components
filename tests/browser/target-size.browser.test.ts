@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 /**
  * **WCAG 2.2 SC 2.5.8 Target Size (Minimum) — 24×24 CSS px** 게이트.
  *
- * `@iyulab/components` 의 같은 이름 파일(cycle-479~492)에서 `chat-components`(cycle-496)를
+ * `@iyulab/components` 의 같은 이름 파일에서 `chat-components`를
  * 거쳐 이식했다. 판정 규칙·간격 예외 모델링·형제 태그 걸러내기는 **같은 형태**이고, 다른 것은
  * 이 패키지의 구성뿐이다. 근거는 `components` 쪽 파일 머리말이 정본이므로 되풀이하지 않는다.
  *
@@ -54,20 +54,20 @@ function inShadow(host: Element, sel: string): Element[] {
 }
 
 /**
- * 🔴**hit-test 축**(cycle-553 · 세 게이트 공통) — 타깃의 중심과 1px 안쪽 네 가장자리를 실제로 누르면 그 타깃이 받는가.
+ * 🔴**hit-test 축**(세 게이트 공통) — 타깃의 중심과 1px 안쪽 네 가장자리를 실제로 누르면 그 타깃이 받는가.
  *
  * `getBoundingClientRect` 는 조상의 `overflow` 가 자른 부분도, 닫혀서 보이지 않는 요소의 박스도 그대로 보고한다 — 크기만
  * 재면 ***보이지도 눌리지도 않는 타깃이 통과한다.*** 실제로 그랬다: components 게이트의 `u-input` 접미 아이콘(좁은 필드에서
  * 밖으로 밀려나 잘렸다)과, 닫힌 채 띄운 대화상자 픽스처(닫기 버튼 중심을 누르면 `body` 가 받았다).
  *
  * - **사용자가 스크롤로 닿을 수 있으면 닿는 것이다** — 점마다, 그 점이 보이도록 `overflow: auto|scroll` 조상과 창만 스크롤한
- *   뒤 잰다(cycle-554: 표·시트·블록이 러너의 좁은 뷰포트를 넘어 `elementFromPoint` 가 `null` 을 돌려줬고, 뷰포트보다 넓은
+ *   뒤 잰다(표·시트·블록이 러너의 좁은 뷰포트를 넘어 `elementFromPoint` 가 `null` 을 돌려줬고, 뷰포트보다 넓은
  *   타깃은 양 끝을 한 화면에 담을 수 없다). `overflow: hidden|clip` 조상은 사용자가 움직일 수 없으므로 **건드리지 않는다** —
  *   `scrollIntoView` 는 그것까지 스크롤해 잘린 타깃을 통과시킨다. 움직인 스크롤은 점마다 돌려놓는다.
  * - 판정은 타깃이 속한 트리(`getRootNode()`)에서 한다. 그 트리로 retarget 되어 **호스트**가 돌아오면, 그 점이 타깃 안
  *   `<slot>` 에 꽂힌 라이트 DOM 내용 위일 때 타깃이 받은 것으로 센다(링크 안에 꽂힌 글자 등).
  * - ⚠**이웃 타깃이 받은 것은 봐주지 않는다.** 붙어 있는 격자 셀의 경계선 때문에 가장자리를 이웃에 양보하는 면제를
- *   시험해 봤지만(cycle-554), 네거티브 컨트롤로 끄자 **어떤 픽스처도 빨개지지 않았다** — 셀 가장자리의 불일치는 경계선이
+ *   시험해 봤지만, 네거티브 컨트롤로 끄자 **어떤 픽스처도 빨개지지 않았다** — 셀 가장자리의 불일치는 경계선이
  *   아니라 뷰포트 밖이었다. 쓰이지 않는 면제는 조용한 미탐이라 걷어냈다. 필요해지면 그 픽스처가 빨강으로 알린다.
  *
  * ⚠이 헬퍼는 세 게이트(components · chat-components · data-components)에 **같은 코드로** 한 벌씩 있다 — 고치면 셋 다.
@@ -230,7 +230,7 @@ function slottedContentAt(el: Element, x: number, y: number): boolean {
  *
  * ⚠**규칙이라 손으로 쓴다** — 어떤 라벨이 «활성화»하는지는 도출이 아니라 우리 지식이다.
  * ⚠**체크박스·라디오에만** 적용한다: 텍스트 입력의 라벨까지 넓히면 정당한 미달을 숨기는
- * 쪽으로만 작용한다. `u-widgets` 게이트(cycle-493)가 같은 규칙을 같은 이유로 쓴다.
+ * 쪽으로만 작용한다. `u-widgets` 게이트가 같은 규칙을 같은 이유로 쓴다.
  */
 function resolveTarget(el: Element): Element {
   const input = el as HTMLInputElement;
@@ -250,7 +250,7 @@ const NOT_A_TARGET = new Set<string>([
   // 🔴**타깃이 «형제 컴포넌트»인 것 — 그 크기는 `@iyulab/components` 의 계약이다.**
   //   `u-data-view` 는 모드 전환 `u-button` 들을 «놓을» 뿐 치수를 정하지 않는다. 여기서 또 재면
   //   판정이 두 곳으로 갈려 드리프트하고, 우리가 고칠 수 없는 미달이 이 스위트를 빨갛게 만든다.
-  //   🔴(cycle-549 정정) `u-record-picker` 는 여기 있었으나 **틀렸다** — 입력칸·지우기(cycle-537 이 역할·
+  //   🔴(정정) `u-record-picker` 는 여기 있었으나 **틀렸다** — 입력칸·지우기(역할·
   //   핸들러를 준 우리 타깃)·대화상자 검색칸을 스스로 가진다. `FIXTURES` 로 옮겼다.
   'u-data-view',
 ]);
@@ -301,7 +301,7 @@ interface Fixture {
   html: string;
   /**
    * 🔴**상태 이름** — 한 태그가 «열린 상태에서만 렌더되는 타깃» 을 가지면 상태마다 픽스처를 둔다
-   * (`FIXTURES` 값이 배열). `components`·`chat-components` 게이트와 같은 형태다(§D-56·57).
+   * (`FIXTURES` 값이 배열). `components`·`chat-components` 게이트와 같은 형태다.
    */
   state?: string;
   /**
@@ -324,7 +324,7 @@ interface Fixture {
 const FIXTURES: Record<string, Fixture | Fixture[]> = {
   'u-rich-table': {
     // ⚠`addable`·`selectable`·`deletable` 을 켜야 «추가» 버튼·선택 체크박스·행 삭제 버튼이 렌더된다 — 끄면 그
-    //   타깃들이 아예 없고, 그것을 «통과»로 읽으면 미탐이다(cycle-485~486 의 함정).
+    //   타깃들이 아예 없고, 그것을 «통과»로 읽으면 미탐이다.
     html: `<u-rich-table addable selectable deletable style="width:520px"
       columns='[{"key":"a","label":"A","sortable":true},{"key":"b","label":"B"}]'
       data='[{"a":"1","b":"2"},{"a":"3","b":"4"}]'></u-rich-table>`,
@@ -344,7 +344,7 @@ const FIXTURES: Record<string, Fixture | Fixture[]> = {
     {
       state: '기본',
       // 시트의 셀·헤더는 서로 **붙어 있어** 크기로만 재면 정당한 격자에 발화한다 ⇒ 간격
-      // 예외를 켠다(그 예외가 실제로 일하는 자리다 — cycle-496 이 세운 기준).
+      // 예외를 켠다(그 예외가 실제로 일하는 자리다).
       html: `<u-simple-sheet style="width:420px" rows="3"
         data='[["1","2"],["3","4"]]'></u-simple-sheet>`,
       targets: () => {
@@ -382,7 +382,7 @@ const FIXTURES: Record<string, Fixture | Fixture[]> = {
   'u-record-picker': [
     {
       state: '값 있음',
-      // 우리 타깃: 입력칸(`.main-input`)과 지우기(`.clear-btn` — 이 컴포넌트가 역할·핸들러·치수를 준다, cycle-537).
+      // 우리 타깃: 입력칸(`.main-input`)과 지우기(`.clear-btn` — 이 컴포넌트가 역할·핸들러·치수를 준다).
       // 찾기(`.find-btn`)와 제안 항목(`u-option`)은 형제 컴포넌트라 재지 않는다. 지우기는 값이 있을 때만 보인다.
       html: '<u-record-picker clearable style="width:260px"></u-record-picker>',
       prepare: async (host) => {

@@ -3,8 +3,7 @@ import { describe, it, beforeEach, afterEach, expect, vi } from 'vitest';
 import '../src/components/u-rich-table/URichTable';
 
 /**
- * `row-activate` — 「목록 클릭 → 상세」를 표현할 이벤트가 없었다(소비앱 초안,
- * `ISSUE-data-components-20260807-no-row-activation-event`). `selection-change` 는 체크박스
+ * `row-activate` — 「목록 클릭 → 상세」를 표현할 이벤트가 없었다. `selection-change` 는 체크박스
  * 상호작용 전용이라 대신할 수 없고, `row-expand` 는 그릴 자리(슬롯)가 없다.
  *
  * ## 편집 모드와의 경계가 이 파일의 핵심

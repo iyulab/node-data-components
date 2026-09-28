@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { USimpleSheet } from '../src/components/simple-sheet/USimpleSheet.js';
 
 /**
- * docket #150 — Ctrl+C 복사가 동작하지 않는 결함의 회귀 테스트.
+ * Ctrl+C 복사가 동작하지 않는 결함의 회귀 테스트.
  *
  * 근본원인: 셀 선택이 `_sel`(내부 상태)로만 관리되고 실제 브라우저 텍스트 선택(Range)을
  * 만들지 않아, 네이티브 `copy` 이벤트가 절대 발생하지 않았다(모든 주요 브라우저의 표준
@@ -26,7 +26,7 @@ async function focusContainer(el: USimpleSheet): Promise<HTMLElement> {
   return container;
 }
 
-describe('USimpleSheet 클립보드 (docket #150)', () => {
+describe('USimpleSheet 클립보드', () => {
   let writeText: ReturnType<typeof vi.fn>;
   let readText: ReturnType<typeof vi.fn>;
   let sheet: USimpleSheet | undefined;
@@ -79,7 +79,7 @@ describe('USimpleSheet 클립보드 (docket #150)', () => {
     expect(el.getData()[0].slice(0, 2)).toEqual(['a', 'b']);
   });
 
-  it('열 단위 readonly(readonly: true) 컬럼은 Ctrl+V로도 덮어써지지 않는다 (docket #160)', async () => {
+  it('열 단위 readonly(readonly: true) 컬럼은 Ctrl+V로도 덮어써지지 않는다', async () => {
     const el = sheet = mount();
     el.columns = [{ readonly: true }, {}];
     const container = await focusContainer(el); // (0,0)이 앵커 — 0번 컬럼은 readonly
@@ -91,7 +91,7 @@ describe('USimpleSheet 클립보드 (docket #150)', () => {
     expect(el.getData()[0][0]).toBe('a');
   });
 
-  it('strict+options 컬럼은 옵션에 없는 값이 붙여넣기로 들어오면 그 셀만 건너뛴다 (docket #166)', async () => {
+  it('strict+options 컬럼은 옵션에 없는 값이 붙여넣기로 들어오면 그 셀만 건너뛴다', async () => {
     const el = sheet = mount();
     el.columns = [{ options: ['1', '2'], strict: true }, {}];
     const container = await focusContainer(el); // (0,0)이 앵커 — 0번 컬럼이 strict+options

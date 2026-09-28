@@ -5,7 +5,7 @@ import '../src/components/u-rich-table/URichTable';
 /**
  * `_handleCopy`/`_handlePaste`는 `navigator.clipboard`의 promise를 그냥 기다리기만 하고
  * 실패를 흡수하지 않았다 — 권한 거부·비보안 컨텍스트에서 unhandled rejection만 남기고
- * 소비자에게는 아무 신호도 가지 않았다. `flex-table`/`u-simple-sheet`(docket #150)와
+ * 소비자에게는 아무 신호도 가지 않았다. `flex-table`/`u-simple-sheet`와
  * 같은 `clipboard-error` 이벤트로 통일한다.
  */
 

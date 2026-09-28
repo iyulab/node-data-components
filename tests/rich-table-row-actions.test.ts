@@ -4,7 +4,7 @@ import '../src/components/u-rich-table/URichTable';
 import type { RowAction } from '../src/components/u-rich-table/types';
 
 /**
- * `rowActions` — docket `#155` ADAPT.
+ * `rowActions`.
  * 원 요청("row-menu 공개 API 부재")은 재진단하니 실체가 달랐다 — `_onRowMenu` 는
  * 구성 가능한 메뉴가 아니라 `⋯` 버튼 하나가 항상 `row-delete` 만 쏘는 단일 액션이었다
  * (`RowMenuConfig` 같은 내부 개념 자체가 없음). 실제 필요는 "메뉴 노출"이 아니라

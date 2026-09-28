@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import '../../src/components/u-rich-table/URichTable';
 
 /**
- * **열 폭 계약**(cycle-573).
+ * **열 폭 계약**.
  *
  * ## 왜 이 파일이 생겼는가
  *

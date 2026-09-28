@@ -3,7 +3,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { USimpleSheet, type SheetColumn } from '../src/components/simple-sheet/USimpleSheet.js';
 
 /**
- * docket #167 — `SheetColumn`에 형제 컴포넌트 `URichTable.ColumnDef`와 같은
+ * `SheetColumn`에 형제 컴포넌트 `URichTable.ColumnDef`와 같은
  * `required`/`validator`가 없어, "필수 입력"·"셀 값 유효성"을 소비앱이 매번
  * `onChange`로 전체 데이터를 순회해 직접 재구현해야 했던 결함(기능 부재)의
  * 회귀 테스트.
@@ -17,7 +17,7 @@ function cell(el: USimpleSheet, r: number, c: number): HTMLElement {
   return el.shadowRoot!.querySelector(`td[data-row="${r}"][data-col="${c}"]`) as HTMLElement;
 }
 
-describe('USimpleSheet required/validator (docket #167)', () => {
+describe('USimpleSheet required/validator', () => {
   let sheet: USimpleSheet | undefined;
 
   afterEach(() => {

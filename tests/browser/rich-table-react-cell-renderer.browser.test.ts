@@ -17,7 +17,7 @@ const _vanillaColumnsAreAcceptable: ColumnDefReact[] = [] as ColumnDef[];
 void _vanillaColumnsAreAcceptable;
 
 /**
- * docket `#155` — React 셀 렌더러 부재.
+ * React 셀 렌더러 부재.
  * vanilla `ColumnDef.render`는 `string | HTMLElement`만 반환하는 계약을 그대로 두고,
  * `URichTableReact`(React 래퍼)에서만 `ReactNode`를 받아 React root로 마운트해
  * `HTMLElement`로 감싸 넘긴다(`react.ts` `wrapColumnsForReact` 참조).

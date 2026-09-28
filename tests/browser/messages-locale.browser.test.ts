@@ -82,9 +82,9 @@ describe('data-components 표 문구 — 영어 기본 + 레지스트리', () =>
     expect(Locale.getValue('valueMissing')).toBe('This field is required');
   });
 
-  // 로케일마다 새 엘리먼트를 만들어 하나의 it() 안에서 순차 검증한다(HANDOFF.md
-  // "브라우저 프로젝트에서 module-singleton 전역 상태를 건드리는 단언은 별도 it()로
-  // 나누면 레이스가 생길 수 있다" — cycle-393과 같은 원인).
+  // 로케일마다 새 엘리먼트를 만들어 하나의 it() 안에서 순차 검증한다 —
+  // 브라우저 프로젝트에서 module-singleton 전역 상태를 건드리는 단언은 별도 it()로
+  // 나누면 레이스가 생길 수 있다.
   it('u-data-view의 뷰 전환 버튼·항목 수 문구가 로케일을 따른다(2026-09-01 감사 — 이전엔 하드코딩 영어 리터럴이었다)', async () => {
     Locale.set('en');
     const en = document.createElement('u-data-view') as UDataView;

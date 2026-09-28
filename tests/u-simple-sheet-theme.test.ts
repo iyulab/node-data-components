@@ -6,7 +6,7 @@ import { styles } from '../src/components/simple-sheet/USimpleSheet.styles.js';
 /**
  * USimpleSheet 테마 1급 지원 검증.
  *
- * 배경(ISSUE-20260610-usimplesheet-darkmode-inconsistent):
+ * 배경:
  * 다크 스타일이 :host-context([theme="dark"])에만 걸려 있어
  * (1) data-theme만 설정하는 앱에서는 다크가 적용되지 않고,
  * (2) :host-context 미지원 브라우저(Firefox/Safari)에서는 항상 미적용이며,
