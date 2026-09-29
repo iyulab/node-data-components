@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.30.0] - 2026-09-29
+
+### Changed
+
+- Requires `@iyulab/components` 1.50.0 or later (peer).
+
+### Fixed
+
+- `u-record-picker` inside `<fieldset disabled>` is now disabled like with its own `disabled`
+  attribute — its search field and find button no longer accept input. A native `form.reset()`
+  returns it to its `value` attribute. Both come from the form control contract in
+  `@iyulab/components` 1.50.0.
+
 ## [0.29.1] - 2026-09-28
 
 ### Fixed

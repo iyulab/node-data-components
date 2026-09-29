@@ -108,7 +108,7 @@ export class URecordPicker extends UFormControlElement<string> {
     return html`
       <u-field part="field"
         ?required=${this.required}
-        ?disabled=${this.disabled}
+        ?disabled=${this.effectivelyDisabled}
         ?invalid=${this.invalid}
         .label=${this.label}
         .description=${this.description}
@@ -117,7 +117,7 @@ export class URecordPicker extends UFormControlElement<string> {
         <div class="container" part="container">
           <input class="main-input" type="text"
             aria-label=${ifDefined(this.label)}
-            ?disabled=${this.disabled}
+            ?disabled=${this.effectivelyDisabled}
             ?readonly=${this.readonly}
             placeholder=${ifDefined(this.placeholder)}
             .value=${live(this.query)}
@@ -125,7 +125,7 @@ export class URecordPicker extends UFormControlElement<string> {
             @keydown=${this.handleInlineKeydown}
           />
           <u-icon class="suffix-item clear-btn"
-            ?hidden=${!this.clearable || !this.value || this.disabled || this.readonly}
+            ?hidden=${!this.clearable || !this.value || this.effectivelyDisabled || this.readonly}
             role="button"
             tabindex="0"
             aria-label=${Locale.getValue('clear')}
@@ -134,7 +134,7 @@ export class URecordPicker extends UFormControlElement<string> {
             @keydown=${this.handleClearKeydown}
           ></u-icon>
           <u-button class="suffix-item find-btn" variant="ghost"
-            ?disabled=${this.disabled}
+            ?disabled=${this.effectivelyDisabled}
             aria-label=${messages.text('pickerFind')}
             @click=${this.openDialog}
           >
