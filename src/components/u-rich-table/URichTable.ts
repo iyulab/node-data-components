@@ -117,10 +117,6 @@ export class URichTable extends LitElement {
   @state() private rowErrors = new Map<string, string>();
 
   // --- Public API ---
-  revertRow(_rowId: string): void {
-    // TODO: M2에서 구현
-  }
-
   setRowError(rowId: string, message: string): void {
     this.rowErrors = new Map(this.rowErrors).set(rowId, message);
   }

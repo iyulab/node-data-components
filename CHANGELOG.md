@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Removed
+
+- 🔴 **Breaking — `URichTable.revertRow()` is removed.** It had no body: calling it did nothing and
+  raised no error. The table is controlled — an inline edit emits `row-update` and the table never
+  changes `data` itself — so there is no uncommitted row state inside it to restore. To undo an edit,
+  put the previous value back into `data` (the `row-update` detail carries `oldValue`).
+
+### Changed
+
+- The optional `@lit/react` peer is `^1.0.8` (was `^1.0.0`) — the version the React entry is tested
+  with.
+
 ## [0.30.2] - 2026-09-30
 
 ### Fixed
