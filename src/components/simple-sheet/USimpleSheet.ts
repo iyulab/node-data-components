@@ -7,6 +7,7 @@ import { ref } from 'lit/directives/ref.js';
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
+import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 
 export interface SheetColumn {
   /** 데이터 키 (getDataAsObjects() 반환시 객체 키로 사용) */
@@ -515,7 +516,7 @@ export class USimpleSheet extends UElement {
     }
 
     // ── Enter: 아래 이동 / Shift+Enter: 위 이동 ──
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isImeComposing(e)) {
       e.preventDefault();
       if (e.shiftKey) {
         this._select(Math.max(0, anchor.row - 1), anchor.col);
@@ -628,6 +629,8 @@ export class USimpleSheet extends UElement {
   };
 
   private _onInputKeyDown = (e: KeyboardEvent) => {
+    // IME 조합 중인 키(한국어 등)는 입력기의 것이다 — 조합을 확정하는 Enter 로 확정·이동·제출하지 않는다.
+    if (isImeComposing(e)) return;
     e.stopPropagation();
     const hasDropdown = this._dropdownItems.length > 0;
 

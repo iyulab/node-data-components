@@ -11,6 +11,7 @@ import { effectiveAlign } from './types.js';
 const cssWidth = (w: number | string | undefined): string => (typeof w === 'number' ? `${w}px` : w ?? '');
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
+import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 
 @customElement('u-rich-table')
 export class URichTable extends LitElement {
@@ -680,6 +681,8 @@ export class URichTable extends LitElement {
   }
 
   private _onEditKeyDown(e: KeyboardEvent): void {
+    // IME 조합 중인 키(한국어 등)는 입력기의 것이다 — 조합을 확정하는 Enter 로 확정·이동·제출하지 않는다.
+    if (isImeComposing(e)) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       this._onCellEditConfirm();
@@ -762,6 +765,8 @@ export class URichTable extends LitElement {
   }
 
   private _onNewRowKeyDown(e: KeyboardEvent): void {
+    // IME 조합 중인 키(한국어 등)는 입력기의 것이다 — 조합을 확정하는 Enter 로 확정·이동·제출하지 않는다.
+    if (isImeComposing(e)) return;
     if (e.key === 'Enter') {
       e.preventDefault();
       const inputs = Array.from(this.shadowRoot?.querySelectorAll('.new-row input') ?? []) as HTMLInputElement[];
@@ -918,7 +923,7 @@ export class URichTable extends LitElement {
       if (e.key === 'ArrowDown') { e.preventDefault(); this._moveFocus(0, 1); }
       if (e.key === 'ArrowLeft') { e.preventDefault(); this._moveFocus(-1, 0); }
       if (e.key === 'ArrowRight') { e.preventDefault(); this._moveFocus(1, 0); }
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !isImeComposing(e)) {
         const col = this.columns[this.focusedCell.colIndex];
         if (col?.editable) {
           const value = this._view[this.focusedCell.rowIndex]?.[col.key];

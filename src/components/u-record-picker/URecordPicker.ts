@@ -21,6 +21,7 @@ import type { ColumnDef } from '../u-rich-table/types.js';
 import { messages } from '../../utilities/messages.js';
 import type { PickerItem } from './types.js';
 import { styles } from './styles.js';
+import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 
 /**
  * Form control that picks one record from a remote-searched list. Typing filters an inline
@@ -247,6 +248,8 @@ export class URecordPicker extends UFormControlElement<string> {
   }
 
   private handleInlineKeydown = (e: KeyboardEvent) => {
+    // IME 조합 중인 키(한국어 등)는 입력기의 것이다 — 조합을 확정하는 Enter 로 확정·이동·제출하지 않는다.
+    if (isImeComposing(e)) return;
     if (e.key === 'Enter' && this.items.length === 0) {
       e.preventDefault();
       this.openDialog();
