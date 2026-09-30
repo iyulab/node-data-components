@@ -9,6 +9,7 @@ import { formatNumber } from '@iyulab/components/dist/utilities/format.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
+import { encodeTsv, decodeTsv } from '@iyulab/components/dist/utilities/tsv.js';
 
 export interface SheetColumn {
   /** 데이터 키 (getDataAsObjects() 반환시 객체 키로 사용) */
@@ -917,26 +918,25 @@ export class USimpleSheet extends UElement {
   private _selectionToTSV(): string {
     if (!this._sel) return '';
     const { minRow, maxRow, minCol, maxCol } = normalizeRange(this._sel);
-    const rows: string[] = [];
+    const rows: string[][] = [];
     for (let r = minRow; r <= maxRow; r++) {
       const cells: string[] = [];
       for (let c = minCol; c <= maxCol; c++) {
         cells.push(this._data[r]?.[c] ?? '');
       }
-      rows.push(cells.join('\t'));
+      rows.push(cells);
     }
-    return rows.join('\n');
+    // 줄바꿈·탭·따옴표가 든 셀은 인용된다 — 스프레드시트에 한 셀로 붙는다.
+    return encodeTsv(rows);
   }
 
   private _pasteFromText(text: string) {
     if (!this._sel) return;
     const { anchor } = this._sel;
 
-    // 줄바꿈 정규화 후 파싱 (CRLF, LF 모두 처리, trailing newline 제거)
-    const pasteRows = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-      .replace(/\n$/, '')
-      .split('\n')
-      .map(row => row.split('\t'));
+    // 스프레드시트 클립보드 형식(인용된 여러 줄 셀 · CRLF · 끝 줄바꿈 하나)을 읽는다.
+    const pasteRows = decodeTsv(text);
+    if (pasteRows.length === 0) return;
 
     const newData = this._data.map(r => [...r]);
 

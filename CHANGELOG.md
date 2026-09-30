@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.30.2] - 2026-09-30
+
+### Fixed
+
+- **Copying from `u-simple-sheet` and `u-rich-table` quotes a cell that contains a line break, a tab or a
+  double quote**, so it pastes into Excel or Google Sheets as one cell instead of splitting into rows, and
+  pasting reads such a quoted cell back as one cell. Both use `encodeTsv` / `decodeTsv` from
+  `@iyulab/components`.
+- `u-rich-table`: pasting a row whose first cell is empty no longer shifts it one column to the left (the
+  whole text was trimmed, removing the leading tab), and pasting text copied from the same table skips its
+  header row instead of adding it as a data row.
+
+### Changed
+
+- Requires `@iyulab/components` 1.52.0 or later (peer).
+
 ## [0.30.1] - 2026-09-30
 
 ### Fixed

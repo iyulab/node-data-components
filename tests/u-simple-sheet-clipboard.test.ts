@@ -177,4 +177,29 @@ describe('USimpleSheet 클립보드', () => {
 
     expect(handler.mock.calls[0][0].detail.action).toBe('copy');
   });
+
+  // 스프레드시트 클립보드 형식(RFC 4180 인용) — 인용하지 않으면 여러 줄 셀이 붙여넣는 쪽에서 행으로 쪼개진다.
+  it('줄바꿈·따옴표가 든 셀을 복사하면 인용해 스프레드시트에 한 셀로 붙게 한다', async () => {
+    const el = sheet = mount([['첫 줄\n둘째 줄', '5" 나사']]);
+    const container = await focusContainer(el);
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true, bubbles: true }));
+    await el.updateComplete;
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', ctrlKey: true, bubbles: true }));
+
+    // 격자는 최소 크기로 빈 셀이 채워져 있어 전체 선택에 그 빈 셀도 실린다 — 앞부분만 본다.
+    expect(writeText.mock.calls[0][0].startsWith('"첫 줄\n둘째 줄"\t"5"" 나사"\t')).toBe(true);
+  });
+
+  it('Excel 이 쓴 인용된 여러 줄 셀을 한 셀로 붙여넣는다(CRLF · 끝 줄바꿈)', async () => {
+    const el = sheet = mount();
+    const container = await focusContainer(el);
+    readText.mockResolvedValue('"첫 줄\r\n둘째 줄"\tx\r\n');
+
+    container.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
+    await vi.waitFor(() => expect(el.getData()[0][1]).toBe('x'));
+
+    expect(el.getData()[0][0]).toBe('첫 줄\r\n둘째 줄');
+    expect(el.getData()[1].slice(0, 2)).toEqual(['c', 'd']); // 둘째 행은 건드리지 않았다
+  });
 });
