@@ -8,6 +8,8 @@
   another composed language), that Enter committed the `u-simple-sheet` and `u-rich-table` cell edit
   and moved down, added a `u-rich-table` new row, and opened the `u-record-picker` lookup dialog —
   before the last syllable was in. Requires `@iyulab/components` 1.51.0 or later.
+- **`u-simple-sheet` number formats follow the app locale.** A column `format` (number format options)
+  always used Korean separators, while the sheet's messages already followed `Locale`.
 
 ## [0.30.0] - 2026-09-29
 

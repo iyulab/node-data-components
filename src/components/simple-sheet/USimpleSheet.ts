@@ -5,6 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { ref } from 'lit/directives/ref.js';
 
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
+import { formatNumber } from '@iyulab/components/dist/utilities/format.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
@@ -1229,7 +1230,8 @@ export class USimpleSheet extends UElement {
       // Intl.NumberFormatOptions
       const num = Number(value.replace(/,/g, ''));
       if (isNaN(num)) return value;
-      return new Intl.NumberFormat('ko-KR', fmt).format(num);
+      // 구분자·소수점은 앱 로케일을 따른다(같은 파일의 문구가 `Locale` 을 따르듯).
+      return formatNumber(num, fmt);
     } catch {
       return value;
     }
