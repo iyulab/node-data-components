@@ -193,6 +193,8 @@ const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null �
 
 명암비는 이 패키지가 쓰는 `@iyulab/components` 토큰을 따릅니다 — 그 패키지의 Accessibility 절을 참고하세요.
 
+**KWCAG 2.2**(한국형 웹 콘텐츠 접근성 지침) 33개 검사항목의 대응은 `@iyulab/components` README 의 [KWCAG 2.2 대응표](https://github.com/iyulab/node-components#kwcag-22-대응표)에 형제 패키지까지 모아 두었습니다.
+
 ## Documentation
 
 - [USimpleSheet](./docs/USimpleSheet.md)

@@ -14,6 +14,10 @@
 - The optional `@lit/react` peer is `^1.0.8` (was `^1.0.0`) — the version the React entry is tested
   with.
 
+### Documentation
+
+- README: the Accessibility section links the KWCAG 2.2 table in `@iyulab/components`.
+
 ## [0.30.2] - 2026-09-30
 
 ### Fixed
