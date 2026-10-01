@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.32.0] - 2026-10-02
 
 ### Fixed
 
@@ -17,6 +17,11 @@
 - `u-simple-sheet` `getNumbers(): (number | null)[][]` — every cell read as a number in the app's
   locale (`1,5` and `1.5` are both 1.5); `null` for empty or non-numeric cells, never a partial
   number. Requires `@iyulab/components` 1.54.0 (`parseNumber`).
+
+### Changed
+
+- Peer `@iyulab/components` is now `>=1.54.0` (was `>=1.52.0`) — the sheet and the table read numbers
+  with its `parseNumber`.
 
 ## [0.31.0] - 2026-09-30
 
