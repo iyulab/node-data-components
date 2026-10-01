@@ -30,6 +30,15 @@ The data is a **2-D array of strings** — the sheet stores what the user typed 
 never coerces it. `format` changes only what is displayed; `getData()` returns
 the raw values.
 
+To compute with the numbers, read them with `getNumbers()` rather than calling
+`Number()` on `getData()` — users write decimals the way their locale does, and
+data pasted from a localized spreadsheet keeps its separators. `getNumbers()`
+reads every cell in the app's locale (`parseNumber` from `@iyulab/components`):
+`1,5` and `1.5` are both 1.5, `1.234,5` and `1,234.5` are both 1234.5. An empty
+cell, or one that is not a number, is `null` — never a partial number — so a
+blank row is distinguishable from a zero. Which cells are styled as numeric, and
+how a numeric `format` reads the text it formats, follow the same rules.
+
 ## Cell-oriented, not record-oriented
 
 Use `u-simple-sheet` when the grid itself is the input surface (an estimate, a
@@ -67,6 +76,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | Method | Description |
 |---|---|
 | `getData(): string[][]` | Current values as a copied 2-D array |
+| `getNumbers(): (number \| null)[][]` | Every cell read as a number in the app's locale; `null` for empty or non-numeric cells |
 | `getDataAsObjects(): Record<string, string>[]` | Rows keyed by `SheetColumn.key` (or `A`, `B`, `C`… when `columns` is unset) |
 | `setData(data: string[][]): void` | Replace all values and re-render |
 | `setCell(row, col, value): void` | Set one cell — recomputes, pushes history and emits `change` |

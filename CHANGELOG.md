@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **`u-simple-sheet` reads a decimal comma.** Every comma was treated as a thousands separator,
+  so `1,5` counted as 15 — a numeric `format` showed it as `15`, and the cell was styled as
+  numeric. Numeric detection and the text a `format` reads now use `parseNumber` from
+  `@iyulab/components` in the app's locale.
+
+### Added
+
+- `u-simple-sheet` `getNumbers(): (number | null)[][]` — every cell read as a number in the app's
+  locale (`1,5` and `1.5` are both 1.5); `null` for empty or non-numeric cells, never a partial
+  number. Requires `@iyulab/components` 1.54.0 (`parseNumber`).
+
 ## [0.31.0] - 2026-09-30
 
 ### Removed

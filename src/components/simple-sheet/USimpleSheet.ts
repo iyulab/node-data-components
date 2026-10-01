@@ -5,7 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { ref } from 'lit/directives/ref.js';
 
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
-import { formatNumber } from '@iyulab/components/dist/utilities/format.js';
+import { formatNumber, parseNumber } from '@iyulab/components/dist/utilities/format.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
@@ -1214,9 +1214,10 @@ export class USimpleSheet extends UElement {
     return null;
   }
 
+  /** 숫자인가 — 앱 로케일로 읽는다(`parseNumber`). 종전에는 쉼표를 전부 묶음으로 지워 `1,5` 를 15 로 셌다. */
   private _isNumeric(value: string): boolean {
     if (!value || !value.trim()) return false;
-    return !isNaN(Number(value.replace(/,/g, '')));
+    return parseNumber(value) !== null;
   }
 
   /** 열의 format 설정에 따라 표시값을 반환. format 미설정 시 원본 반환. */
@@ -1227,9 +1228,9 @@ export class USimpleSheet extends UElement {
       if (typeof fmt === 'function') {
         return fmt(value, row);
       }
-      // Intl.NumberFormatOptions
-      const num = Number(value.replace(/,/g, ''));
-      if (isNaN(num)) return value;
+      // Intl.NumberFormatOptions — 셀 글자는 앱 로케일로 읽는다(`1,5` 는 1.5, `1.234,5` 는 1234.5).
+      const num = parseNumber(value);
+      if (num === null) return value;
       // 구분자·소수점은 앱 로케일을 따른다(같은 파일의 문구가 `Locale` 을 따르듯).
       return formatNumber(num, fmt);
     } catch {
@@ -1279,6 +1280,15 @@ export class USimpleSheet extends UElement {
   /** 현재 데이터를 2D 배열로 반환 */
   getData(): string[][] {
     return this._data.map(r => [...r]);
+  }
+
+  /**
+   * The data read as numbers in the app's locale (`parseNumber` from `@iyulab/components`):
+   * `1,5` and `1.5` are both 1.5, `1.234,5` and `1,234.5` are both 1234.5. A cell that is empty or
+   * not a number is `null` — never a partial number — so a consumer can tell "skip" from "zero".
+   */
+  getNumbers(): (number | null)[][] {
+    return this._data.map(r => r.map(v => (v && v.trim() ? parseNumber(v) : null)));
   }
 
   /**
