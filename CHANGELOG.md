@@ -8,6 +8,9 @@
   so `1,5` counted as 15 — a numeric `format` showed it as `15`, and the cell was styled as
   numeric. Numeric detection and the text a `format` reads now use `parseNumber` from
   `@iyulab/components` in the app's locale.
+- **`u-rich-table` paste reads a decimal comma in `type: 'number'` columns.** Every comma was
+  stripped (`1,5` pasted as 15) and a cell that was not a number became `0`. Number columns now read
+  with `parseNumber` in the app's locale; an empty or non-numeric cell becomes `null`.
 
 ### Added
 
