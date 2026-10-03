@@ -96,7 +96,7 @@ export class UDataView extends UElement {
     const selected = this.mode === mode;
     return html`
       <u-button
-        variant=${selected ? 'solid' : 'ghost'}
+        appearance=${selected ? 'solid' : 'plain'}
         color=${selected ? 'primary' : 'neutral'}
         title=${label}
         aria-label=${label}

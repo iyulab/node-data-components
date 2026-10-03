@@ -55,8 +55,8 @@ describe('u-data-view 툴바', () => {
     expect(list.getAttribute('aria-pressed')).toBe('true');
     expect(grid.getAttribute('aria-pressed')).toBe('false');
     expect(table.getAttribute('aria-pressed')).toBe('false');
-    expect(list.getAttribute('variant')).toBe('solid');
-    expect(grid.getAttribute('variant')).toBe('ghost');
+    expect(list.getAttribute('appearance')).toBe('solid');
+    expect(grid.getAttribute('appearance')).toBe('plain');
   });
 
   // 공용 인터넷에 닿지 않는 망에서도 버튼이 비지 않는다 — 아이콘은 컴포넌트가 직접 그린다.

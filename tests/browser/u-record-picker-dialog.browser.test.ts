@@ -66,7 +66,7 @@ describe('URecordPicker — lookup dialog', () => {
     // Negative control — this is the exact regression the corrected design guards against.
     expect(dialog(el).hasAttribute('open')).toBe(true);
     expect(el.value).toBeUndefined();
-    const confirmBtn = el.shadowRoot!.querySelector('.dialog-footer u-button[color="primary"]');
+    const confirmBtn = el.shadowRoot!.querySelector('.dialog-footer u-button:not([appearance="plain"])');
     expect(confirmBtn?.hasAttribute('disabled')).toBe(false);
   });
 
@@ -79,7 +79,7 @@ describe('URecordPicker — lookup dialog', () => {
 
     cell(el, 1).click();
     await el.updateComplete;
-    (el.shadowRoot!.querySelector('.dialog-footer u-button[color="primary"]') as HTMLElement)
+    (el.shadowRoot!.querySelector('.dialog-footer u-button:not([appearance="plain"])') as HTMLElement)
       .click();
     await el.updateComplete;
 
@@ -114,7 +114,7 @@ describe('URecordPicker — lookup dialog', () => {
 
     cell(el, 0).click();
     await el.updateComplete;
-    (el.shadowRoot!.querySelector('.dialog-footer u-button[variant="ghost"]') as HTMLElement)
+    (el.shadowRoot!.querySelector('.dialog-footer u-button[appearance="plain"]') as HTMLElement)
       .click();
     await el.updateComplete;
 

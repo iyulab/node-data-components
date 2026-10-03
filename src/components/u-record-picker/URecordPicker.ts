@@ -134,7 +134,7 @@ export class URecordPicker extends UFormControlElement<string> {
             @click=${this.handleClearClick}
             @keydown=${this.handleClearKeydown}
           ></u-icon>
-          <u-button class="suffix-item find-btn" variant="ghost"
+          <u-button class="suffix-item find-btn" appearance="plain"
             ?disabled=${this.effectivelyDisabled}
             aria-label=${messages.text('pickerFind')}
             @click=${this.openDialog}
@@ -183,7 +183,7 @@ export class URecordPicker extends UFormControlElement<string> {
         </div>
         <slot name="footer">
           <div class="dialog-footer">
-            <u-button variant="ghost" @click=${() => this.dialogEl?.hide()}
+            <u-button appearance="plain" @click=${() => this.dialogEl?.hide()}
             >${messages.text('pickerCancel')}</u-button>
             <u-button color="primary" ?disabled=${!this.pendingId}
               @click=${this.confirmDialogSelection}
