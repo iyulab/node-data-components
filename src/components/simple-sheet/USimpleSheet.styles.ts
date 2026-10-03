@@ -154,7 +154,7 @@ const baseStyles = css`
     width: 2px;
     background: transparent;
     border-radius: 1px;
-    transition: background 0.15s;
+    transition: background var(--u-duration-fast, 140ms);
   }
 
   .resize-handle:hover::after {

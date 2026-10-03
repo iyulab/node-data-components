@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **Transitions in `u-data-view` and `u-simple-sheet` follow the motion tokens**, so they stop for users
+  who prefer reduced motion (`--u-duration-*` from `@iyulab/components` drops to zero under
+  `prefers-reduced-motion: reduce`).
+
 ## [0.32.0] - 2026-10-02
 
 ### Fixed
