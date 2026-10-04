@@ -244,10 +244,12 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `row-update` | `{ row, field, value, oldValue }` |
 | `row-delete` | `{ row }` — `deletable`일 때 액션 셀 "⋯" 클릭 또는 `Delete` 키 |
 | `row-expand` | `{ row, expanded }` |
+| `row-activate` | `{ row, id, via }` — 행을 클릭했거나, 편집할 수 없는 셀에 포커스를 둔 채 `Enter` 를 눌렀다(`via` 는 `'click'` · `'keyboard'`). `selectable` 과 무관하다 — 선택은 «무엇에 작업할지», 활성은 «무엇을 볼지» |
 | `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |
 | `filter-change` | `{ filters, filteredCount? }` — `filteredCount` 는 `data-mode="client"` 에서만 |
 | `page-change` | `{ page, pageSize }` |
 | `paste` | `{ rows }` |
+| `clipboard-error` | `{ action: 'copy' | 'paste', error }` — `Ctrl`/`Cmd` + `C`/`V` 가 Clipboard API 를 불렀는데 거부됐다(권한 거부 · 안전하지 않은 문맥) |
 
 React에서는 `URichTableReact`가 이들을 `onSelectionChange` 형태로 노출합니다 — 목록이 표와
 어긋나면 **컴파일 에러**가 납니다(`src/react.ts`의 완전성 단언).
@@ -257,7 +259,7 @@ React에서는 `URichTableReact`가 이들을 `onSelectionChange` 형태로 노�
 | 키 | 동작 |
 |---|---|
 | `↑` `↓` `←` `→` | 셀 포커스 이동 |
-| `Enter` | 편집 시작 / 확정 후 아래 셀로 |
+| `Enter` | 편집할 수 있는 셀: 편집 시작 / 확정 후 아래 셀로 · 편집할 수 없는 셀: `row-activate` |
 | `Tab` | 확정 후 오른쪽 셀로 |
 | `Escape` | 편집 취소 |
 | `Space` | 포커스된 행 선택 토글 (`selectable`) |
