@@ -7,6 +7,14 @@
 - Internal buttons use `@iyulab/components` 2.0's `appearance` (`plain` for the former `ghost`) — the
   view switcher's selected button is `appearance="solid"`, the others `appearance="plain"`.
 
+## [0.32.1] - 2026-10-03
+
+### Changed
+
+- **Transitions in `u-data-view` and `u-simple-sheet` follow the motion tokens**, so they stop for users
+  who prefer reduced motion (`--u-duration-*` from `@iyulab/components` drops to zero under
+  `prefers-reduced-motion: reduce`).
+
 ## [0.32.0] - 2026-10-02
 
 ### Fixed

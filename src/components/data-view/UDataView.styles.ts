@@ -110,7 +110,7 @@ const baseStyles = css`
     border-radius: 8px;
     padding: 1.25rem;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--u-duration-fast, 140ms) ease;
   }
 
   .card:hover {
@@ -195,7 +195,7 @@ const baseStyles = css`
 
   tbody tr {
     cursor: pointer;
-    transition: background 0.1s ease;
+    transition: background var(--u-duration-instant, 80ms) ease;
   }
 
   tbody tr:hover {
