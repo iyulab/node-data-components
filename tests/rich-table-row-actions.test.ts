@@ -47,7 +47,7 @@ describe('URichTable — rowActions', () => {
     const el = table = await mount();
     expect(actionsCell(el)).toBeNull();
     expect(actionHeaders(el)).toBe(0);
-    expect(el.shadowRoot!.querySelector('.row-menu'), '「행 삭제」 버튼이 없다').toBeNull();
+    expect(el.shadowRoot!.querySelector('.row-delete'), '「행 삭제」 버튼이 없다').toBeNull();
     // 칸 수가 머리글과 행에서 같다 — colspan 이 없는 칸을 세지 않는다.
     expect(el.shadowRoot!.querySelectorAll('thead th').length)
       .toBe(el.shadowRoot!.querySelectorAll('tbody tr')[0].querySelectorAll('td').length);
@@ -62,12 +62,15 @@ describe('URichTable — rowActions', () => {
     expect((el.shadowRoot!.querySelector('tbody td') as HTMLTableCellElement).colSpan).toBe(2);
   });
 
-  it('deletable 을 켜면 "⋯" 삭제 버튼이 행 끝에 그려진다', async () => {
+  it('deletable 을 켜면 휴지통 삭제 버튼이 행 끝에 그려진다 — «메뉴» 기호 ⋯ 가 아니다', async () => {
     const el = table = await mount();
     el.deletable = true;
     await el.updateComplete;
     const cell = actionsCell(el);
-    expect(cell.querySelector('.row-menu')).toBeTruthy();
+    const button = cell.querySelector('.row-delete') as HTMLElement;
+    expect(button).toBeTruthy();
+    expect(button.textContent?.trim(), '기호가 메뉴를 약속한다').not.toBe('⋯');
+    expect(button.querySelector('svg[aria-hidden="true"]')).toBeTruthy();
     expect(cell.querySelector('.row-action')).toBeFalsy();
     expect(actionHeaders(el)).toBe(1);
   });
@@ -78,17 +81,17 @@ describe('URichTable — rowActions', () => {
     el.columns = [{ key: 'name', label: 'Name' }];
     el.data = [{ _id: 'r0', name: 'first' }];
     await el.updateComplete;
-    expect(actionsCell(el).querySelector('.row-menu')).toBeTruthy();
+    expect(actionsCell(el).querySelector('.row-delete')).toBeTruthy();
   });
 
-  it('deletable 의 "⋯" 클릭은 row-delete 를 쏜다', async () => {
+  it('deletable 의 삭제 버튼 클릭은 row-delete 를 쏜다', async () => {
     const el = table = await mount();
     el.deletable = true;
     await el.updateComplete;
     const handler = vi.fn();
     el.addEventListener('row-delete', handler);
 
-    (actionsCell(el).querySelector('.row-menu') as HTMLElement).click();
+    (actionsCell(el).querySelector('.row-delete') as HTMLElement).click();
 
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler.mock.calls[0][0].detail.row._id).toBe('r0');
@@ -100,7 +103,7 @@ describe('URichTable — rowActions', () => {
     await el.updateComplete;
 
     const cell = actionsCell(el);
-    expect(cell.querySelector('.row-menu')).toBeFalsy();
+    expect(cell.querySelector('.row-delete')).toBeFalsy();
     const action = cell.querySelector('.row-action') as HTMLElement;
     expect(action).toBeTruthy();
     expect(action.textContent).toBe('✎');
@@ -167,7 +170,7 @@ describe('URichTable — rowActions', () => {
     await el.updateComplete;
 
     const buttons = [...actionsCell(el).querySelectorAll('button')];
-    expect(buttons.map((b) => b.className)).toEqual(['row-action', 'row-menu']);
+    expect(buttons.map((b) => b.className)).toEqual(['row-action', 'row-delete']);
   });
 
   it('🔴선택 행의 Delete 키는 deletable 일 때만 row-delete 를 쏜다', async () => {

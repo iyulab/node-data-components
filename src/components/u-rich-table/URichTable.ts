@@ -1,7 +1,7 @@
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import { messages } from '../../utilities/messages.js';
 // src/components/u-rich-table/URichTable.component.ts
-import { html, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
+import { html, svg, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
@@ -12,6 +12,12 @@ const cssWidth = (w: number | string | undefined): string => (typeof w === 'numb
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
+
+/**
+ * 행 삭제 버튼의 휴지통 — 이 컴포넌트 자신의 크롬이라 직접 그린다(`u-data-view` 와 같은 이유).
+ * 종전 기호 `⋯` 는 «더 보기 메뉴» 를 약속하는데 누르면 곧바로 `row-delete` 를 냈다.
+ */
+const DELETE_ICON = svg`<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.5h6.6L12 4M6.8 6.5v4.5M9.2 6.5v4.5"/></svg>`;
 
 @customElement('u-rich-table')
 export class URichTable extends LitElement {
@@ -60,7 +66,7 @@ export class URichTable extends LitElement {
   /** 펼친 행의 상세 — Lit 템플릿, 요소 또는 문자열(Lit 이 그대로 그리는 셋). */
   @property({ attribute: false }) detailRenderer?: (row: Record<string, unknown>) => TemplateResult | HTMLElement | string;
   /**
-   * 행 삭제를 다루는 표임을 선언한다. 켜면 행 끝에 삭제 버튼(`⋯`, 접근 이름 「행 삭제」)을
+   * 행 삭제를 다루는 표임을 선언한다. 켜면 행 끝에 삭제 버튼(휴지통, 접근 이름 「행 삭제」)을
    * 그리고, 선택된 행에서 Delete 키도 `row-delete` 를 쏜다. 기본은 꺼짐 — 삭제를 다루지
    * 않는 표가 동작하지 않는 삭제 버튼을 행마다 그리지 않게 한다.
    */
@@ -426,8 +432,8 @@ export class URichTable extends LitElement {
               <button type="button" class="row-action" title=${action.label} aria-label=${action.label}
                 @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</button>
             `)}
-            ${this.deletable ? html`<button type="button" class="row-menu" aria-label=${messages.text('deleteRow')}
-              @click=${() => this._onRowMenu(row)}>⋯</button>` : ''}
+            ${this.deletable ? html`<button type="button" class="row-delete" aria-label=${messages.text('deleteRow')}
+              title=${messages.text('deleteRow')} @click=${() => this._onRowDelete(row)}>${DELETE_ICON}</button>` : ''}
           </td>` : ''}
         </tr>
         ${isExpanded && this.detailRenderer ? html`
@@ -795,7 +801,7 @@ export class URichTable extends LitElement {
     }
   }
 
-  private _onRowMenu(row: Record<string, unknown>): void {
+  private _onRowDelete(row: Record<string, unknown>): void {
     this.dispatchEvent(new CustomEvent('row-delete', {
       detail: { row },
       bubbles: true, composed: true

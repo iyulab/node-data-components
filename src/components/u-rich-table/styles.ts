@@ -175,7 +175,7 @@ export const richTableStyles = css`
 
   .sort-button:focus-visible,
   .expand-button:focus-visible,
-  .row-menu:focus-visible,
+  .row-delete:focus-visible,
   .row-action:focus-visible {
     outline: 2px solid var(--u-primary-color, #1976D2);
     outline-offset: -2px;
@@ -284,7 +284,7 @@ export const richTableStyles = css`
 
   /* 펼침 토글 — 글자 하나짜리라 버튼 상자에 24px 하한을 준다(WCAG 2.2 SC 2.5.8). */
   .expand-button,
-  .row-menu,
+  .row-delete,
   .row-action {
     all: unset;
     box-sizing: border-box;

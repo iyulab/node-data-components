@@ -35,7 +35,7 @@ export interface ColumnDef {
 
 /**
  * 액션 셀(행 우측 끝)에 렌더할 커스텀 액션 하나. `URichTable.rowActions` 로 배열을
- * 주면 기존 단일 "⋯"(항상 `row-delete` 를 쏘는) 버튼 대신 이 목록으로 대체된다 —
+ * 주면 이 목록이 행 끝에 그려진다(`deletable` 이면 그 뒤에 삭제 버튼) —
  * `rowActions` 를 주지 않으면 종전 동작 그대로다(하위호환).
  */
 export interface RowAction {

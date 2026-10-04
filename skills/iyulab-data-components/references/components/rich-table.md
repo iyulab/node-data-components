@@ -207,7 +207,7 @@ forever.
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |
 | `expandable` | `boolean` | `false` | | Renders the expander column; pair with `detailRenderer` |
 | `detailRenderer` | `(row) => TemplateResult \| HTMLElement \| string` | — | | Renders the expanded detail row. In `URichTableReact` it may also return a `ReactNode`, mounted per row while the row is expanded and unmounted when it collapses or leaves `data` |
-| `deletable` | `boolean` | `false` | | Declares a table that handles row deletion: renders the "⋯" delete button (accessible name "Delete row") and enables the `Delete` key (`0.25.0~`) |
+| `deletable` | `boolean` | `false` | | Declares a table that handles row deletion: renders a trash-can delete button (accessible name "Delete row"; a "⋯" before `0.33.0`) and enables the `Delete` key (`0.25.0~`) |
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 
 ## CSS Parts
@@ -252,7 +252,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `page-change` | `{ page, pageSize }` | The pager or page-size selector moved |
 | `row-update` | `{ row, field, value, oldValue }` | An inline edit was committed |
 | `row-create` | `{ row }` | The add-row control produced a row |
-| `row-delete` | `{ row }` | The "⋯" delete button was clicked, or `Delete` was pressed on selected rows (only when `deletable`) |
+| `row-delete` | `{ row }` | The trash-can delete button was clicked, or `Delete` was pressed on selected rows (only when `deletable`) |
 | `row-expand` | `{ row, expanded }` | A detail row was opened or closed |
 | `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). Independent of `selectable` — selection is "what to act on", activation is "what to view" |
 | `paste` | `{ rows }` | TSV was pasted into the grid |

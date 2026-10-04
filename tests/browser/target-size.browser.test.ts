@@ -334,7 +334,7 @@ const FIXTURES: Record<string, Fixture | Fixture[]> = {
         ...inShadow(t, 'button.btn'),
         ...inShadow(t, 'th'),
         ...inShadow(t, 'th .sort-button'),
-        ...inShadow(t, 'button.row-menu'),
+        ...inShadow(t, 'button.row-delete'),
         ...inShadow(t, 'input[type=checkbox]'),
       ];
     },

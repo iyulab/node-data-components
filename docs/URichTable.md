@@ -93,7 +93,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `filterable` | `boolean` | `false` | 헤더 아래 필터 입력 줄 |
 | `expandable` | `boolean` | `false` | 행 펼치기 (`detailRenderer` 필요) |
 | `detailRenderer` | `(row) => TemplateResult` | `undefined` | 펼친 행의 내용 |
-| `deletable` | `boolean` | `false` | 행 삭제를 다루는 표 — 행 끝 "⋯" 삭제 버튼 + `Delete` 키 (`0.25.0~`) |
+| `deletable` | `boolean` | `false` | 행 삭제를 다루는 표 — 행 끝 휴지통 삭제 버튼 + `Delete` 키 (`0.25.0~` · 휴지통은 `0.33.0~`, 그 전에는 "⋯") |
 | `rowActions` | `RowAction[]` | `undefined` | 액션 셀의 버튼 구성 (`0.20.0~`, 아래 참조) |
 
 ### UI 문구
@@ -204,7 +204,7 @@ interface ColumnDef {
 각 행 우측 끝의 액션 셀은 **동작을 선언했을 때만** 있습니다(`0.25.0~`). 아무것도 선언하지
 않은 표에는 머리글·행 모두 그 칸이 없습니다.
 
-- **`deletable`** — 삭제를 다루는 표. 행 끝에 "⋯" 버튼(접근 이름 「행 삭제」)을 그리고,
+- **`deletable`** — 삭제를 다루는 표. 행 끝에 휴지통 버튼(접근 이름 「행 삭제」)을 그리고,
   클릭하면 `row-delete`를 냅니다. 선택 행의 `Delete` 키도 이때만 동작합니다.
 - **`rowActions`** — 삭제 외의 액션(수정 등). `deletable`과 함께 주면 목록 뒤에 삭제 버튼이 붙습니다.
 
@@ -242,7 +242,7 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `select-all` | `{ checked, pageRowIds }` — 전체선택 체크박스 조작. `selection-change`와 함께 발생 |
 | `row-create` | `{ row }` |
 | `row-update` | `{ row, field, value, oldValue }` |
-| `row-delete` | `{ row }` — `deletable`일 때 액션 셀 "⋯" 클릭 또는 `Delete` 키 |
+| `row-delete` | `{ row }` — `deletable`일 때 액션 셀 휴지통 클릭 또는 `Delete` 키 |
 | `row-expand` | `{ row, expanded }` |
 | `row-activate` | `{ row, id, via }` — 행을 클릭했거나, 편집할 수 없는 셀에 포커스를 둔 채 `Enter` 를 눌렀다(`via` 는 `'click'` · `'keyboard'`). `selectable` 과 무관하다 — 선택은 «무엇에 작업할지», 활성은 «무엇을 볼지» |
 | `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |

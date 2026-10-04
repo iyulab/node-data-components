@@ -14,6 +14,10 @@
 
 - Internal buttons use `@iyulab/components` 2.0's `appearance` (`plain` for the former `ghost`) — the
   view switcher's selected button is `appearance="solid"`, the others `appearance="plain"`.
+- `u-rich-table`'s row delete button (`deletable`) draws a trash can instead of `⋯`. The `⋯` glyph
+  promised a "more" menu, but pressing it deleted the row at once. The event (`row-delete`) and the
+  accessible name ("Delete row") are unchanged. The button's class in the shadow DOM is now
+  `row-delete` (was `row-menu`) — not a public part, but a test that reached for it must follow.
 
 ## [0.32.1] - 2026-10-03
 
