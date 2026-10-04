@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- **`URichTableReact`: `detailRenderer` takes a `ReactNode`.** Like `columns[].render`, the detail of an
+  expanded row can be a React element; it is mounted in a React root per row while the row is
+  expanded and unmounted when the row collapses or leaves `data` (effects clean up). The vanilla
+  `detailRenderer` type now also states what Lit already renders: `TemplateResult | HTMLElement |
+  string`.
+
 ### Changed
 
 - Internal buttons use `@iyulab/components` 2.0's `appearance` (`plain` for the former `ghost`) — the

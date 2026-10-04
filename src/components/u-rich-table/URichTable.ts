@@ -57,7 +57,8 @@ export class URichTable extends LitElement {
   @property({ type: Boolean }) addable = false;
   @property({ type: Boolean }) filterable = false;
   @property({ type: Boolean }) expandable = false;
-  @property({ attribute: false }) detailRenderer?: (row: Record<string, unknown>) => TemplateResult;
+  /** 펼친 행의 상세 — Lit 템플릿, 요소 또는 문자열(Lit 이 그대로 그리는 셋). */
+  @property({ attribute: false }) detailRenderer?: (row: Record<string, unknown>) => TemplateResult | HTMLElement | string;
   /**
    * 행 삭제를 다루는 표임을 선언한다. 켜면 행 끝에 삭제 버튼(`⋯`, 접근 이름 「행 삭제」)을
    * 그리고, 선택된 행에서 Delete 키도 `row-delete` 를 쏜다. 기본은 꺼짐 — 삭제를 다루지

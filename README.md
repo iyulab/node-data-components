@@ -172,6 +172,20 @@ const columns: ColumnDefReact[] = [
 vanilla `URichTable`(`import { URichTable } from '@iyulab/data-components'`)은 이 계약에
 영향받지 않습니다 — `render`는 여전히 `string | HTMLElement`만 반환해야 합니다.
 
+펼친 행의 상세(`detailRenderer`)도 같습니다 — `URichTableReact` 에서는 `ReactNode` 를 돌려줄 수
+있고, 행마다 React root 에 마운트됩니다. **그 root 는 행이 펼쳐져 있는 동안만 삽니다**: 접거나
+행이 `data` 에서 사라지면 언마운트되므로(effect 정리가 돈다), 상세의 로컬 상태는 다시 펼칠 때
+처음부터 시작합니다. 넘긴 `onRowExpand` 는 그대로 불립니다.
+
+```tsx
+<URichTableReact
+  expandable
+  columns={columns}
+  data={rows}
+  detailRenderer={(row) => <DiffTable rowId={row._id as string} />}
+/>
+```
+
 타입스크립트만 필요하다면 래퍼 없이도 엘리먼트 클래스와 `HTMLElementTagNameMap` 증강이
 메인 엔트리에서 제공됩니다:
 

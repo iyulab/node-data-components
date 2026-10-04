@@ -206,7 +206,7 @@ forever.
 | `addable` | `boolean` | `false` | | Renders the add-row control |
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |
 | `expandable` | `boolean` | `false` | | Renders the expander column; pair with `detailRenderer` |
-| `detailRenderer` | `(row) => TemplateResult` | — | | Renders the expanded detail row |
+| `detailRenderer` | `(row) => TemplateResult \| HTMLElement \| string` | — | | Renders the expanded detail row. In `URichTableReact` it may also return a `ReactNode`, mounted per row while the row is expanded and unmounted when it collapses or leaves `data` |
 | `deletable` | `boolean` | `false` | | Declares a table that handles row deletion: renders the "⋯" delete button (accessible name "Delete row") and enables the `Delete` key (`0.25.0~`) |
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 

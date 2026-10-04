@@ -138,3 +138,60 @@ describe('URichTableReact — React 셀 렌더러', () => {
     expect(unmounted).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('URichTableReact — React 상세 렌더러(detailRenderer)', () => {
+  const expandButton = (el: URichTable) => el.shadowRoot!.querySelector('.expand-button') as HTMLButtonElement;
+
+  it('🔴detailRenderer 가 React 엘리먼트를 반환하면 펼친 행 안에 마운트되고 동작한다', async () => {
+    const handler = vi.fn();
+    const el = await mount({
+      expandable: true,
+      columns: [{ key: 'name', label: 'Name' }],
+      data: [{ _id: 'r0', name: 'first' }],
+      detailRenderer: (row: Record<string, unknown>) =>
+        React.createElement('button', { className: 'detail', onClick: handler }, `detail:${row.name}`),
+    });
+    await act(async () => { expandButton(el).click(); });
+    await el.updateComplete;
+    const btn = el.shadowRoot!.querySelector('button.detail') as HTMLButtonElement;
+    expect(btn?.textContent).toBe('detail:first');
+    await act(async () => { btn.click(); });
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴접으면 상세의 React 트리가 언마운트되고(effect 정리), 소비자의 onRowExpand 도 그대로 불린다', async () => {
+    const cleanup = vi.fn();
+    const onRowExpand = vi.fn();
+    const Detail = () => {
+      useEffect(() => cleanup, []);
+      return React.createElement('span', { className: 'detail' }, 'd');
+    };
+    const el = await mount({
+      expandable: true,
+      columns: [{ key: 'name', label: 'Name' }],
+      data: [{ _id: 'r0', name: 'first' }],
+      detailRenderer: () => React.createElement(Detail),
+      onRowExpand,
+    });
+    await act(async () => { expandButton(el).click(); });
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('.detail')).toBeTruthy();
+    await act(async () => { expandButton(el).click(); });
+    await el.updateComplete;
+    await act(async () => { await Promise.resolve(); });
+    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(onRowExpand.mock.calls.map(([e]) => e.detail.expanded)).toEqual([true, false]);
+  });
+
+  it('Lit 템플릿·문자열을 돌려주는 vanilla 렌더러는 그대로 동작한다', async () => {
+    const el = await mount({
+      expandable: true,
+      columns: [{ key: 'name', label: 'Name' }],
+      data: [{ _id: 'r0', name: 'first' }],
+      detailRenderer: (row: Record<string, unknown>) => `plain:${row.name}`,
+    });
+    await act(async () => { expandButton(el).click(); });
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('.detail-row, tr.detail')?.textContent ?? el.shadowRoot!.textContent).toContain('plain:first');
+  });
+});

@@ -10,6 +10,7 @@
 import React, { forwardRef, useEffect, useMemo, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createComponent, type EventName } from '@lit/react';
+import type { TemplateResult } from 'lit';
 
 import './utilities/shadowDomProtection';
 
@@ -168,8 +169,52 @@ function pruneStaleRoots(
   }
 }
 
-export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTableReact>, 'columns'> & {
+/**
+ * 펼친 행의 상세 렌더러 — React 래퍼에서는 `ReactNode` 도 돌려줄 수 있다. vanilla 가 받는
+ * Lit 템플릿·요소·문자열은 그대로 넘긴다(Lit 화면과 상세 렌더러를 공유하는 경우).
+ */
+export type DetailRendererReact = (row: Record<string, unknown>) => React.ReactNode | TemplateResult | HTMLElement;
+
+const isTemplateResult = (v: unknown): v is TemplateResult =>
+  typeof v === 'object' && v !== null && '_$litType$' in v;
+
+/**
+ * 상세 렌더러가 React 노드를 돌려주면 행(`_id`)마다 캐시된 React root 에 마운트해 그 컨테이너를
+ * 넘긴다 — 셀 렌더러(`wrapColumnsForReact`)와 같은 수명 관리다. root 는 행이 **펼쳐져 있는
+ * 동안** 산다: 접히거나(`row-expand` 의 `expanded: false`) 행이 데이터에서 사라지면 언마운트된다.
+ */
+function wrapDetailForReact(
+  render: DetailRendererReact | undefined,
+  roots: Map<string, ReactCellRoot>,
+): URichTable['detailRenderer'] {
+  if (!render) return undefined;
+  return (row) => {
+    const result = render(row);
+    if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
+    if (result == null || typeof result === 'boolean') return '';
+    const rowId = String((row as { _id?: unknown })._id ?? '');
+    let entry = roots.get(rowId);
+    if (!entry) {
+      const container = document.createElement('div');
+      entry = { container, root: createRoot(container), rowId };
+      roots.set(rowId, entry);
+    }
+    entry.root.render(result as React.ReactNode);
+    return entry.container;
+  };
+}
+
+/** 한 행의 상세 root 를 놓는다 — 커밋 사이클 밖(마이크로태스크)에서 언마운트한다(`pruneStaleRoots` 와 같은 이유). */
+function releaseDetailRoot(roots: Map<string, ReactCellRoot>, rowId: string): void {
+  const entry = roots.get(rowId);
+  if (!entry) return;
+  roots.delete(rowId);
+  queueMicrotask(() => entry.root.unmount());
+}
+
+export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTableReact>, 'columns' | 'detailRenderer'> & {
   columns?: ColumnDefReact[];
+  detailRenderer?: DetailRendererReact;
 };
 
 /**
@@ -179,20 +224,41 @@ export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTab
  */
 export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((props, ref) => {
   const rootsRef = useRef<Map<string, ReactCellRoot>>(new Map());
-  const { columns, data, ...rest } = props;
+  const detailRootsRef = useRef<Map<string, ReactCellRoot>>(new Map());
+  const { columns, data, detailRenderer, onRowExpand, ...rest } = props;
 
   const wrappedColumns = useMemo(
     () => wrapColumnsForReact(columns, rootsRef.current),
     [columns]
   );
+  const wrappedDetail = useMemo(
+    () => wrapDetailForReact(detailRenderer, detailRootsRef.current),
+    [detailRenderer]
+  );
+
+  // 접힌 행의 상세 root 를 놓은 뒤 소비자의 핸들러로 넘긴다.
+  const handleRowExpand = useMemo(
+    () => (e: RichTableEventMap['row-expand']) => {
+      if (!e.detail.expanded) releaseDetailRoot(detailRootsRef.current, String((e.detail.row as { _id?: unknown })._id ?? ''));
+      onRowExpand?.(e);
+    },
+    [onRowExpand]
+  );
 
   useEffect(() => {
     pruneStaleRoots(rootsRef.current, columns, data);
+    const ids = new Set((data ?? []).map(row => String((row as { _id?: unknown })._id ?? '')));
+    for (const rowId of [...detailRootsRef.current.keys()]) {
+      if (!ids.has(rowId)) releaseDetailRoot(detailRootsRef.current, rowId);
+    }
   }, [columns, data]);
 
   useEffect(() => {
     const roots = rootsRef.current;
+    const detailRoots = detailRootsRef.current;
     return () => {
+      for (const entry of detailRoots.values()) queueMicrotask(() => entry.root.unmount());
+      detailRoots.clear();
       // 같은 이유로(위 pruneStaleRoots 주석 참조) 마이크로태스크로 미룬다 — 이 cleanup은
       // 바깥 root 자신의 unmount 커밋 도중에 실행되므로, 안쪽 per-cell root들을 동기로
       // unmount하면 그 경고가 그대로 재현된다(실측).
@@ -205,6 +271,8 @@ export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((pro
     ...rest,
     data,
     columns: wrappedColumns,
+    detailRenderer: wrappedDetail,
+    onRowExpand: handleRowExpand,
     ref,
   } as React.ComponentProps<typeof BaseURichTableReact>);
 });
