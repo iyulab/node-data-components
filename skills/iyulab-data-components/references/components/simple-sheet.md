@@ -132,5 +132,12 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `Ctrl`/`Cmd` + `Y` | Redo |
 | `Ctrl`/`Cmd` + `D` / `R` | Fill down / fill right from the selection |
 | `Ctrl`/`Cmd` + `A` | Select every cell |
+| `Shift` + `Space` | Select the rows the selection spans |
+| `Ctrl`/`Cmd` + `Space` | Select the columns the selection spans |
+| `Alt` + `Shift` + `←` / `→` | Narrow / widen every column the selection spans (16px a step, down to 30px) |
+
+**Column width.** Columns keep the width they are given — `width` in the column definition, 80px by
+default — and a longer value is cut with an ellipsis. Drag a column header's right edge to resize,
+or double-click that edge to fit the column to its widest value.
 
 Cut (`Ctrl`/`Cmd` + `X`) is not handled — copy, then `Delete`.

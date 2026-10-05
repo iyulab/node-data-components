@@ -124,7 +124,7 @@ const baseStyles = css`
     border-right: 1px solid var(--u-border-color, #E0E0E0);
     border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     white-space: nowrap;
-    min-width: 80px;
+    /* 너비는 열마다 인라인으로 준다(기본 80px · 하한 30px) — 여기 min-width 를 두면 그 하한을 덮어 좁힐 수 없다. */
     cursor: pointer;
     letter-spacing: 0.05em;
     user-select: none;
@@ -205,7 +205,6 @@ const baseStyles = css`
     border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
     font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
-    min-width: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

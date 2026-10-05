@@ -130,6 +130,10 @@ export class USimpleSheet extends UElement {
   private _resizing: { col: number; startX: number; startWidth: number; current: number } | null = null;
   private static readonly MIN_COL_WIDTH = 30;
   private static readonly DEFAULT_COL_WIDTH = 80;
+  /** 모서리(행 번호) 칸의 너비 — 스타일의 `.corner` 와 같은 값이어야 한다. */
+  private static readonly CORNER_WIDTH = 48;
+  /** 키보드로 열 너비를 바꿀 때 한 번에 움직이는 양(px). */
+  private static readonly COL_RESIZE_STEP = 16;
 
   // Undo/Redo 히스토리
   private _history: string[][][] = [];
@@ -253,6 +257,19 @@ export class USimpleSheet extends UElement {
     return `width:${w}px;min-width:${w}px;`;
   }
 
+  /**
+   * 표의 너비 = 모서리 칸 + 열 너비의 합. 🔴이것이 있어야 `table-layout: fixed` 가 실제로 적용된다 — 너비가 `auto` 인
+   * 표는 자동 레이아웃으로 떨어져, 긴 값이 열을 멋대로 넓히고 열을 좁힐 수 없었다(셀의 말줄임도 한 번도 보이지 않았다).
+   * `override` 는 드래그 중인 열의 임시 너비다.
+   */
+  private _tableWidth(override?: { col: number; width: number }): number {
+    let sum = USimpleSheet.CORNER_WIDTH;
+    for (let c = 0; c < this._colCount; c++) {
+      sum += override?.col === c ? override.width : (this._colWidths[c] ?? USimpleSheet.DEFAULT_COL_WIDTH);
+    }
+    return sum;
+  }
+
   // ──────────────────────────────────────────
   // 선택 유틸리티
   // ──────────────────────────────────────────
@@ -297,6 +314,7 @@ export class USimpleSheet extends UElement {
         <div class="sheet-scroll">
           <table
             class="sheet-table"
+            style="width:${this._tableWidth()}px"
             @mousedown=${this._onTableMouseDown}
             @mouseover=${this._onTableMouseOver}
             @dblclick=${this._onTableDblClick}
@@ -314,6 +332,7 @@ export class USimpleSheet extends UElement {
                     <span
                       class="resize-handle"
                       @mousedown=${(e: MouseEvent) => this._onResizeStart(e, c)}
+                      @dblclick=${(e: MouseEvent) => this._onResizeAutofit(e, c)}
                     ></span>
                   </th>
                 `)}
@@ -547,6 +566,19 @@ export class USimpleSheet extends UElement {
         } else {
           this._select(anchor.row, anchor.col + 1);
         }
+      }
+      return;
+    }
+
+    // ── Alt+Shift+←/→: 선택이 걸친 열의 너비 ──
+    // 열 너비 핸들은 드래그 전용이라 키보드로는 너비를 바꿀 길이 없었다(SC 2.1.1). 선택(열 머리 클릭 · Ctrl+Space)과
+    // 같은 단위로 동작한다 — 선택한 열 전부가 같은 양만큼 바뀐다.
+    if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault();
+      const focus = this._sel?.focus ?? anchor;
+      const delta = e.key === 'ArrowRight' ? USimpleSheet.COL_RESIZE_STEP : -USimpleSheet.COL_RESIZE_STEP;
+      for (let c = Math.min(anchor.col, focus.col); c <= Math.max(anchor.col, focus.col); c++) {
+        this._setColWidth(c, (this._colWidths[c] ?? USimpleSheet.DEFAULT_COL_WIDTH) + delta);
       }
       return;
     }
@@ -816,16 +848,48 @@ export class USimpleSheet extends UElement {
       th.style.width = `${newWidth}px`;
       th.style.minWidth = `${newWidth}px`;
     }
+    // 고정 레이아웃의 표는 자기 너비 안에서 열을 나눈다 — 표 너비도 함께 바꿔야 이 열만 바뀐다.
+    const table = this.renderRoot.querySelector('.sheet-table') as HTMLElement | null;
+    if (table) table.style.width = `${this._tableWidth({ col: this._resizing.col, width: newWidth })}px`;
   };
 
   private _onResizeEnd = () => {
     if (this._resizing) {
-      this._colWidths[this._resizing.col] = this._resizing.current;
+      const { col, current } = this._resizing;
       this._resizing = null;
-      this.requestUpdate(); // 상태 커밋 후 재렌더
+      this._setColWidth(col, current); // 상태 커밋 후 재렌더
     }
     document.removeEventListener('mousemove', this._onResizeMove);
     document.removeEventListener('mouseup', this._onResizeEnd);
+  };
+
+  /** 열 너비를 바꾸는 단 하나의 경로 — 드래그 · 키보드 · 자동 맞춤이 모두 여기로 온다. */
+  private _setColWidth(col: number, width: number) {
+    this._colWidths[col] = Math.max(USimpleSheet.MIN_COL_WIDTH, Math.round(width));
+    this.requestUpdate();
+  }
+
+  /**
+   * 핸들 더블클릭 → 그 열을 내용에 맞춘다(머리 글자와 셀 값 중 가장 넓은 것). 드래그 없이 한 번의 포인터 동작으로
+   * 너비를 바꾸는 길이다(SC 2.5.7). 셀은 `nowrap` + 말줄임이라 상자 폭이 아니라 글자 범위로 잰다.
+   */
+  private _onResizeAutofit = (e: MouseEvent, col: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const cells = [
+      this.renderRoot.querySelector(`th.col-header:nth-child(${col + 2})`),
+      ...this.renderRoot.querySelectorAll(`td.cell[data-col="${col}"]`),
+    ].filter((el): el is HTMLElement => el instanceof HTMLElement);
+    const range = document.createRange();
+    let widest = 0;
+    for (const cell of cells) {
+      range.selectNodeContents(cell);
+      const style = getComputedStyle(cell);
+      const chrome = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+        + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      widest = Math.max(widest, Math.ceil(range.getBoundingClientRect().width + chrome));
+    }
+    if (widest > 0) this._setColWidth(col, widest);
   };
 
   /** 코너 클릭 → 전체 선택 */

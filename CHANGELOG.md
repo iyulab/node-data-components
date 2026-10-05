@@ -18,6 +18,18 @@
   promised a "more" menu, but pressing it deleted the row at once. The event (`row-delete`) and the
   accessible name ("Delete row") are unchanged. The button's class in the shadow DOM is now
   `row-delete` (was `row-menu`) — not a public part, but a test that reached for it must follow.
+- **`u-simple-sheet` columns keep the width they are given.** A long value no longer widens its
+  column; it is cut with an ellipsis, as the sheet's styles always intended. Before, the table had no
+  width of its own, so the browser ignored `table-layout: fixed`: columns grew to their longest value
+  and could not be made narrower than that (nor below 80px). Give a column a `width`, or double-click
+  its edge to fit it.
+
+### Fixed
+
+- **`u-simple-sheet` column widths can be changed without dragging.** `Alt` + `Shift` + `←` / `→`
+  narrows or widens every column the selection spans, 16px a step (down to 30px); double-clicking a
+  column's edge fits it to its widest value. Until now the 5px edge handle, drag only, was the one
+  way to change a width — out of reach from the keyboard.
 
 ## [0.32.1] - 2026-10-03
 
