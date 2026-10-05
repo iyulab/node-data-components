@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.36.2] - 2026-10-06
+
+`0.36.1` was tagged on the wrong commit and never published; this is the release it was meant to be.
+
+### Fixed
+
+- **`u-simple-sheet` keyboard docs match the sheet.** Both the guide and the skill reference said
+  `Enter` starts editing; the sheet moves down on `Enter` (spreadsheet convention) and starts
+  editing on `F2` or a typed character. The skill also said `PageUp`/`PageDown` jump a screenful —
+  they move 10 rows. The keyboard table now lists `Shift+Enter`, `Ctrl+Home`/`Ctrl+End` and
+  `Ctrl+Enter` as well, and a browser test presses each documented key and checks the result.
+
 ## [0.36.0] - 2026-10-06
 
 ### Added

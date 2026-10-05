@@ -121,11 +121,13 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 |---|---|
 | Arrow keys | Move the active cell |
 | `Shift` + arrows | Extend the selection |
-| `Home` / `End` | Jump to the first / last column |
-| `PageUp` / `PageDown` | Jump a screenful of rows |
-| `Enter` / `F2` | Start editing; `Enter` again commits and moves down |
+| `Home` / `End` | Jump to the first / last column (`Ctrl` + `Home` / `End`: first / last cell of the sheet) |
+| `PageUp` / `PageDown` | Move 10 rows |
+| `Enter` / `Shift` + `Enter` | Move down / up — `Enter` does not start editing (spreadsheet convention) |
+| `F2`, or typing a character | Start editing (typing replaces the value) |
+| `Enter` while editing | Commit and move down (`Ctrl` + `Enter` commits and stays) |
 | `Escape` | Cancel editing |
-| `Tab` | Commit and move right (`Shift` + `Tab` moves left) |
+| `Tab` | Move right — from the last column to the next row (`Shift` + `Tab` moves left); while editing, commits first |
 | `Delete` / `Backspace` | Clear the selected cells |
 | `Ctrl`/`Cmd` + `C` / `V` | Copy / paste the selection as TSV |
 | `Ctrl`/`Cmd` + `Z` | Undo (`Shift` + `Ctrl`/`Cmd` + `Z` redoes) |
