@@ -293,6 +293,37 @@ const baseStyles = css`
     text-overflow: ellipsis;
   }
 
+  /* 열 머리 메뉴 — 열 너비의 단일 포인터 경로. 시트의 셀 드롭다운과 같은 면·글자 축. */
+  .col-menu {
+    position: fixed;
+    z-index: var(--u-layer-floating, 1000);
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    padding-block: 4px;
+    background: var(--u-bg-color, #FFFFFF);
+    border: 1px solid var(--u-border-color, #E0E0E0);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px var(--u-shadow-color-normal, rgba(0, 0, 0, 0.12));
+  }
+
+  .col-menu-item {
+    all: unset;
+    box-sizing: border-box;
+    display: block;
+    min-block-size: max(28px, var(--u-target-size, 0px));
+    padding: 6px 12px;
+    font-size: var(--dc-font-size);
+    color: var(--u-txt-color, #212121);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .col-menu-item:hover,
+  .col-menu-item:focus-visible {
+    background: var(--u-primary-bg-color, #E3F2FD);
+  }
+
   .dropdown-item:hover {
     background: var(--u-neutral-100, #F5F5F5);
   }

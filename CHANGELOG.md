@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.34.0] - 2026-10-05
+
+### Added
+
+- **`u-simple-sheet` column menu — column width without dragging.** Right-click a column header
+  (long-press on touch) for **Auto-fit width**, **Wider** and **Narrower** (16px a step; the menu stays
+  open so they can be pressed repeatedly). When the selection spans several columns and the header is one
+  of them, the menu applies to all of them. From the keyboard: the `ContextMenu` key or `Shift` + `F10`
+  opens it for the selected columns; arrows move, `Escape` closes and returns focus to the sheet. Before,
+  a width other than «fit to content» could only be set by dragging (WCAG 2.2 SC 2.5.7).
+
 ## [0.33.0] - 2026-10-05
 
 ### Added

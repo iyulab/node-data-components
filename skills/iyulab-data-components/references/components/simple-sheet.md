@@ -135,9 +135,13 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `Shift` + `Space` | Select the rows the selection spans |
 | `Ctrl`/`Cmd` + `Space` | Select the columns the selection spans |
 | `Alt` + `Shift` + `←` / `→` | Narrow / widen every column the selection spans (16px a step, down to 30px) |
+| `ContextMenu` / `Shift` + `F10` | Open the column menu for the columns the selection spans |
 
 **Column width.** Columns keep the width they are given — `width` in the column definition, 80px by
 default — and a longer value is cut with an ellipsis. Drag a column header's right edge to resize,
-or double-click that edge to fit the column to its widest value.
+or double-click that edge to fit the column to its widest value. Without dragging, right-click a column
+header (long-press on touch) for its menu: **Auto-fit width**, **Wider** and **Narrower** (16px a step;
+the menu stays open so they can be pressed repeatedly). When the selection spans several columns and
+the header is one of them, the menu applies to all of them.
 
 Cut (`Ctrl`/`Cmd` + `X`) is not handled — copy, then `Delete`.

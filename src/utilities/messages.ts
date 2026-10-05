@@ -28,7 +28,8 @@ export type DataMessageKey =
   | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage'
   | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError' | 'pickerSearch'
   | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount'
-  | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage' | 'selectRow';
+  | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage' | 'selectRow'
+  | 'columnMenu' | 'autoFitWidth' | 'wider' | 'narrower';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
 
@@ -58,6 +59,10 @@ messages.register('en', {
   collapseRow: 'Collapse row',
   selectAllOnPage: 'Select all rows on this page',
   selectRow: 'Select row',
+  columnMenu: 'Column {col}',
+  autoFitWidth: 'Auto-fit width',
+  wider: 'Wider',
+  narrower: 'Narrower',
 });
 
 messages.register('ko', {
@@ -86,4 +91,8 @@ messages.register('ko', {
   collapseRow: '행 접기',
   selectAllOnPage: '이 페이지 전체 선택',
   selectRow: '행 선택',
+  columnMenu: '{col} 열',
+  autoFitWidth: '너비 자동 맞춤',
+  wider: '넓게',
+  narrower: '좁게',
 });

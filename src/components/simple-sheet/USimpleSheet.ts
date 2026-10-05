@@ -117,6 +117,8 @@ export class USimpleSheet extends UElement {
   @state() private _replaceOnEdit = false;
   @state() private _dropdownItems: string[] = [];
   @state() private _dropdownIndex = -1;
+  /** 열 머리 메뉴 — 열 너비의 단일 포인터 경로(SC 2.5.7). `cols` 는 메뉴가 바꿀 열 범위(양 끝 포함). */
+  @state() private _colMenu: { cols: [number, number]; x: number; y: number } | null = null;
 
   private _isDropdownClick = false;
 
@@ -151,6 +153,7 @@ export class USimpleSheet extends UElement {
     document.removeEventListener('mouseup', this._onDocMouseUp);
     document.removeEventListener('mousemove', this._onResizeMove);
     document.removeEventListener('mouseup', this._onResizeEnd);
+    document.removeEventListener('mousedown', this._onDocMouseDownForMenu, true);
   }
 
   protected willUpdate(changed: Map<string, unknown>) {
@@ -301,6 +304,10 @@ export class USimpleSheet extends UElement {
   // ──────────────────────────────────────────
 
   render() {
+    return html`${this._renderSheet()}${this._renderColMenu()}`;
+  }
+
+  private _renderSheet() {
     return html`
       <div
         class="sheet-container${this._resizing ? ' is-resizing' : ''}"
@@ -327,6 +334,7 @@ export class USimpleSheet extends UElement {
                     class="col-header ${this._isColSelected(c) ? 'col-selected' : ''}"
                     style=${this._colWidthStyle(c)}
                     @mousedown=${(e: MouseEvent) => this._onColHeaderMouseDown(e, c)}
+                    @contextmenu=${(e: MouseEvent) => this._onColHeaderContextMenu(e, c)}
                   >
                     ${this._colLabel(c)}
                     <span
@@ -448,6 +456,17 @@ export class USimpleSheet extends UElement {
     if (this._editing) return; // 편집 중이면 input이 처리
 
     const anchor = this._sel?.anchor ?? { row: 0, col: 0 };
+
+    // ── ContextMenu 키 · Shift+F10: 선택한 열의 머리 메뉴 — 우클릭의 키보드 등가 ──
+    if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) {
+      e.preventDefault();
+      const focus = this._sel?.focus ?? anchor;
+      const lo = Math.min(anchor.col, focus.col);
+      const th = this.renderRoot.querySelector<HTMLElement>(`th.col-header:nth-child(${lo + 2})`);
+      const box = th?.getBoundingClientRect();
+      this._openColMenu([lo, Math.max(anchor.col, focus.col)], box?.left ?? 0, box?.bottom ?? 0);
+      return;
+    }
 
     // ── Shift+Space: 행 선택 · Ctrl+Space: 열 선택 ──
     // 스프레드시트 관례(Excel·Google Sheets)이자 행 번호·열 머리 클릭의 키보드 등가다 — 그 머리들은 포인터로만 눌렸다.
@@ -869,13 +888,17 @@ export class USimpleSheet extends UElement {
     this.requestUpdate();
   }
 
-  /**
-   * 핸들 더블클릭 → 그 열을 내용에 맞춘다(머리 글자와 셀 값 중 가장 넓은 것). 드래그 없이 한 번의 포인터 동작으로
-   * 너비를 바꾸는 길이다(SC 2.5.7). 셀은 `nowrap` + 말줄임이라 상자 폭이 아니라 글자 범위로 잰다.
-   */
+  /** 핸들 더블클릭 → 그 열을 내용에 맞춘다. */
   private _onResizeAutofit = (e: MouseEvent, col: number) => {
     e.preventDefault();
     e.stopPropagation();
+    this._autofitCol(col);
+  };
+
+  /**
+   * 열을 내용에 맞춘다(머리 글자와 셀 값 중 가장 넓은 것). 셀은 `nowrap` + 말줄임이라 상자 폭이 아니라 글자 범위로 잰다.
+   */
+  private _autofitCol(col: number) {
     const cells = [
       this.renderRoot.querySelector(`th.col-header:nth-child(${col + 2})`),
       ...this.renderRoot.querySelectorAll(`td.cell[data-col="${col}"]`),
@@ -890,7 +913,105 @@ export class USimpleSheet extends UElement {
       widest = Math.max(widest, Math.ceil(range.getBoundingClientRect().width + chrome));
     }
     if (widest > 0) this._setColWidth(col, widest);
+  }
+
+  // ──────────────────────────────────────────
+  // 열 머리 메뉴 — 열 너비의 단일 포인터 경로
+  // ──────────────────────────────────────────
+  //
+  // 너비 핸들은 드래그 전용이고, 핸들 더블클릭(내용에 맞춤)은 «원하는 너비» 를 줄 수 없다 — SC 2.5.7 은 드래그로
+  // 하는 일을 드래그 없이 한 포인터로 할 수 있기를 요구한다. 스프레드시트 관례(Excel·Google Sheets)대로 열 머리의
+  // 우클릭 메뉴가 그 길이다(터치에서는 길게 누르기). 키보드는 ContextMenu 키 · Shift+F10.
+  // 선택이 여러 열에 걸쳐 있고 그 안의 머리를 누르면 선택한 열 전부에 적용한다(Alt+Shift+←/→ 와 같은 단위).
+
+  private _onColHeaderContextMenu = (e: MouseEvent, col: number) => {
+    e.preventDefault();
+    const a = this._sel?.anchor.col ?? col;
+    const f = this._sel?.focus.col ?? col;
+    const [lo, hi] = [Math.min(a, f), Math.max(a, f)];
+    const inSelection = col >= lo && col <= hi && this._isColSelected(col);
+    this._openColMenu(inSelection ? [lo, hi] : [col, col], e.clientX, e.clientY);
   };
+
+  private _openColMenu(cols: [number, number], x: number, y: number) {
+    this._colMenu = { cols, x, y };
+    document.addEventListener('mousedown', this._onDocMouseDownForMenu, true);
+    void this.updateComplete.then(() => {
+      const menu = this.renderRoot.querySelector<HTMLElement>('.col-menu');
+      if (!menu) return;
+      // 화면 밖으로 나가지 않게 — 실제 크기를 안 뒤에 되민다.
+      const r = menu.getBoundingClientRect();
+      if (r.right > innerWidth) menu.style.left = `${Math.max(0, innerWidth - r.width - 4)}px`;
+      if (r.bottom > innerHeight) menu.style.top = `${Math.max(0, innerHeight - r.height - 4)}px`;
+      // 포인터로 연 메뉴도 첫 항목에 초점을 둔다 — 메뉴 패턴(WAI-ARIA)이고, 이어서 화살표로 고를 수 있다.
+      menu.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    });
+  }
+
+  private _closeColMenu(returnFocus: boolean) {
+    if (!this._colMenu) return;
+    this._colMenu = null;
+    document.removeEventListener('mousedown', this._onDocMouseDownForMenu, true);
+    if (returnFocus) this._containerEl?.focus();
+  }
+
+  /** 메뉴 밖을 누르면 닫는다 — 캡처 단계에서, 섀도 경계를 넘어 경로로 판정한다. */
+  private _onDocMouseDownForMenu = (e: MouseEvent) => {
+    const menu = this.renderRoot.querySelector('.col-menu');
+    if (menu && e.composedPath().includes(menu)) return;
+    this._closeColMenu(false);
+  };
+
+  private _forMenuCols(run: (col: number) => void) {
+    if (!this._colMenu) return;
+    const [lo, hi] = this._colMenu.cols;
+    for (let c = lo; c <= hi; c++) run(c);
+  }
+
+  private _onColMenuKeyDown = (e: KeyboardEvent) => {
+    const items = [...this.renderRoot.querySelectorAll<HTMLElement>('.col-menu [role="menuitem"]')];
+    const current = items.indexOf(e.target as HTMLElement);
+    let next: number;
+    switch (e.key) {
+      case 'ArrowDown': next = (current + 1) % items.length; break;
+      case 'ArrowUp': next = current <= 0 ? items.length - 1 : current - 1; break;
+      case 'Home': next = 0; break;
+      case 'End': next = items.length - 1; break;
+      case 'Escape':
+        e.preventDefault();
+        e.stopPropagation();
+        this._closeColMenu(true);
+        return;
+      case 'Tab':
+        e.preventDefault();
+        this._closeColMenu(true);
+        return;
+      default:
+        return;
+    }
+    e.preventDefault();
+    items[next]?.focus();
+  };
+
+  private _renderColMenu() {
+    if (!this._colMenu) return nothing;
+    const { cols: [lo, hi], x, y } = this._colMenu;
+    const label = lo === hi ? this._colLabel(lo) : `${this._colLabel(lo)}–${this._colLabel(hi)}`;
+    // 폭 조절 둘은 연달아 누르도록 메뉴를 열어 둔다(형제 flex-table 의 열 메뉴와 같은 동작).
+    const item = (action: string, text: string, run: () => void, keepOpen: boolean) => html`
+      <button type="button" role="menuitem" class="col-menu-item" data-action=${action}
+        @click=${() => { run(); if (!keepOpen) this._closeColMenu(true); }}>${text}</button>
+    `;
+    return html`
+      <div class="col-menu" role="menu" aria-label=${messages.text('columnMenu', { col: label })}
+        style="left:${x}px;top:${y}px"
+        @keydown=${this._onColMenuKeyDown}>
+        ${item('autofit', messages.text('autoFitWidth'), () => this._forMenuCols(c => this._autofitCol(c)), false)}
+        ${item('wider', messages.text('wider'), () => this._forMenuCols(c => this._setColWidth(c, (this._colWidths[c] ?? USimpleSheet.DEFAULT_COL_WIDTH) + USimpleSheet.COL_RESIZE_STEP)), true)}
+        ${item('narrower', messages.text('narrower'), () => this._forMenuCols(c => this._setColWidth(c, (this._colWidths[c] ?? USimpleSheet.DEFAULT_COL_WIDTH) - USimpleSheet.COL_RESIZE_STEP)), true)}
+      </div>
+    `;
+  }
 
   /** 코너 클릭 → 전체 선택 */
   private _onSelectAll = (e: MouseEvent) => {
