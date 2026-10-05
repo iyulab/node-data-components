@@ -316,6 +316,11 @@ interface Fixture {
    * 쓰지 않는다»(크기로만 판정) — 고립 픽스처에 예외를 적용하면 무엇이든 통과한다.
    */
   spacingIsOurs?: true;
+  /**
+   * 판정하지 않지만 **간격 계산에는 넣는** 이웃 타깃. 간격 예외는 같은 상태의 타깃끼리만 재므로, 같은 픽스처에 함께 그려지는
+   * 다른 상태의 타깃(열린 목록 바로 위의 툴바 단추 등)이 보이지 않으면 미달 타깃이 «간격 예외» 로 통과한다.
+   */
+  spacingNeighbors?: (tag: string) => Element[];
   /** 렌더가 비동기인 블록(마크다운 파싱·이미지 로드 등)을 위한 추가 대기(ms). */
   settle?: number;
 }
@@ -352,6 +357,9 @@ const FIXTURES: Record<string, Fixture | Fixture[]> = {
         return [...inShadow(sheet, 'th'), ...inShadow(sheet, 'td')];
       },
       spacingIsOurs: true,
+      // 머리 칸 오른쪽 끝의 열 너비 핸들(5px)은 머리 칸과 같은 픽스처에 붙어 그려진다 — 간격 계산에 넣는다.
+      // ⚠핸들 자신은 판정하지 않는다: 드래그 전용이라 대체 수단이 생기기 전에는 크기 판정이 아니라 그 결손이 먼저다.
+      spacingNeighbors: () => inShadow(document.querySelector('u-simple-sheet')!, '.resize-handle'),
       settle: 200,
     },
     {
@@ -653,8 +661,9 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
           .map(({ el, misses }) => `${describeEl(el)} — ${misses.map((m) => `${m.point}→${m.hit}`).join(' · ')}`);
         expect(unreachable, '누르면 다른 요소가 받는 타깃 — 잘렸거나 가려졌거나 닫혀 있다').toEqual([]);
 
+        const neighbors = (fixture.spacingNeighbors ? fixture.spacingNeighbors(tag) : []).map(measure);
         const verdicts = targets.map((t, i) =>
-          fixture.spacingIsOurs ? judge(t, targets.filter((_, j) => j !== i)) : judge(t, [t]),
+          fixture.spacingIsOurs ? judge(t, [...targets.filter((_, j) => j !== i), ...neighbors]) : judge(t, [t]),
         );
         const detail = `실측 ${targets.map((t) => `${Math.round(t.w)}x${Math.round(t.h)}`).join(' ')} · 판정 ${verdicts.join(' ')}`;
 
