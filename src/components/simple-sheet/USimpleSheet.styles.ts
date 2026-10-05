@@ -99,6 +99,8 @@ const baseStyles = css`
     z-index: 4;
     width: 48px;
     min-width: 48px;
+    /* 호스트 하한(--u-target-size) — 표 칸의 height 는 최소 높이로 작동한다. 미설정이면 auto(종전). */
+    height: var(--u-target-size, auto);
     background: var(--u-neutral-100, #F5F5F5);
     border-right: 1px solid var(--u-border-color, #E0E0E0);
     border-bottom: 2px solid var(--u-border-color, #E0E0E0);
@@ -117,6 +119,7 @@ const baseStyles = css`
     z-index: 2;
     background: var(--u-neutral-100, #F5F5F5);
     padding: 4px 8px;
+    height: var(--u-target-size, auto);
     text-align: center;
     font-size: var(--dc-header-font-size);
     font-weight: var(--dc-header-font-weight);
@@ -177,6 +180,7 @@ const baseStyles = css`
     z-index: 1;
     width: 48px;
     min-width: 48px;
+    height: var(--u-target-size, auto);
     text-align: right;
     padding: 0 6px;
     font-size: 11px;
@@ -211,7 +215,8 @@ const baseStyles = css`
     cursor: cell;
     /* ⚠height 는 «빈 셀»을 정한다 — 내용이 있는 셀의 높이는 line-height 가 만든다.
        둘 중 하나만 배선하면 데이터 행과 빈 행의 높이가 갈린다(네거티브 컨트롤이 잡은 자리). */
-    height: var(--dc-row-height);
+    /* 호스트 하한(--u-target-size)이 있으면 셀은 그 높이 이상 — 글자 줄(line-height)은 그대로. */
+    height: max(var(--dc-row-height), var(--u-target-size, 0px));
     line-height: var(--dc-row-height);
     vertical-align: middle;
     position: relative;
@@ -277,6 +282,8 @@ const baseStyles = css`
 
   .dropdown-item {
     padding: 4px 8px;
+    /* 호스트 하한(--u-target-size) — 한 줄 높이(1lh)를 뺀 나머지를 위아래 여백으로. 미설정이면 4px(종전). */
+    padding-block: max(4px, calc((var(--u-target-size, 0px) - 1lh) / 2));
     /* 셀 값의 후보를 보이는 자리다 — 본문 글자 축을 따른다. */
     font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);

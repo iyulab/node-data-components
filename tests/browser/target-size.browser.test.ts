@@ -687,4 +687,53 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
       });
     }
   });
+
+  /**
+   * 🔴**호스트 하한 `--u-target-size`** — 호스트가 «모든 타깃 ≥ N» 을 한 곳에서 정하면 위와 **같은 픽스처의
+   * 같은 타깃**이 전부 그 값 이상인가. 글자 크기(`--u-density`)와 독립된 축이라, 글자를 키우지 않고 터치 하한만 올린다.
+   *
+   * ⚠간격 예외를 쓰지 않는다 — 호스트가 하한을 요구한 것은 «타깃 자체가 그만큼 크다» 이지 «이웃과 떨어져 있다» 가 아니다
+   * (WCAG 2.5.5 AAA 44px 도 간격 예외가 없다). 타깃을 고르는 규칙은 위 게이트를 그대로 쓴다 — 두 번 쓰면 둘이 갈린다.
+   * ⚠미설정(기본값)이 기하를 바꾸지 않는다는 것은 위 게이트와 각 컴포넌트 시험이 이미 재는 값으로 지킨다(폴백 `0px`).
+   */
+  describe('호스트 하한 --u-target-size — 같은 타깃이 전부 그 값 이상이다', () => {
+    const FLOOR = 44;
+    const CASES = Object.entries(FIXTURES).flatMap(([tag, entry]) =>
+      (Array.isArray(entry) ? entry : [entry]).map((fixture) => ({ tag, fixture })));
+    for (const { tag, fixture } of CASES) {
+      const name = `${tag}${fixture.state ? ` [${fixture.state}]` : ''}`;
+      it(`${name}: --u-target-size: ${FLOOR}px 를 따른다`, async () => {
+        document.documentElement.style.setProperty('--u-target-size', `${FLOOR}px`);
+        try {
+          await mount(fixture.html, fixture.settle);
+          if (fixture.prepare) await fixture.prepare(document.querySelector(tag)!);
+          const els = (fixture.targets ? fixture.targets(tag) : [document.querySelector(tag)!]).map(resolveTarget);
+          // 여는 전환(대화상자의 scale 등) 도중에 재면 커진 상자가 작게 잡힌다 — 두 프레임 연속 같을 때까지 기다린다.
+          //   (섀도 트리 안의 전환은 document.getAnimations() 에 잡히지 않아 «상자가 멈췄는가» 로 잰다.)
+          const frame = () => new Promise((r) => requestAnimationFrame(() => r(undefined)));
+          //   ⚠전환은 몇 프레임 뒤에야 시작할 수 있다 — 바로 연속 두 프레임을 보면 «시작 전» 에 멈춘다(실측). 전환 시간만큼 먼저 둔다.
+          await new Promise((r) => setTimeout(r, 300));
+          for (let i = 0, prev = ''; i < 60; i++) {
+            const now = JSON.stringify(els.map(measure));
+            if (now === prev) break;
+            prev = now;
+            await frame();
+          }
+          const targets = els.map(measure);
+          expect(targets.length, '타깃을 하나도 못 찾으면 이 판정은 무의미하다').toBeGreaterThan(0);
+          // 반올림 오차(장치 픽셀 스냅)를 0.5px 까지 받는다.
+          const under = els
+            .map((el, i) => ({ el, t: targets[i] }))
+            .filter(({ t }) => t.w < FLOOR - 0.5 || t.h < FLOOR - 0.5)
+            .map(({ el, t }) => `${describeEl(el)} ${Math.round(t.w)}x${Math.round(t.h)}`);
+          expect(under, `${FLOOR}px 미만 타깃`).toEqual([]);
+          const unreachable = els.filter((el) => unreachablePoints(el).length > 0).map(describeEl);
+          expect(unreachable, '커진 타깃이 실제로 눌린다').toEqual([]);
+        } finally {
+          document.documentElement.style.removeProperty('--u-target-size');
+        }
+      });
+    }
+  });
+
 });

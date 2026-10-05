@@ -100,7 +100,7 @@ export const richTableStyles = css`
        갈리기 때문이다. */
     display: inline-flex;
     align-items: center;
-    min-block-size: 24px;
+    min-block-size: max(24px, var(--u-target-size, 0px));
     /* 예외 — "색 배경 위의 글자" 역할 토큰이 없다. --u-txt-color-inverse 는
        다크에서 neutral-100(#121212) 이라 파랑/초록 버튼 위에서 읽히지 않는다.
        버튼 배경은 두 테마 모두 유채색이므로 흰 글자가 맞다. */
@@ -141,7 +141,7 @@ export const richTableStyles = css`
     background: var(--u-bg-color-raised, #FAFAFA);
     font-weight: 600;
     text-align: left;
-    user-select: none;
+    user-select: none;\n    /* 호스트 하한(--u-target-size) — 표 칸의 height 는 최소 높이로 작동한다. 미설정이면 auto(종전). */\n    height: var(--u-target-size, auto);
 
     /* ⚠**아래 경계선을 «border-bottom» 으로 그리지 않는다.** «border-collapse: collapse» 에서
        셀 테두리는 테이블이 소유하므로 **헤더만 sticky 로 띄우면 함께 따라오지 않는다** —
@@ -167,7 +167,7 @@ export const richTableStyles = css`
     display: flex;
     align-items: center;
     inline-size: 100%;
-    padding: 8px;
+    padding: 8px;\n    min-block-size: var(--u-target-size, 0px);
     font: inherit;
     color: inherit;
     cursor: pointer;
@@ -271,8 +271,8 @@ export const richTableStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: 24px;
-    min-block-size: 24px;
+    min-inline-size: max(24px, var(--u-target-size, 0px));
+    min-block-size: max(24px, var(--u-target-size, 0px));
     cursor: pointer;
   }
 
@@ -291,8 +291,8 @@ export const richTableStyles = css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-inline-size: 24px;
-    min-block-size: 24px;
+    min-inline-size: max(24px, var(--u-target-size, 0px));
+    min-block-size: max(24px, var(--u-target-size, 0px));
     border-radius: 4px;
     cursor: pointer;
     color: var(--dc-icon-color);

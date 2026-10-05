@@ -17,7 +17,7 @@ export const styles = css`
     /* The text field is a pointer target (WCAG 2.2 SC 2.5.8, 24x24). Its natural height is the
        inherited font's line box, which is a font-metric value — 24px with Windows fonts, 20px
        with the default Linux fonts — so the floor is declared rather than assumed. */
-    min-block-size: 24px;
+    min-block-size: max(24px, var(--u-target-size, 0px));
     border: none;
     outline: none;
     background: transparent;
@@ -35,9 +35,12 @@ export const styles = css`
      gives back exactly the container's 0.25rem gap on each side, so the box meets the text field
      and the find button without covering either, and nothing visible moves. */
   .clear-btn {
+    /* 호스트 하한(--u-target-size)이 있으면 상자가 그 값 — 세로로만 되돌려 주고 가로는 종전 간격만큼만
+       되돌려 이웃(입력칸·찾기 버튼)을 덮지 않는다. 미설정이면 0.25rem 그대로(종전). */
+    --_pad: max(0.25rem, calc((var(--u-target-size, 0px) - 1em) / 2));
     box-sizing: content-box;
-    padding: 0.25rem;
-    margin: -0.25rem;
+    padding: var(--_pad);
+    margin: calc(-1 * var(--_pad)) -0.25rem;
   }
 
   u-popover {
@@ -76,6 +79,8 @@ export const styles = css`
     flex: 1;
     min-width: 0;
     padding: 0.5rem 0.75rem;
+    box-sizing: border-box;
+    min-height: var(--u-target-size, 0px);
     border: 1px solid currentColor;
     border-radius: 0.25rem;
     font: inherit;

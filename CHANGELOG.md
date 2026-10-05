@@ -4,6 +4,10 @@
 
 ### Added
 
+- **Press targets follow `--u-target-size`** (`@iyulab/components` 2.0). When it is set, `u-rich-table`'s
+  toolbar buttons, header cells and sort buttons, row checkboxes and row actions, `u-simple-sheet`'s cells,
+  headers and edit-dropdown items, and `u-record-picker`'s field, clear icon and dialog search field are at
+  least that size (cells keep their line height; icons keep their glyph size). Unset, nothing changes.
 - **`URichTableReact`: `detailRenderer` takes a `ReactNode`.** Like `columns[].render`, the detail of an
   expanded row can be a React element; it is mounted in a React root per row while the row is
   expanded and unmounted when the row collapses or leaves `data` (effects clean up). The vanilla
