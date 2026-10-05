@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.35.0] - 2026-10-05
+
+### Changed
+
+- **`u-rich-table` date cells edit with `u-date-picker`** from `@iyulab/components`. The native date
+  input showed the browser's UI language (`10/02/2026` in an English browser) while the table shows
+  the ISO value; the picker's text box reads and shows `YYYY-MM-DD` (and short forms such as
+  `20261231`), with a calendar beside it — a day picked there is the new value. The committed value is
+  still the ISO day string. Text that is not a date keeps the cell editing with the picker's message
+  instead of committing an empty value. While the calendar is open, Escape closes the calendar; the
+  next Escape cancels the edit. **Requires `@iyulab/components` 2.0.1** (peer `>=2.0.1`, was
+  `>=2.0.0`) — the release in which pressing the calendar keeps focus in the picker.
+
+### Fixed
+
+- **Enter and Tab in a `u-rich-table` cell editor moved the wrong way round.** They decided where to
+  go from the editing cell after confirming it — which is empty once a confirm succeeds — so a
+  successful edit never moved down (Enter) or on (Tab), as the keyboard table says, and an edit that
+  failed validation moved away from its error. They now move on only after a commit, and an edit
+  that fails stays on its cell with the message.
+- **Leaving an editor no longer commits a different cell.** The editor removed by moving on blurs;
+  that blur confirmed whichever cell was being edited at that moment, which closed the next cell's
+  editor as soon as it opened. A blur now confirms only its own cell.
+- **Leaving an empty cell empty is not an edit** — it no longer emits `row-update` with `''` for a
+  cell whose value was `null` or `undefined`.
+
 ## [0.34.0] - 2026-10-05
 
 ### Added
