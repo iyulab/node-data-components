@@ -1,5 +1,6 @@
 // src/components/u-rich-table/styles.ts
 import { css } from 'lit';
+import { SPECIAL_COLUMN_PX } from './utils/column-layout.js';
 
 export const richTableStyles = css`
   :host {
@@ -117,8 +118,8 @@ export const richTableStyles = css`
     border-collapse: collapse;
   }
 
-  /* 🔴**선언한 열 폭을 지키는 모드** — 모든 열이 절대 길이로 폭을 선언했을 때만 켜진다
-     (판정은 URichTable 의 _fixedColumnWidths, 이유도 거기 적혀 있다).
+  /* 🔴**선언한 열 폭을 지키는 모드** — 모든 열이 절대 길이로 폭(또는 유연 열의 바닥 minWidth)을 알 때만 켜진다
+     (판정은 utils/column-layout.ts 의 columnLayout, 이유도 거기 적혀 있다).
 
      기본 «auto» 모드에서 열 폭은 *모든 행의 내용*이 함께 정하므로 th 의 인라인 width 는
      힌트로 강등된다 — 그리고 이 컴포넌트의 td 안에는 필터 행의 input/select(둘 다
@@ -261,7 +262,7 @@ export const richTableStyles = css`
   }
 
   .checkbox-cell {
-    width: 40px;
+    width: ${SPECIAL_COLUMN_PX.checkbox}px;
     text-align: center;
   }
 
@@ -277,7 +278,7 @@ export const richTableStyles = css`
   }
 
   .expand-cell {
-    width: 30px;
+    width: ${SPECIAL_COLUMN_PX.expand}px;
     text-align: center;
     color: var(--dc-icon-color);
   }
@@ -303,7 +304,7 @@ export const richTableStyles = css`
   }
 
   .actions-cell {
-    width: 60px;
+    width: ${SPECIAL_COLUMN_PX.actions}px;
     text-align: center;
   }
 

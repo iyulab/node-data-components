@@ -142,6 +142,27 @@ That is not a style preference — it is what makes the guarantee possible:
 Nothing changes for tables that don't meet the condition, and nothing changes for a table whose
 declared widths already fit — there the columns share the leftover space as before.
 
+### A column that takes the rest — `minWidth`
+
+The usual line-of-business table has one column that should take whatever space is left (customer,
+item, note) but must not be squeezed to nothing on a phone. Give it a floor instead of a width:
+
+```ts
+columns = [
+  { key: 'id',    label: 'Order', width: 100 },
+  { key: 'item',  label: 'Item',  minWidth: 200 },   // flexible: the rest, never below 200px
+  { key: 'qty',   label: 'Qty',   width: 80 },
+];
+```
+
+- A column with `minWidth` and no `width` counts as "known" for the rule above, so the table keeps
+  its declared widths: the fixed columns stay exact and the flexible one takes the leftover space.
+- When the container is narrower than the fixed widths plus the floors, the row area scrolls — the
+  flexible column does not wrap its text letter by letter.
+- Several flexible columns share the leftover space equally, and none goes below its own floor.
+- With `width` as well, the column is `max(width, minWidth)`.
+- A column with neither still puts the whole table in the default mode.
+
 ## Selection across pages
 
 Two facts are deliberately separate, because in server paging they differ:
@@ -265,6 +286,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `key` | `string` | Property read from the row object |
 | `label` | `string` | Header text |
 | `width` | `number\|string` | A number is pixels (as in `@iyulab/flex-table`); a string is a CSS length (`'120px'`, `'8rem'`). See [Column widths](#column-widths) for when it is honoured exactly |
+| `minWidth` | `number\|string` | Floor for the column, same units as `width`. Without `width` the column is flexible — it takes the leftover space and never narrows below the floor. See [A column that takes the rest](#a-column-that-takes-the-rest--minwidth) |
 | `type` | `'text'\|'number'\|'date'\|'select'\|'badge'` | Cell renderer and editor |
 | `options` | `{ value, label }[]` | Choices for `type: 'select'` |
 | `badgeColors` | `Record<string, string>` | Value → color for `type: 'badge'` |

@@ -7,8 +7,7 @@ import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
 import { effectiveAlign } from './types.js';
 
-/** 열 폭을 CSS 값으로 — 숫자는 px(flex-table 과 같은 어휘), 문자열은 그대로. */
-const cssWidth = (w: number | string | undefined): string => (typeof w === 'number' ? `${w}px` : w ?? '');
+import { columnLayout, headerWidth, type ColumnLayout } from './utils/column-layout.js';
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
@@ -226,34 +225,27 @@ export class URichTable extends LitElement {
   // --- Rendering ---
 
   /**
-   * 선언된 열 폭을 **그대로 지킬 수 있는가** — `table-layout: fixed` 로 전환할 조건.
+   * 선언된 열 폭을 **그대로 지킬 수 있는가** — `table-layout: fixed` 와, 유연 열이 있으면 표의 하한.
+   * 판정 규칙과 근거는 `utils/column-layout.ts`(모든 열이 절대 `width` 또는 절대 `minWidth` 를 알 때만).
    *
-   * 🔴**게이트가 필수이고 느슨하게 할 수 없다.** `fixed` 는 폭을 선언하지 않은 열을 **0 으로
-   * 만든다**(실측: 17열 중 8열만 선언한 표에서 나머지 8열이 사라졌다). 그래서 «전 열» 을 요구한다.
-   *
-   * ⚠**퍼센트는 제외한다.** 퍼센트는 컨테이너 기준이라 «합이 넘친다» 가 성립하지 않고,
-   * `fixed` 로 전환하면 표가 오히려 컨테이너 폭에 갇혀 가로 스크롤이 사라진다(실측).
-   * 절대 길이만 «합이 컨테이너를 넘으면 스크롤» 이라는 모델이 성립한다.
-   *
-   * 숫자 폭(`width: 150`)은 px 다(`cssWidth`) — flex-table 과 같은 어휘다. 종전에는
-   * 인라인 style 이 `width: 150` 이 되어 브라우저가 버렸다.
+   * 숫자 폭(`width: 150`)은 px 다 — flex-table 과 같은 어휘다. 종전에는 인라인 style 이
+   * `width: 150` 이 되어 브라우저가 버렸다.
    *
    * 계약은 `tests/browser/rich-table-column-width.browser.test.ts` 가 고정한다.
    */
-  private get _fixedColumnWidths(): boolean {
-    const ABSOLUTE = /^\s*\d+(\.\d+)?(px|rem|em|ch|pt|pc|cm|mm|in|Q)\s*$/;
-    return (
-      this.columns.length > 0 &&
-      this.columns.every((c) =>
-        typeof c.width === 'number' ? c.width > 0 : typeof c.width === 'string' && ABSOLUTE.test(c.width))
-    );
+  private get _layout(): ColumnLayout {
+    return columnLayout(this.columns, {
+      checkbox: this.selectable,
+      expand: this.expandable,
+      actions: this._hasActionsColumn,
+    });
   }
 
   render(): TemplateResult {
     return html`
       ${this._renderToolbar()}
       <div class="table-wrap">
-        <table class=${this._fixedColumnWidths ? 'fixed-cols' : ''}>
+        <table class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
           ${this._renderHeader()}
           <tbody>
             ${this.filterable && this.columns.some(c => c.filterable) ? this._renderFilterRow() : ''}
@@ -319,7 +311,8 @@ export class URichTable extends LitElement {
 
   private _headerStyle(col: ColumnDef): string {
     const align = this._headerAlign(col);
-    return [col.width != null ? `width: ${cssWidth(col.width)}` : '', align !== 'start' ? `text-align: ${align}` : '']
+    const width = headerWidth(col);
+    return [width ? `width: ${width}` : '', align !== 'start' ? `text-align: ${align}` : '']
       .filter(Boolean).join('; ');
   }
 

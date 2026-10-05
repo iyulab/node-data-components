@@ -142,6 +142,81 @@ describe('u-rich-table — 열 폭', () => {
     expect(w.scrollWidth - w.clientWidth, '가로 스크롤이 생기지 않는다').toBeLessThanOrEqual(1);
   });
 
+  // ── 유연 열(`minWidth` · `width` 없음) — 남는 폭을 흡수하되 바닥 아래로 눌리지 않는다.
+  //    계기: 폭 없는 열 하나가 표 전체를 auto 로 떨어뜨려 390px 에서 품명이 글자 단위로 접혔다.
+  async function mountCols(cols: Record<string, unknown>[], width: number, extra: Record<string, unknown> = {}) {
+    host.style.width = `${width}px`;
+    const el = document.createElement('u-rich-table') as Table;
+    Object.assign(el, extra);
+    el.columns = cols as unknown[];
+    el.data = [{ _id: 'r0', a: 'A-0001', item: 'Business cards, 500ct', qty: '12' }];
+    el.totalCount = 1;
+    el.pageSize = 5;
+    el.currentPage = 1;
+    host.appendChild(el);
+    await el.updateComplete;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return el;
+  }
+  const flexCols = [
+    { key: 'a', label: 'No', width: 100 },
+    { key: 'item', label: 'Item', minWidth: 200 },
+    { key: 'qty', label: 'Qty', width: 80 },
+  ];
+  const widthOf = (el: Table, label: string) =>
+    Math.round(([...el.shadowRoot!.querySelectorAll('thead th')] as HTMLElement[])
+      .find((th) => th.textContent?.trim() === label)!.getBoundingClientRect().width);
+
+  it('🔴유연 열: 좁은 화면에서는 바닥을 지키고 행 영역이 스크롤한다', async () => {
+    const el = await mountCols(flexCols, 300);
+    expect(widthOf(el, 'Item'), '바닥 200 아래로 눌리지 않는다').toBeGreaterThanOrEqual(199);
+    expect([widthOf(el, 'No'), widthOf(el, 'Qty')]).toEqual([100, 80]);
+    const w = wrap(el);
+    expect(w.scrollWidth, '하한 380 이 300 을 넘으니 스크롤').toBeGreaterThan(w.clientWidth);
+  });
+
+  it('🔴유연 열: 넓은 화면에서는 남는 폭을 혼자 받는다 — 고정 열은 그대로', async () => {
+    const el = await mountCols(flexCols, 900);
+    expect([widthOf(el, 'No'), widthOf(el, 'Qty')]).toEqual([100, 80]);
+    expect(widthOf(el, 'Item'), '900 − 180 을 받는다').toBeGreaterThanOrEqual(715);
+    const w = wrap(el);
+    expect(w.scrollWidth - w.clientWidth, '넘치지 않는다').toBeLessThanOrEqual(1);
+  });
+
+  it('🔴바닥이 다른 유연 열 둘 — 어느 쪽도 자기 바닥 아래로 내려가지 않는다', async () => {
+    const el = await mountCols([
+      { key: 'a', label: 'No', width: 100 },
+      { key: 'item', label: 'Item', minWidth: 300 },
+      { key: 'qty', label: 'Qty', minWidth: 100 },
+    ], 400);
+    expect(widthOf(el, 'Item')).toBeGreaterThanOrEqual(299);
+    expect(widthOf(el, 'Qty')).toBeGreaterThanOrEqual(99);
+  });
+
+  it('🔴표가 그리는 열(선택 · 동작)도 하한에 든다 — 유연 열이 그만큼 눌리지 않는다', async () => {
+    const el = await mountCols(flexCols, 300, { selectable: true, deletable: true });
+    expect(widthOf(el, 'Item')).toBeGreaterThanOrEqual(199);
+  });
+
+  it('NEGATIVE: `width` 와 `minWidth` 를 함께 주면 큰 쪽이다', async () => {
+    const el = await mountCols([
+      { key: 'a', label: 'No', width: 60, minWidth: 90 },
+      { key: 'item', label: 'Item', width: 200 },
+    ], 900);
+    // 전 열 고정 · 합이 컨테이너보다 작아 남는 폭은 종전대로 비례 분배된다 — 비율로 잰다.
+    const ratio = widthOf(el, 'No') / widthOf(el, 'Item');
+    expect(ratio).toBeGreaterThan(0.4);
+  });
+
+  it('NEGATIVE: 바닥 없는 폭 없는 열이 하나라도 있으면 종전(auto)이다', async () => {
+    const el = await mountCols([
+      { key: 'a', label: 'No', width: 100 },
+      { key: 'item', label: 'Item' },
+      { key: 'qty', label: 'Qty', minWidth: 80 },
+    ], 600);
+    expect(el.shadowRoot!.querySelector('table')!.classList.contains('fixed-cols')).toBe(false);
+  });
+
   it('NEGATIVE: 선언 합이 컨테이너보다 작으면 남는 폭을 나눠 갖는다', async () => {
     const el = await mount(3, 'px');
     const w = wrap(el);

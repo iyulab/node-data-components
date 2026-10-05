@@ -176,6 +176,7 @@ interface ColumnDef {
   key:      string;                       // 데이터 객체의 키
   label:    string;                       // 헤더 표시 텍스트
   width?:   number | string;              // 열 너비 — 숫자는 px(flex-table 과 같다), 문자열은 CSS 길이
+  minWidth?: number | string;             // 바닥 — width 없이 주면 «유연 열»: 남는 폭을 받고 바닥 아래로 눌리지 않는다
   align?:   'start' | 'center' | 'end';   // 셀 정렬 — 기본값: number 열은 end, 그 밖은 start
   headerAlign?: 'start' | 'center' | 'end'; // 머리글 정렬 — 기본값: 셀 정렬
   type?:    'text' | 'number' | 'date' | 'select' | 'badge';

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.36.0] - 2026-10-06
+
+### Added
+
+- **`u-rich-table` columns take `minWidth` — a column that takes the rest of the width.** A column
+  with `minWidth` and no `width` is flexible: the other columns keep their declared widths, it takes
+  the space left over, and it never narrows below its floor — on a narrow screen the row area scrolls
+  instead. Until now one column without a width put the whole table back in the browser's default
+  sizing, where every declared width became a hint and, at phone width, a long item name wrapped one
+  letter per line. Several flexible columns share the leftover space and each keeps its own floor;
+  with `width` as well, the column is `max(width, minWidth)`. Same name and units as
+  `@iyulab/flex-table`'s `minWidth`.
+
 ## [0.35.0] - 2026-10-05
 
 ### Changed

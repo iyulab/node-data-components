@@ -14,6 +14,13 @@ export interface ColumnDef {
   label: string;
   /** Column width — a number is pixels (as in `@iyulab/flex-table`), a string is any CSS length (`'8rem'`). */
   width?: number | string;
+  /**
+   * Floor for the column, same units as `width`. A column with `minWidth` and no `width` is
+   * **flexible**: it takes the space the other columns leave and never narrows below the floor —
+   * on a narrow screen the table scrolls instead. With `width`, the column is `max(width, minWidth)`.
+   * Declared widths are kept only when every column has an absolute `width` or `minWidth`.
+   */
+  minWidth?: number | string;
   sortable?: boolean;
   editable?: boolean;
   required?: boolean;
