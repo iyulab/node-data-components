@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.33.0] - 2026-10-05
 
 ### Added
 
@@ -16,6 +16,8 @@
 
 ### Changed
 
+- 🔴**Requires `@iyulab/components` 2.0** (peer `>=2.0.0`). With 1.x, the internal buttons below draw in
+  the wrong appearance.
 - Internal buttons use `@iyulab/components` 2.0's `appearance` (`plain` for the former `ghost`) — the
   view switcher's selected button is `appearance="solid"`, the others `appearance="plain"`.
 - `u-rich-table`'s row delete button (`deletable`) draws a trash can instead of `⋯`. The `⋯` glyph
