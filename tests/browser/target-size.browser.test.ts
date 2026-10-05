@@ -698,11 +698,18 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
    */
   describe('호스트 하한 --u-target-size — 같은 타깃이 전부 그 값 이상이다', () => {
     const FLOOR = 44;
+    /**
+     * 하한을 따르지 않는 것이 옳은 타깃 — **이름(상태 포함) → 사유**. WCAG 2.5.5 의 예외 중 이 패키지가 쓰는 것만 적는다
+     * (인라인: 문장 속 타깃은 주변 글줄이 크기를 정한다 · 등가: 같은 동작을 하는 하한 이상의 다른 타깃이 있다).
+     * 면제된 타깃도 «눌린다» 는 그대로 잰다.
+     */
+    const EXEMPT: Record<string, string> = {};
     const CASES = Object.entries(FIXTURES).flatMap(([tag, entry]) =>
       (Array.isArray(entry) ? entry : [entry]).map((fixture) => ({ tag, fixture })));
     for (const { tag, fixture } of CASES) {
       const name = `${tag}${fixture.state ? ` [${fixture.state}]` : ''}`;
-      it(`${name}: --u-target-size: ${FLOOR}px 를 따른다`, async () => {
+      const exempt = EXEMPT[name];
+      it(`${name}: ${exempt ? `하한 면제 — ${exempt}` : `--u-target-size: ${FLOOR}px 를 따른다`}`, async () => {
         document.documentElement.style.setProperty('--u-target-size', `${FLOOR}px`);
         try {
           await mount(fixture.html, fixture.settle);
@@ -726,8 +733,11 @@ describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
             .map((el, i) => ({ el, t: targets[i] }))
             .filter(({ t }) => t.w < FLOOR - 0.5 || t.h < FLOOR - 0.5)
             .map(({ el, t }) => `${describeEl(el)} ${Math.round(t.w)}x${Math.round(t.h)}`);
-          expect(under, `${FLOOR}px 미만 타깃`).toEqual([]);
-          const unreachable = els.filter((el) => unreachablePoints(el).length > 0).map(describeEl);
+          if (!exempt) expect(under, `${FLOOR}px 미만 타깃`).toEqual([]);
+          const unreachable = els
+            .map((el) => ({ el, misses: unreachablePoints(el) }))
+            .filter(({ misses }) => misses.length > 0)
+            .map(({ el, misses }) => `${describeEl(el)} — ${misses.map((m) => `${m.point}→${m.hit}`).join(' · ')}`);
           expect(unreachable, '커진 타깃이 실제로 눌린다').toEqual([]);
         } finally {
           document.documentElement.style.removeProperty('--u-target-size');
