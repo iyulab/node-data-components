@@ -331,8 +331,16 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 |---|---|
 | Arrow keys | Move the focused cell |
 | `Enter` | Editable cell: start editing / commit and move down. Non-editable cell: emit `row-activate` |
-| `Escape` | Cancel editing |
-| `Tab` | Commit and move to the next cell |
+| `Escape` | Cancel editing (in a date editor with its calendar open: close the calendar) |
+| `Tab` | Commit and move to the next editable cell |
+
+An edit that fails validation (`required`, `validator`, or text that is not a date) stays on its
+cell with the message; Enter and Tab move on only after a commit.
+
+A `type: 'date'` column edits with `u-date-picker` from `@iyulab/components`: a text box that shows
+and reads `YYYY-MM-DD` in every browser language (it also reads short forms such as `20261231` and
+`10-02`), with a calendar beside it — a day picked there is the new value. The committed value is
+the ISO day string, as before. Leaving an empty cell empty is not an edit (no `row-update`).
 | `Space` | Toggle selection of the focused row (when `selectable`) |
 | `Delete` | Emit `row-delete` for every selected row (when `deletable`) |
 | `Ctrl`/`Cmd` + `A` | Select every row **on this page** — same scope as the header checkbox |

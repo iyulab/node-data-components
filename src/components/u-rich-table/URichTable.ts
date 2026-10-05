@@ -12,6 +12,8 @@ const cssWidth = (w: number | string | undefined): string => (typeof w === 'numb
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
+// The date cell editor (registers `u-date-picker`).
+import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
 
 /**
  * 행 삭제 버튼의 휴지통 — 이 컴포넌트 자신의 크롬이라 직접 그린다(`u-data-view` 와 같은 이유).
@@ -471,14 +473,29 @@ export class URichTable extends LitElement {
           </td>
         `;
       }
+      if (col.type === 'date') {
+        // `u-date-picker`, not the native date input: that one shows the browser's UI language
+        // (`10/02/2026` in an English browser). The picker's text box reads and shows `YYYY-MM-DD`
+        // with a calendar beside it; its value is the same ISO day string the native input gave.
+        return html`
+          <td>
+            <u-date-picker class="cell-edit-input ${validationError ? 'invalid' : ''}" size="sm"
+              .value=${/^\d{4}-\d{2}-\d{2}$/.test(this.editValue) ? this.editValue : ''}
+              @change=${this._onDateEditorChange}
+              @keydown=${this._onEditKeyDown}
+              @blur=${() => this._onEditorBlur(rowIdx, colIdx)}></u-date-picker>
+            ${validationError ? html`<div class="validation-error">${validationError}</div>` : ''}
+          </td>
+        `;
+      }
       return html`
         <td>
           <input class="cell-edit-input ${validationError ? 'invalid' : ''}"
-            type=${col.type === 'number' ? 'number' : col.type === 'date' ? 'date' : 'text'}
+            type=${col.type === 'number' ? 'number' : 'text'}
             .value=${this.editValue}
             @input=${(e: Event) => this.editValue = (e.target as HTMLInputElement).value}
             @keydown=${this._onEditKeyDown}
-            @blur=${this._onCellEditConfirm} />
+            @blur=${() => this._onEditorBlur(rowIdx, colIdx)} />
           ${validationError ? html`<div class="validation-error">${validationError}</div>` : ''}
         </td>
       `;
@@ -676,34 +693,73 @@ export class URichTable extends LitElement {
     this.editingCell = { rowIndex: rowIdx, colIndex: colIdx };
     this.editValue = String(value ?? '');
     this.requestUpdate();
-    requestAnimationFrame(() => {
-      const input = this.shadowRoot?.querySelector('.cell-edit-input') as HTMLInputElement;
+    requestAnimationFrame(async () => {
+      const input = this.shadowRoot?.querySelector('.cell-edit-input') as HTMLInputElement | null;
+      if (input?.localName === 'u-date-picker') {
+        // 커스텀 엘리먼트는 자기 갱신 뒤에야 텍스트 상자가 있다 — 그다음 초점·전체 선택(입력한 키가 값을 바꾸게).
+        const picker = input as unknown as HTMLElement & { updateComplete: Promise<unknown> };
+        await picker.updateComplete;
+        picker.focus();
+        picker.shadowRoot?.querySelector<HTMLInputElement>('[part~="input"]')?.select();
+        return;
+      }
       input?.focus();
       input?.select();
     });
   }
 
+  /**
+   * 날짜 편집기의 `change` — 값을 받아 두고, 달력에서 고른 것이면 확정한다.
+   *
+   * 확정을 «다음 틱» 으로 미루는 이유: 텍스트 상자의 Enter 도 피커 안에서 먼저 `change` 를 낸 뒤
+   * 이 셀의 keydown(확정 + 아래 행으로 이동)에 닿는다. 그 경우 미룬 확정이 돌 때는 편집 셀이 이미
+   * 바뀌어 있으므로(새 객체) 아무것도 하지 않는다 — 남는 것은 키 없이 난 변경(달력에서 날짜 고르기)뿐이다.
+   */
+  private _onDateEditorChange = (e: Event): void => {
+    this.editValue = (e.target as HTMLElement & { value?: string }).value ?? '';
+    const cell = this.editingCell;
+    setTimeout(() => {
+      if (this.editingCell === cell) this._onCellEditConfirm();
+    });
+  };
+
   private _onEditKeyDown(e: KeyboardEvent): void {
     // IME 조합 중인 키(한국어 등)는 입력기의 것이다 — 조합을 확정하는 Enter 로 확정·이동·제출하지 않는다.
     if (isImeComposing(e)) return;
-    if (e.key === 'Enter') {
+    // 날짜 편집기의 달력은 자기 키를 갖는다 — 달력 안의 Enter 는 고르기, 달력이 열린 동안의 Escape 는
+    // 달력 닫기다(문서 수준 오버레이 층이 닫는다). 고른 날짜는 `change` 로 확정된다.
+    const editor = e.currentTarget as Element | null;
+    if (editor?.localName === 'u-date-picker') {
+      const inCalendar = e.composedPath().some(n => n instanceof Element && n.part?.contains('popover'));
+      if (inCalendar || (e.key === 'Escape' && calendarOpen(editor))) return;
+    }
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault();
+      // 이동의 기준은 «확정 전» 셀이다 — 확정이 성공하면 편집 셀이 비고, 검증에 걸리면 그대로 남아
+      // 그 셀에서 오류를 고치게 한다(이동하지 않는다).
+      const from = this.editingCell;
       this._onCellEditConfirm();
-      // 다음 행으로 이동
-      if (this.editingCell && this.editingCell.rowIndex < this._view.length - 1) {
-        const nextRow = this.editingCell.rowIndex + 1;
-        const col = this.editingCell.colIndex;
-        const nextValue = this._view[nextRow][this.columns[col].key];
-        this._onCellDblClick(nextRow, col, nextValue);
+      if (!from || this.editingCell) return;
+      if (e.key === 'Tab') {
+        this._moveToNextEditableCell(from, e.shiftKey);
+      } else if (from.rowIndex < this._view.length - 1) {
+        // 다음 행으로 이동
+        const nextRow = from.rowIndex + 1;
+        this._onCellDblClick(nextRow, from.colIndex, this._view[nextRow][this.columns[from.colIndex].key]);
       }
     } else if (e.key === 'Escape') {
       this.editingCell = null;
       this.editValue = '';
-    } else if (e.key === 'Tab') {
-      e.preventDefault();
-      this._onCellEditConfirm();
-      this._moveToNextEditableCell(e.shiftKey);
     }
+  }
+
+  /**
+   * 편집기를 떠나면 확정한다 — 단 «그 편집기의 셀» 이 아직 편집 중일 때만. Enter/Tab 으로 다음 셀로
+   * 옮기면 앞 편집기가 DOM 에서 빠지며 blur 를 내는데, 그것이 이미 열린 다음 셀의 편집을 확정해 닫으면 안 된다.
+   */
+  private _onEditorBlur(rowIdx: number, colIdx: number): void {
+    if (this.editingCell?.rowIndex !== rowIdx || this.editingCell.colIndex !== colIdx) return;
+    this._onCellEditConfirm();
   }
 
   private _onCellEditConfirm(): void {
@@ -715,6 +771,24 @@ export class URichTable extends LitElement {
     let newValue: unknown = this.editValue;
 
     if (col.type === 'number') newValue = Number(newValue);
+
+    // 날짜가 아닌 텍스트 — 피커는 값을 비우고 badInput 을 알린다. 비운 값으로 덮어쓰지 않고 편집을 잇는다.
+    if (col.type === 'date') {
+      const picker = this.shadowRoot?.querySelector('u-date-picker.cell-edit-input') as
+        (HTMLElement & { validity?: ValidityState; validationMessage?: string }) | null;
+      if (picker?.validity?.badInput) {
+        this.validationErrors = new Map(this.validationErrors)
+          .set(`${rowIndex}-${colIndex}`, picker.validationMessage || Locale.getValue('valueMissing'));
+        return;
+      }
+    }
+
+    // 빈 칸을 빈 채로 두고 나간 것은 변경이 아니다(`null`/`undefined` 셀의 편집 상자는 '' 로 시작한다).
+    if (newValue === '' && (oldValue == null || oldValue === '')) {
+      this.editingCell = null;
+      this.editValue = '';
+      return;
+    }
 
     // Validation
     if (col.required && !newValue && newValue !== 0) {
@@ -860,9 +934,8 @@ export class URichTable extends LitElement {
     return pages;
   }
 
-  private _moveToNextEditableCell(reverse: boolean): void {
-    if (!this.editingCell) return;
-    let { rowIndex, colIndex } = this.editingCell;
+  private _moveToNextEditableCell(from: CellPosition, reverse: boolean): void {
+    let { rowIndex, colIndex } = from;
     const editableCols = this.columns.map((c, i) => c.editable ? i : -1).filter(i => i >= 0);
     const currentIdx = editableCols.indexOf(colIndex);
 
@@ -1007,6 +1080,15 @@ export class URichTable extends LitElement {
     if (!customElements.get(tagName)) {
       customElements.define(tagName, this);
     }
+  }
+}
+
+/** `u-date-picker` publishes its calendar state as `:state(open)`. Engines without `:state()` say no. */
+function calendarOpen(picker: Element): boolean {
+  try {
+    return picker.matches(':state(open)');
+  } catch {
+    return false;
   }
 }
 
