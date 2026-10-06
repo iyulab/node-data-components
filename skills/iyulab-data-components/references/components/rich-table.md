@@ -349,9 +349,16 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 
 ## Keyboard
 
-The body is a grid with one Tab stop: the focused cell (the first data cell before any). The header's
-controls — select all, sort, filter boxes — come before it in Tab order. Clicking a cell or moving
-with the arrows puts keyboard focus on that cell, and the keys below apply to keys pressed on a cell.
+The table is a data grid with one Tab stop (WAI-ARIA APG Grid): the focused cell — the first data cell
+before any, or the first header cell when the body is empty. Clicking a cell or moving with the arrows
+puts keyboard focus on that cell, and the keys below apply to keys pressed on a cell. **`Tab` on a cell
+leaves the table**; only while editing does `Tab` walk the cells. (The spreadsheet model, where `Tab`
+always moves to the next cell, is `u-simple-sheet`'s.)
+
+The header row and the filter row are rows of the grid: ↑ from the first data row reaches the filter
+row, then the header row. Their widgets — select all, sort, filter boxes — are not Tab stops. On a
+header cell `Enter`/`Space` sorts (or toggles select-all); on a filter cell typing goes into the filter
+box, `Enter`/`F2` enters it, and `Escape` returns to the cell.
 
 The row checkbox, the expand button and the row-actions buttons sit in cells of their own and are
 reached with the arrows, not Tab: ← from the first data cell lands on the selection cell (Space
@@ -366,7 +373,7 @@ cell.
 | Arrow keys | Move the focused cell |
 | `Enter` | Editable cell: start editing / commit and move down. Non-editable cell: emit `row-activate` |
 | `Escape` | Cancel editing (in a date editor with its calendar open: close the calendar) |
-| `Tab` | Commit and move to the next editable cell |
+| `Tab` / `Shift` + `Tab` | On a cell: leave the table. While editing: commit and edit the next / previous editable cell, wrapping across rows — on the last editable cell (`Shift` + `Tab`: the first) commit and leave the table |
 | `Space` | Toggle selection of the focused row (when `selectable`) |
 | `Delete` | Emit `row-delete` for every selected row (when `deletable`) |
 | `Ctrl`/`Cmd` + `A` | Select every row **on this page** — same scope as the header checkbox |

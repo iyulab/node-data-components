@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.39.2] - 2026-10-06
+
+### Fixed
+
+- **`u-rich-table`: Tab while editing leaves the table at its ends.** On the last editable cell `Tab` (on the first,
+  `Shift+Tab`) re-opened the same cell, so a keyboard user could not get past the table without pressing `Escape`
+  first (SC 2.1.2). It now commits and moves on, like `u-simple-sheet`; in the middle `Tab` still edits the next
+  editable cell.
+
+### Documentation
+
+- `u-rich-table` keyboard: `Tab` on a cell leaves the table (the table is one Tab stop — a data grid); only while
+  editing does `Tab` walk the cells. The skill reference still said the header's controls came before the body in
+  Tab order, which stopped being true when the header and filter rows became grid rows (0.38.0).
+
 ## [0.39.1] - 2026-10-06
 
 ### Documentation

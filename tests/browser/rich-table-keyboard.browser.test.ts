@@ -276,3 +276,64 @@ describe('u-rich-table keyboard — the header and filter rows are grid rows', (
     expect(focused()).toEqual([-2, -1]);
   });
 });
+
+describe('u-rich-table keyboard — Tab while editing leaves the table at its ends', () => {
+  // Tab while editing walks the editable cells (spreadsheet convention). On the last editable cell it used to
+  // re-open the same cell, and Shift+Tab on the first did the same: the only way out was Escape first.
+  // Siblings commit and leave there (flex-table, u-simple-sheet) — SC 2.1.2.
+  const editor = () => table.shadowRoot!.querySelector<HTMLInputElement>('.cell-edit-input');
+
+  const startEdit = async (r: number, c: number) => {
+    await userEvent.click(cell(r, c));
+    await settle();
+    await press('{Enter}');
+    await new Promise((res) => requestAnimationFrame(res));
+  };
+
+  async function mountEditable() {
+    const before = document.createElement('button');
+    before.textContent = 'before';
+    const after = document.createElement('button');
+    after.textContent = 'after';
+    table = document.createElement('u-rich-table') as Table;
+    table.columns = [
+      { key: 'name', label: 'Name', editable: true },
+      { key: 'note', label: 'Note', editable: true },
+    ];
+    table.data = [0, 1].map((i) => ({ _id: `r${i}`, name: `name ${i}`, note: `note ${i}` }));
+    document.body.append(before, table, after);
+    await table.updateComplete;
+    return { before, after };
+  }
+
+  it('Tab on the last editable cell commits and leaves the table', async () => {
+    const { after } = await mountEditable();
+    const updates: unknown[] = [];
+    table.addEventListener('row-update', (e) => updates.push((e as CustomEvent).detail.value));
+    await startEdit(1, 1);
+    expect(editor()).not.toBeNull();
+    await userEvent.keyboard('{Control>}a{/Control}changed');
+    await press('{Tab}');
+    expect(updates).toEqual(['changed']);
+    expect(editor(), 'no editor re-opened').toBeNull();
+    expect(document.activeElement).toBe(after);
+  });
+
+  it('Shift+Tab on the first editable cell commits and leaves the table backwards', async () => {
+    const { before } = await mountEditable();
+    await startEdit(0, 0);
+    await press('{Shift>}{Tab}{/Shift}');
+    expect(editor()).toBeNull();
+    expect(document.activeElement).toBe(before);
+  });
+
+  it('NEGATIVE Tab in the middle still walks to the next editable cell', async () => {
+    await mountEditable();
+    await startEdit(0, 1);
+    await press('{Tab}');
+    // The editing cell renders as a bare <td> — read its place from the row and column positions.
+    const td = editor()!.closest('td')!;
+    expect(editor()!.getAttribute('aria-label')).toBe('Name');
+    expect([...td.parentElement!.parentElement!.children].indexOf(td.parentElement!)).toBe(1);
+  });
+});

@@ -858,10 +858,16 @@ export class URichTable extends LitElement {
       if (inCalendar || (e.key === 'Escape' && calendarOpen(editor))) return;
     }
     if (e.key === 'Enter' || e.key === 'Tab') {
-      e.preventDefault();
       // 이동의 기준은 «확정 전» 셀이다 — 확정이 성공하면 편집 셀이 비고, 검증에 걸리면 그대로 남아
       // 그 셀에서 오류를 고치게 한다(이동하지 않는다).
       const from = this.editingCell;
+      // 편집할 다음 칸이 없는 Tab(마지막 칸의 Tab · 첫 칸의 Shift+Tab)은 표를 떠난다 — 기본 동작을 막지 않는다.
+      // 편집 중인 칸은 Tab 정지점이 아니므로 브라우저가 표 밖의 이웃으로 옮기고, 편집기의 blur 가 확정한다
+      // (SC 2.1.2 · 형제 그리드와 같은 모델). ⚠여기서 확정하면 안 된다 — 다시 그리기(마이크로태스크)가 브라우저의
+      // 기본 동작보다 먼저 돌아 그 칸이 Tab 정지점으로 돌아오고, Tab 이 그 칸에 떨어진다(실측).
+      // 종전에는 같은 칸을 다시 열어, Escape 를 먼저 누르지 않으면 벗어날 수 없었다.
+      if (e.key === 'Tab' && from && !this._nextEditableCell(from, e.shiftKey)) return;
+      e.preventDefault();
       this._onCellEditConfirm();
       if (!from || this.editingCell) return;
       // The editor leaves the DOM with focus in it — the cell takes focus back unless another edit opens.
@@ -1041,29 +1047,25 @@ export class URichTable extends LitElement {
     return pages;
   }
 
-  private _moveToNextEditableCell(from: CellPosition, reverse: boolean): void {
-    let { rowIndex, colIndex } = from;
+  /** Tab 이 편집을 옮길 다음(`reverse` 면 이전) 편집 가능 칸 — 행을 넘어 이어지고, 양 끝에서는 없다(`null`). */
+  private _nextEditableCell(from: CellPosition, reverse: boolean): CellPosition | null {
     const editableCols = this.columns.map((c, i) => c.editable ? i : -1).filter(i => i >= 0);
-    const currentIdx = editableCols.indexOf(colIndex);
-
+    const currentIdx = editableCols.indexOf(from.colIndex);
     if (reverse) {
-      if (currentIdx > 0) {
-        colIndex = editableCols[currentIdx - 1];
-      } else if (rowIndex > 0) {
-        rowIndex--;
-        colIndex = editableCols[editableCols.length - 1];
-      }
-    } else {
-      if (currentIdx < editableCols.length - 1) {
-        colIndex = editableCols[currentIdx + 1];
-      } else if (rowIndex < this._view.length - 1) {
-        rowIndex++;
-        colIndex = editableCols[0];
-      }
+      if (currentIdx > 0) return { rowIndex: from.rowIndex, colIndex: editableCols[currentIdx - 1] };
+      if (from.rowIndex > 0) return { rowIndex: from.rowIndex - 1, colIndex: editableCols[editableCols.length - 1] };
+      return null;
     }
+    if (currentIdx < editableCols.length - 1) return { rowIndex: from.rowIndex, colIndex: editableCols[currentIdx + 1] };
+    if (from.rowIndex < this._view.length - 1) return { rowIndex: from.rowIndex + 1, colIndex: editableCols[0] };
+    return null;
+  }
 
-    const value = this._view[rowIndex]?.[this.columns[colIndex]?.key];
-    this._onCellDblClick(rowIndex, colIndex, value);
+  private _moveToNextEditableCell(from: CellPosition, reverse: boolean): void {
+    const next = this._nextEditableCell(from, reverse);
+    if (!next) return;
+    const value = this._view[next.rowIndex]?.[this.columns[next.colIndex]?.key];
+    this._onCellDblClick(next.rowIndex, next.colIndex, value);
   }
 
   /**
