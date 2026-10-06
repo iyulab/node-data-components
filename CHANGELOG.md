@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.37.4] - 2026-10-06
+
+### Fixed
+
+- **Form controls inside the tables are named.** `u-rich-table`'s filter boxes were named only by
+  their placeholder, so every column's filter read as "Filter…"; they are now "Filter {column}". Its
+  cell editors (text, number, select, date) and the new-row inputs had no name; editors are named by
+  the column header and new-row inputs as "New row: {column}". A text editor that fails validation
+  carries `aria-invalid`. `u-simple-sheet`'s cell editor is named by its column header too. New
+  message keys: `filterColumn`, `newRowColumn` (English and Korean built in).
+
 ## [0.37.3] - 2026-10-06
 
 ### Documentation

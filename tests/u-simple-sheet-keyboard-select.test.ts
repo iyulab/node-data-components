@@ -72,4 +72,15 @@ describe('USimpleSheet — 행/열 선택 키보드 등가 · 후보 목록 역�
     const active = input.getAttribute('aria-activedescendant');
     expect(active && el.shadowRoot!.getElementById(active)?.getAttribute('aria-selected')).toBe('true');
   });
+
+  it('셀 편집 입력은 그 열의 머리글로 이름 붙는다', async () => {
+    const el = sheet = new USimpleSheet();
+    el.columns = [{ key: 'item', label: 'Item' }, { key: 'qty', label: 'Qty' }];
+    el.rows = 1;
+    document.body.appendChild(el);
+    await el.updateComplete;
+    await press(el, { key: 'ArrowRight' });
+    await press(el, { key: 'x' });
+    expect(el.shadowRoot!.querySelector('.cell-input')!.getAttribute('aria-label')).toBe('Qty');
+  });
 });

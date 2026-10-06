@@ -401,6 +401,7 @@ export class USimpleSheet extends UElement {
                (포커스는 입력에 남고 강조된 후보를 aria-activedescendant 가 가리킨다). -->
           <input
             class="cell-input"
+            aria-label=${this._colLabel(c)}
             role=${showDropdown ? 'combobox' : nothing}
             aria-expanded=${showDropdown ? 'true' : nothing}
             aria-controls=${showDropdown ? 'cell-dropdown' : nothing}

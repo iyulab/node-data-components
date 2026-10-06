@@ -379,11 +379,13 @@ export class URichTable extends LitElement {
           <td>
             ${col.filterable ? (
               col.filterType === 'select' && col.options
-                ? html`<select @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
+                ? html`<select aria-label=${messages.text('filterColumn', { col: col.label })}
+                    @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
                     <option value="">${this.filterAllLabel || messages.text('filterAll')}</option>
                     ${col.options.map(o => html`<option value=${o.value}>${o.label}</option>`)}
                   </select>`
                 : html`<input
+                    aria-label=${messages.text('filterColumn', { col: col.label })}
                     placeholder=${this.filterPlaceholder || messages.text('filterPlaceholder')}
                     @input=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLInputElement).value)} />`
             ) : ''}
@@ -483,7 +485,7 @@ export class URichTable extends LitElement {
       if (col.type === 'select' && col.options) {
         return html`
           <td>
-            <select class="cell-edit-input" @change=${this._onCellEditConfirm} @keydown=${this._onEditKeyDown}>
+            <select class="cell-edit-input" aria-label=${col.label} @change=${this._onCellEditConfirm} @keydown=${this._onEditKeyDown}>
               ${col.options.map(o => html`<option value=${o.value} ?selected=${o.value === String(value)}>${o.label}</option>`)}
             </select>
           </td>
@@ -495,7 +497,7 @@ export class URichTable extends LitElement {
         // with a calendar beside it; its value is the same ISO day string the native input gave.
         return html`
           <td>
-            <u-date-picker class="cell-edit-input ${validationError ? 'invalid' : ''}" size="sm"
+            <u-date-picker class="cell-edit-input ${validationError ? 'invalid' : ''}" size="sm" aria-label=${col.label}
               .value=${/^\d{4}-\d{2}-\d{2}$/.test(this.editValue) ? this.editValue : ''}
               @change=${this._onDateEditorChange}
               @keydown=${this._onEditKeyDown}
@@ -506,7 +508,9 @@ export class URichTable extends LitElement {
       }
       return html`
         <td>
-          <input class="cell-edit-input ${validationError ? 'invalid' : ''}"
+          <!-- 편집기의 이름은 그 열의 머리글이다(그리드 셀의 이름이 그것이듯) — 이름이 없으면 «편집 상자» 만 들린다. -->
+          <input class="cell-edit-input ${validationError ? 'invalid' : ''}" aria-label=${col.label}
+            aria-invalid=${validationError ? 'true' : nothing}
             type=${col.type === 'number' ? 'number' : 'text'}
             .value=${this.editValue}
             @input=${(e: Event) => this.editValue = (e.target as HTMLInputElement).value}
@@ -565,7 +569,7 @@ export class URichTable extends LitElement {
         ${this.columns.map((col, colIdx) => html`
           <td>
             ${col.editable !== false ? html`
-              <input placeholder=${col.label}
+              <input placeholder=${col.label} aria-label=${messages.text('newRowColumn', { col: col.label })}
                 data-new-col=${colIdx}
                 @keydown=${this._onNewRowKeyDown}
                 @focus=${this._onNewRowFocus} />
