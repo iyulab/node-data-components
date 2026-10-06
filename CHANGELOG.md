@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.39.1] - 2026-10-06
+
+### Documentation
+
+- README Quick Start looks the sheet up by its tag (`document.querySelector('u-simple-sheet')`), so the element
+  is typed in TypeScript and its properties and `change` listener are checked — `getElementById` gives a plain
+  `HTMLElement`.
+
 ## [0.39.0] - 2026-10-06
 
 ### Fixed

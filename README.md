@@ -43,12 +43,12 @@ npx skills add ./node_modules/@iyulab/data-components/skills/iyulab-data-compone
 ## Quick Start
 
 ```html
-<u-simple-sheet id="sheet" style="height: 300px;"></u-simple-sheet>
+<u-simple-sheet style="height: 300px;"></u-simple-sheet>
 
 <script type="module">
   import '@iyulab/data-components';
 
-  const sheet = document.getElementById('sheet');
+  const sheet = document.querySelector('u-simple-sheet'); // the tag gives the element its type
   sheet.columns = [
     { key: 'name',  label: 'Name',  width: 150 },
     { key: 'email', label: 'Email', width: 220 },
