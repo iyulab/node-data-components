@@ -4,7 +4,7 @@ import { messages } from '../../utilities/messages.js';
 import { html, svg, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
-import type { ColumnDef, CellPosition, SortState, FilterState, RowAction } from './types.js';
+import type { ColumnDef, CellPosition, SortState, FilterState, RowAction, RichTableEventMap, RowActionEventDetail } from './types.js';
 import { effectiveAlign } from './types.js';
 
 import { columnLayout, headerWidth, type ColumnLayout } from './utils/column-layout.js';
@@ -26,6 +26,7 @@ const ARROW_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 const DELETE_ICON = svg`<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11M6.5 4V2.5h3V4M4 4l.7 9.5h6.6L12 4M6.8 6.5v4.5M9.2 6.5v4.5"/></svg>`;
 
 @customElement('u-rich-table')
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
 export class URichTable extends LitElement {
   static styles = richTableStyles;
 
@@ -197,6 +198,14 @@ export class URichTable extends LitElement {
    * 재정렬·재페이징되면 **선택이 다른 행으로 옮겨간다.** 정렬/필터/페이지가 소비자
    * 책임인 컴포넌트이므로, 실제 사용에서는 `_id` 를 주는 것이 옳다.
    */
+  /**
+   * Dispatches one of {@link RichTableEventMap}'s events — bubbling and composed. Every named event goes
+   * through here, so a detail that drifts from the map fails to compile.
+   */
+  private _emit<K extends keyof RichTableEventMap>(type: K, detail: RichTableEventMap[K]['detail']): void {
+    this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+  }
+
   private _rowId(row: Record<string, unknown>, index: number): string {
     const id = row._id;
     if (id !== undefined && id !== null) return String(id);
@@ -439,7 +448,7 @@ export class URichTable extends LitElement {
               @focusin=${() => this._onCellFocus(rowIdx, EXPAND_COL)}>
               <button type="button" class="expand-button" tabindex="-1" aria-expanded=${isExpanded ? 'true' : 'false'}
                 aria-label=${messages.text(isExpanded ? 'collapseRow' : 'expandRow')}
-                @click=${() => this._onExpandToggle(rowId)}>${isExpanded ? '▼' : '▶'}</button>
+                @click=${() => this._onExpandToggle(row, rowId)}>${isExpanded ? '▼' : '▶'}</button>
             </td>
           ` : ''}
           ${this.columns.map((col, colIdx) => this._renderCell(row, rowIdx, col, colIdx))}
@@ -639,10 +648,7 @@ export class URichTable extends LitElement {
     this.selectedIds = next;
     this._fireSelectionChange();
     // 의도를 따로 알린다 — 아래 주석 참조.
-    this.dispatchEvent(new CustomEvent('select-all', {
-      detail: { checked, pageRowIds: pageIds },
-      bubbles: true, composed: true
-    }));
+    this._emit('select-all', { checked, pageRowIds: pageIds });
   }
 
   private _onRowSelect(rowId: string): void {
@@ -676,10 +682,7 @@ export class URichTable extends LitElement {
     } else {
       this.sort = { field, direction: 'asc' };
     }
-    this.dispatchEvent(new CustomEvent('sort-change', {
-      detail: this.sort ? { field: this.sort.field, direction: this.sort.direction } : { field, direction: null },
-      bubbles: true, composed: true
-    }));
+    this._emit('sort-change', this.sort ? { field: this.sort.field, direction: this.sort.direction } : { field, direction: null });
   }
 
   private _onFilterChange(field: string, value: string): void {
@@ -691,12 +694,9 @@ export class URichTable extends LitElement {
     }
     // 새 조건은 첫 페이지부터 — 결과가 줄었는데 4쪽에 남는 것이 이 자리의 흔한 버그다.
     if (this.dataMode === 'client') this.currentPage = 1;
-    this.dispatchEvent(new CustomEvent('filter-change', {
-      detail: this.dataMode === 'client'
+    this._emit('filter-change', this.dataMode === 'client'
         ? { filters: this.filters, filteredCount: this.filteredRowCount }
-        : { filters: this.filters },
-      bubbles: true, composed: true
-    }));
+        : { filters: this.filters });
   }
 
   /**
@@ -775,10 +775,7 @@ export class URichTable extends LitElement {
   private _fireRowActivate(rowIdx: number, via: 'click' | 'keyboard'): void {
     const row = this._view[rowIdx];
     if (!row) return;
-    this.dispatchEvent(new CustomEvent('row-activate', {
-      detail: { row, id: this._rowId(row, rowIdx), via },
-      bubbles: true, composed: true
-    }));
+    this._emit('row-activate', { row, id: this._rowId(row, rowIdx), via });
   }
 
   private _onCellDblClick(rowIdx: number, colIdx: number, value: unknown): void {
@@ -905,26 +902,20 @@ export class URichTable extends LitElement {
     this.validationErrors = nextErrors;
 
     if (newValue !== oldValue) {
-      this.dispatchEvent(new CustomEvent('row-update', {
-        detail: { row, field: col.key, value: newValue, oldValue },
-        bubbles: true, composed: true
-      }));
+      this._emit('row-update', { row, field: col.key, value: newValue, oldValue });
     }
 
     this.editingCell = null;
     this.editValue = '';
   }
 
-  private _onExpandToggle(rowId: string): void {
+  private _onExpandToggle(row: Record<string, unknown>, rowId: string): void {
     const next = new Set(this.expandedIds);
     const expanded = !next.has(rowId);
     if (expanded) next.add(rowId);
     else next.delete(rowId);
     this.expandedIds = next;
-    this.dispatchEvent(new CustomEvent('row-expand', {
-      detail: { row: this._view.find((r, i) => this._rowId(r, i) === rowId), expanded },
-      bubbles: true, composed: true
-    }));
+    this._emit('row-expand', { row, expanded });
   }
 
   private _onAddRowClick(): void {
@@ -952,10 +943,7 @@ export class URichTable extends LitElement {
         }
       });
 
-      this.dispatchEvent(new CustomEvent('row-create', {
-        detail: { row: newRow },
-        bubbles: true, composed: true
-      }));
+      this._emit('row-create', { row: newRow });
 
       // 입력 초기화
       inputs.forEach(input => input.value = '');
@@ -972,25 +960,17 @@ export class URichTable extends LitElement {
   }
 
   private _onRowDelete(row: Record<string, unknown>): void {
-    this.dispatchEvent(new CustomEvent('row-delete', {
-      detail: { row },
-      bubbles: true, composed: true
-    }));
+    this._emit('row-delete', { row });
   }
 
   private _onRowAction(action: RowAction, row: Record<string, unknown>): void {
-    this.dispatchEvent(new CustomEvent(action.event, {
-      detail: { row },
-      bubbles: true, composed: true
-    }));
+    // 이름을 소비자가 정한다(`RowAction.event`) — 맵 밖이라 `_emit` 이 아니다. detail 은 `RowActionEventDetail`.
+    this.dispatchEvent(new CustomEvent<RowActionEventDetail>(action.event, { detail: { row }, bubbles: true, composed: true }));
   }
 
   private _onPageChange(page: number): void {
     if (this.dataMode === 'client') this.currentPage = page;
-    this.dispatchEvent(new CustomEvent('page-change', {
-      detail: { page, pageSize: this.pageSize },
-      bubbles: true, composed: true
-    }));
+    this._emit('page-change', { page, pageSize: this.pageSize });
   }
 
   private _onPageSizeChange(pageSize: number): void {
@@ -998,10 +978,7 @@ export class URichTable extends LitElement {
       this.pageSize = pageSize;
       this.currentPage = 1;
     }
-    this.dispatchEvent(new CustomEvent('page-change', {
-      detail: { page: 1, pageSize },
-      bubbles: true, composed: true
-    }));
+    this._emit('page-change', { page: 1, pageSize });
   }
 
   // --- Helpers ---
@@ -1062,10 +1039,7 @@ export class URichTable extends LitElement {
    * 갖고 있지 않기 때문이다.
    */
   private _fireSelectionChange(): void {
-    this.dispatchEvent(new CustomEvent('selection-change', {
-      detail: { selectedRows: this.getSelectedRows(), selectedIds: [...this.selectedIds] },
-      bubbles: true, composed: true
-    }));
+    this._emit('selection-change', { selectedRows: this.getSelectedRows(), selectedIds: [...this.selectedIds] });
   }
 
   // --- Lifecycle ---
@@ -1109,7 +1083,7 @@ export class URichTable extends LitElement {
       const r = this._view[rowIndex];
       if (colIndex === EXPAND_COL && this.expandable && r) {
         e.preventDefault();
-        this._onExpandToggle(this._rowId(r, rowIndex));
+        this._onExpandToggle(r, this._rowId(r, rowIndex));
       } else if (colIndex === this._actionsCol) {
         e.preventDefault();
         (origin as HTMLElement).querySelector?.<HTMLButtonElement>('button')?.focus();
@@ -1137,7 +1111,7 @@ export class URichTable extends LitElement {
       if (e.key === 'Delete' && this.deletable && this.selectedIds.size > 0) {
         // 선택된 행 삭제 (개별 이벤트)
         for (const row of this.getSelectedRows()) {
-          this.dispatchEvent(new CustomEvent('row-delete', { detail: { row }, bubbles: true, composed: true }));
+          this._emit('row-delete', { row });
         }
       }
     }
@@ -1164,18 +1138,12 @@ export class URichTable extends LitElement {
       if (!text.trim()) return;
       const parsedRows = parseTSV(text, this.columns);
       if (parsedRows.length === 0) return;
-      this.dispatchEvent(new CustomEvent('clipboard-paste', {
-        detail: { rows: parsedRows },
-        bubbles: true, composed: true
-      }));
+      this._emit('clipboard-paste', { rows: parsedRows });
     }, (error) => this._clipboardError('paste', error));
   }
 
   private _clipboardError(action: 'copy' | 'paste', error: unknown): void {
-    this.dispatchEvent(new CustomEvent('clipboard-error', {
-      detail: { action, error },
-      bubbles: true, composed: true
-    }));
+    this._emit('clipboard-error', { action, error });
   }
 
   private _moveByArrow(key: string): void {
@@ -1216,6 +1184,21 @@ function calendarOpen(picker: Element): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Typed listeners for {@link RichTableEventMap} — the DOM's own pattern (`HTMLMediaElement` with
+ * `HTMLMediaElementEventMap`). Element-scoped: several names are generic and would collide on the
+ * global event map. `RowAction.event` names are the consumer's own and stay untyped.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
+export interface URichTable {
+  addEventListener<K extends keyof RichTableEventMap>(type: K, listener: (this: URichTable, ev: RichTableEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: URichTable, ev: HTMLElementEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  removeEventListener<K extends keyof RichTableEventMap>(type: K, listener: (this: URichTable, ev: RichTableEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: URichTable, ev: HTMLElementEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
 declare global {

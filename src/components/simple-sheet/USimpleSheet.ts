@@ -67,6 +67,19 @@ function normalizeRange(sel: SelectionRange) {
 }
 
 /**
+ * Every event `<u-simple-sheet>` dispatches, by name. All bubble and are composed. The element dispatches
+ * through a helper keyed on this map, and `addEventListener` on a `USimpleSheet` uses it.
+ */
+export interface SimpleSheetEventMap {
+  /** The grid's values changed (edit, paste, fill, undo/redo, clear). */
+  'change': CustomEvent<{ data: string[][] }>;
+  /** Some pasted cells failed the column's validation and were left as they were. */
+  'paste-rejected': CustomEvent<{ cells: Array<{ row: number; col: number }> }>;
+  /** Copy could not put the text on the clipboard, or paste could not read it. */
+  'clipboard-error': CustomEvent<{ action: 'copy' | 'paste'; error: unknown }>;
+}
+
+/**
  * USimpleSheet - 심플 스프레드시트 컴포넌트
  *
  * 편집 편의 기능:
@@ -86,6 +99,7 @@ function normalizeRange(sel: SelectionRange) {
  * - columns 미설정시 A, B, C... 자동 헤더
  */
 @customElement('u-simple-sheet')
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
 export class USimpleSheet extends UElement {
   static styles = [super.styles, styles];
 
@@ -525,7 +539,7 @@ export class USimpleSheet extends UElement {
       if (e.key === 'c' || e.key === 'C') {
         if (this._sel) {
           void copyFromKey(this._selectionToTSV()).then((ok) => {
-            if (!ok) this.fire('clipboard-error', { detail: { action: 'copy', error: new Error('The clipboard did not take the copied text') } });
+            if (!ok) this._emit('clipboard-error', { action: 'copy', error: new Error('The clipboard did not take the copied text') });
           });
         }
         return;
@@ -534,7 +548,7 @@ export class USimpleSheet extends UElement {
         if (!this.readonly && this._sel) {
           pasteFromKey().then(
             (text) => this._pasteFromText(text),
-            (error) => this.fire('clipboard-error', { detail: { action: 'paste', error } }),
+            (error) => this._emit('clipboard-error', { action: 'paste', error }),
           );
         }
         return;
@@ -1134,7 +1148,7 @@ export class USimpleSheet extends UElement {
     this._pushHistory();
     this._emitChange();
     if (rejectedCells.length > 0) {
-      this.fire('paste-rejected', { detail: { cells: rejectedCells } });
+      this._emit('paste-rejected', { cells: rejectedCells });
     }
     this.requestUpdate();
   }
@@ -1423,7 +1437,12 @@ export class USimpleSheet extends UElement {
   }
 
   private _emitChange() {
-    this.fire('change', { detail: { data: this._data } });
+    this._emit('change', { data: this._data });
+  }
+
+  /** Dispatches one of {@link SimpleSheetEventMap}'s events — a detail that drifts from the map fails to compile. */
+  private _emit<K extends keyof SimpleSheetEventMap>(type: K, detail: SimpleSheetEventMap[K]['detail']): void {
+    this.fire(type, { detail });
   }
 
   // ──────────────────────────────────────────
@@ -1532,6 +1551,17 @@ export class USimpleSheet extends UElement {
 
   /** Redo 가능 여부 */
   get canRedo(): boolean { return this._historyIndex < this._history.length - 1; }
+}
+
+/** Typed listeners for {@link SimpleSheetEventMap} — element-scoped (`change` is also a native event name). */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
+export interface USimpleSheet {
+  addEventListener<K extends keyof SimpleSheetEventMap>(type: K, listener: (this: USimpleSheet, ev: SimpleSheetEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: USimpleSheet, ev: HTMLElementEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  removeEventListener<K extends keyof SimpleSheetEventMap>(type: K, listener: (this: USimpleSheet, ev: SimpleSheetEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: USimpleSheet, ev: HTMLElementEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
 declare global {

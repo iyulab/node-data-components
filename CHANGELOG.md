@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.37.5] - 2026-10-06
+
+### Fixed
+
+- **Typed listeners on `u-rich-table` and `u-simple-sheet`.** `RichTableEventMap` existed but only the
+  React wrapper used it; `addEventListener('sort-change', (e) => e.detail.field)` on the element got a
+  plain `Event`. Both elements now type their listeners with their maps (`SimpleSheetEventMap` is new),
+  and every named event is dispatched through a helper keyed on the map, so a detail that drifts from
+  it fails to compile. `row-expand`'s `row` is now always the row (it was looked up again, typed as
+  possibly missing).
+- **`USimpleSheetReact` exposes `onPasteRejected` and `onClipboardError`** — only `onChange` was mapped.
+
 ## [0.37.4] - 2026-10-06
 
 ### Fixed

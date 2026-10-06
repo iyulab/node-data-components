@@ -15,17 +15,20 @@ import type { TemplateResult } from 'lit';
 import './utilities/shadowDomProtection';
 
 import { USimpleSheet } from './components/simple-sheet/USimpleSheet';
+import type { SimpleSheetEventMap } from './components/simple-sheet/USimpleSheet';
 import { UDataView } from './components/data-view/UDataView';
 import { URichTable } from './components/u-rich-table/URichTable';
 import type { ColumnDef, RichTableEventMap } from './components/u-rich-table/types';
 
-/** USimpleSheet React 래퍼 — `change` 이벤트는 `onChange`로 노출 */
+/** USimpleSheet React 래퍼 — `SimpleSheetEventMap` 의 이벤트를 전부 `onXxx` 로 노출 */
 export const USimpleSheetReact = createComponent({
   tagName: 'u-simple-sheet',
   elementClass: USimpleSheet,
   react: React,
   events: {
-    onChange: 'change' as EventName<CustomEvent<{ data: string[][] }>>,
+    onChange: 'change' as EventName<SimpleSheetEventMap['change']>,
+    onPasteRejected: 'paste-rejected' as EventName<SimpleSheetEventMap['paste-rejected']>,
+    onClipboardError: 'clipboard-error' as EventName<SimpleSheetEventMap['clipboard-error']>,
   },
 });
 
