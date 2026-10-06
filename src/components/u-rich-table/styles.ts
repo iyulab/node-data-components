@@ -223,7 +223,11 @@ export const richTableStyles = css`
     background: var(--u-primary-bg-color, #E3F2FD);
   }
 
-  tbody tr.focused td.focused-cell {
+  /* 포커스된 셀 — 그리드가 키보드 포커스를 가질 때만(로빙 tabindex 의 그 셀). */
+  tbody td[data-cell]:focus {
+    outline: none;
+  }
+  tbody td[data-cell]:focus-visible {
     outline: 2px solid var(--u-primary-color, #1976D2);
     outline-offset: -2px;
   }

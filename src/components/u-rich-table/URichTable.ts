@@ -123,6 +123,13 @@ export class URichTable extends LitElement {
     const start = (this.currentPage - 1) * this.pageSize;
     this._view = ordered.slice(start, start + this.pageSize);
   }
+
+  protected updated(changed: PropertyValues<this>): void {
+    super.updated(changed);
+    // 다른 편집이 열렸으면(Enter/Tab 이 다음 셀을 편집) 그 편집기가 포커스를 갖는다.
+    if (this._focusCellAfterUpdate && !this.editingCell) this._focusFocusedCell();
+    this._focusCellAfterUpdate = false;
+  }
   @state() private validationErrors = new Map<string, string>();
   @state() private rowErrors = new Map<string, string>();
 
@@ -247,7 +254,7 @@ export class URichTable extends LitElement {
     return html`
       ${this._renderToolbar()}
       <div class="table-wrap">
-        <table class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
+        <table role="grid" class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
           ${this._renderHeader()}
           <tbody>
             ${this.filterable && this.columns.some(c => c.filterable) ? this._renderFilterRow() : ''}
@@ -498,7 +505,12 @@ export class URichTable extends LitElement {
 
     return html`
       <td class=${isFocused ? 'focused-cell' : ''}
+        data-cell
+        data-row=${rowIdx}
+        data-col=${colIdx}
+        tabindex=${this._isTabStop(rowIdx, colIdx) ? '0' : '-1'}
         style=${effectiveAlign(col) !== 'start' ? `text-align: ${effectiveAlign(col)}` : ''}
+        @focus=${() => this._onCellFocus(rowIdx, colIdx)}
         @click=${() => this._onCellClick(rowIdx, colIdx)}
         @dblclick=${() => col.editable && this._onCellDblClick(rowIdx, colIdx, value)}>
         ${this._renderCellContent(col, value, row)}
@@ -664,6 +676,32 @@ export class URichTable extends LitElement {
     }));
   }
 
+  /**
+   * Roving tabindex (WAI-ARIA APG grid): the grid is one Tab stop — the focused cell, or the first
+   * cell before any — and arrow keys move DOM focus between cells, so the keyboard model below is
+   * reachable from the keyboard and not only from a control inside the table.
+   */
+  private _isTabStop(rowIdx: number, colIdx: number): boolean {
+    const f = this.focusedCell;
+    const inView = f && f.rowIndex < this._view.length && f.colIndex < this.columns.length;
+    return inView ? f.rowIndex === rowIdx && f.colIndex === colIdx : rowIdx === 0 && colIdx === 0;
+  }
+
+  /** Tab or a click put DOM focus on a cell — it is the focused cell. */
+  private _onCellFocus(rowIdx: number, colIdx: number): void {
+    if (this.focusedCell?.rowIndex === rowIdx && this.focusedCell.colIndex === colIdx) return;
+    this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
+  }
+
+  /** After the next render, move DOM focus to the focused cell (a key moved it, or an edit ended by key). */
+  private _focusCellAfterUpdate = false;
+
+  private _focusFocusedCell(): void {
+    const f = this.focusedCell;
+    if (!f) return;
+    this.shadowRoot?.querySelector<HTMLElement>(`td[data-cell][data-row="${f.rowIndex}"][data-col="${f.colIndex}"]`)?.focus();
+  }
+
   private _onCellClick(rowIdx: number, colIdx: number): void {
     this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
     this._lastSelectedIndex = rowIdx;
@@ -686,6 +724,7 @@ export class URichTable extends LitElement {
 
   private _onCellDblClick(rowIdx: number, colIdx: number, value: unknown): void {
     this.editingCell = { rowIndex: rowIdx, colIndex: colIdx };
+    this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
     this.editValue = String(value ?? '');
     this.requestUpdate();
     requestAnimationFrame(async () => {
@@ -735,6 +774,8 @@ export class URichTable extends LitElement {
       const from = this.editingCell;
       this._onCellEditConfirm();
       if (!from || this.editingCell) return;
+      // The editor leaves the DOM with focus in it — the cell takes focus back unless another edit opens.
+      this._focusCellAfterUpdate = true;
       if (e.key === 'Tab') {
         this._moveToNextEditableCell(from, e.shiftKey);
       } else if (from.rowIndex < this._view.length - 1) {
@@ -745,6 +786,7 @@ export class URichTable extends LitElement {
     } else if (e.key === 'Escape') {
       this.editingCell = null;
       this.editValue = '';
+      this._focusCellAfterUpdate = true;
     }
   }
 
@@ -980,14 +1022,19 @@ export class URichTable extends LitElement {
 
   // --- Clipboard & Keyboard ---
   private _onGlobalKeyDown = (e: KeyboardEvent): void => {
+    const origin = e.composedPath()[0];
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 'c') this._handleCopy(e);
       else if (e.key === 'v') this._handlePaste(e);
-      else if (e.key === 'a' && !this.editingCell) {
+      else if (e.key === 'a' && !this.editingCell && !isTextEntry(origin)) {
         e.preventDefault();
         this._selectAll();
       }
     }
+    // 셀 키보드 모델은 셀에서 온 키만 — 필터 입력·행 체크박스·행 동작 버튼의 키는 그 컨트롤의 것이다
+    // (←/→ 는 캐럿을, Space 는 글자·체크를, Delete 는 글자를). 호스트 자체에 보낸 키는 그대로 받는다.
+    const fromCell = origin === this || (origin instanceof HTMLElement && origin.hasAttribute('data-cell'));
+    if (!fromCell) return;
     // Arrow key navigation (비편집 모드)
     if (!this.editingCell && this.focusedCell) {
       if (e.key === 'ArrowUp') { e.preventDefault(); this._moveFocus(0, -1); }
@@ -1058,6 +1105,7 @@ export class URichTable extends LitElement {
     const newCol = Math.max(0, Math.min(this.columns.length - 1, this.focusedCell.colIndex + dx));
     const newRow = Math.max(0, Math.min(this._view.length - 1, this.focusedCell.rowIndex + dy));
     this.focusedCell = { rowIndex: newRow, colIndex: newCol };
+    this._focusCellAfterUpdate = true;
   }
 
   /** `Ctrl`/`Cmd` + `A` — 전체선택 체크박스와 같은 범위(현재 페이지 합집합)여야 한다. */

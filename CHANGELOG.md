@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.37.1] - 2026-10-06
+
+### Fixed
+
+- **`u-rich-table`'s keyboard works from the keyboard.** No cell ever held focus: clicking a cell set
+  the focused cell while focus stayed on the page, so the arrows, Enter, Space, Delete and Ctrl/Cmd +
+  A, C, V reached the table only while a control inside it (a row checkbox) had focus. The table is
+  now a grid with a roving tabindex: one Tab stop, the focused cell holds focus, the arrows move it,
+  and ending an edit with Enter or Escape returns focus to the cell. The focused cell's outline shows
+  while the grid has keyboard focus (the old rule never matched).
+- **Keys in a filter box, a row checkbox or a row button are that control's.** The table read them as
+  cell keys: ←/→ in a filter box moved the focused cell instead of the caret, Space toggled a row
+  instead of typing, **Delete emitted `row-delete` for the selected rows**, and Ctrl/Cmd + A selected
+  every row instead of the text.
+
 ## [0.37.0] - 2026-10-06
 
 ### Changed
