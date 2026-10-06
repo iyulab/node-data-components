@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.39.3] - 2026-10-06
+
+### Documentation
+
+- The UDataGrid → flex-table migration guide taught an API flex-table does not have (`field`, `renderer`, a `source` prop, `useODataSource` `key`/`filter` options, and "no alignment"). It is now a mapping table onto the current API (`key`, `label`, `type`, `align: 'start' | 'center' | 'end'`, `render`, `fixedFilter`, `dataMode="server"`) with an example that type-checks, and points to the flex-table README for the rest.
+
 ## [0.39.2] - 2026-10-06
 
 ### Fixed

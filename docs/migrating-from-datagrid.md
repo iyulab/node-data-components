@@ -1,37 +1,18 @@
 # UDataGrid에서 flex-table로 마이그레이션
 
-UDataGrid(DevExtreme 기반)를 `@iyulab/flex-table`로 전환하는 가이드입니다.
-
-리스트 페이지 9개를 실제로 전환한 기록을 기반으로 작성되었습니다.
-
-## 왜 전환하는가
-
-| | UDataGrid (DevExtreme) | flex-table |
-|---|---|---|
-| 라이선스 | 상용 라이선스 필요 | MIT |
-| 번들 크기 | CSS+JS 수백 KB | ~74 KB |
-| 렌더러 | React JSX | Lit html 템플릿 |
-| 서버 사이드 페이징 | OData DataSource | `useODataSource` 훅 + odata-query |
-
-## 설치
+`UDataGrid`(DevExtreme 기반)는 v0.4.0에서 제거되었습니다. 서버 페이징 목록은 `@iyulab/flex-table`의
+`useODataSource` 훅과 `FlexTableReact`로 옮깁니다. 이 문서는 옮길 때의 대응만 다루고, 각 API의 정본은
+[flex-table README](https://github.com/iyulab/flex-table#readme)입니다.
 
 ```bash
 npm install @iyulab/flex-table
 ```
 
-OData 서버 사이드 페이징이 필요한 경우:
+## 기본 패턴
 
-```bash
-npm install @iyulab/flex-table odata-query
-```
-
-## 기본 패턴 비교
-
-### UDataGrid (기존)
+### UDataGrid (제거됨)
 
 ```tsx
-import { UDataGrid } from '@iyulab/data-components';
-
 <UDataGrid
   dataSourceUrl="/api/odata/products"
   keyField="id"
@@ -39,121 +20,65 @@ import { UDataGrid } from '@iyulab/data-components';
     { dataField: 'name',  caption: '상품명' },
     { dataField: 'price', caption: '가격', dataType: 'number', alignment: 'right' },
   ]}
-  onRowClick={(e) => handleRowClick(e.data)}
 />
 ```
 
-### flex-table (전환 후)
+### flex-table
 
 ```tsx
 import { FlexTableReact, useODataSource } from '@iyulab/flex-table/react';
-import { html } from 'lit';
+import type { ColumnDefinition } from '@iyulab/flex-table';
 
-function ProductList() {
-  const source = useODataSource('/api/odata/products', { key: 'id' });
+const columns: ColumnDefinition[] = [
+  { key: 'name',  label: '상품명' },
+  { key: 'price', label: '가격', type: 'number', align: 'end' },
+];
 
+export function ProductList() {
+  const source = useODataSource('/api/odata/products', { pageSize: 20 });
   return (
     <FlexTableReact
-      source={source}
-      columns={[
-        { field: 'name',  label: '상품명' },
-        { field: 'price', label: '가격',
-          renderer: (value) => html`<span style="text-align:right">${value?.toLocaleString()}원</span>` },
-      ]}
-      onRowClick={(row) => handleRowClick(row)}
+      dataMode="server"
+      columns={columns}
+      data={source.data}
+      loading={source.loading}
+      onSortChange={source.onSortChange}
     />
   );
 }
 ```
 
-## 주요 차이점과 대응
+`dataMode="server"` 이면 표는 정렬·필터를 다시 계산하지 않고 이벤트만 냅니다 — 훅이 그 조건으로 다시 조회합니다.
 
-### 1. 렌더러: React JSX → Lit html 템플릿
+## 대응표
 
-DevExtreme의 `cellRender`는 React 컴포넌트를 반환했지만, flex-table의 `renderer`는 **Lit `html` 태그 템플릿**을 반환합니다.
+| UDataGrid (DevExtreme) | flex-table |
+|---|---|
+| `dataSourceUrl` · `keyField` | `useODataSource(url, options)` + `<FlexTableReact dataMode="server">` |
+| `columns[].dataField` | `columns[].key` |
+| `columns[].caption` | `columns[].label` |
+| `columns[].dataType` | `columns[].type` |
+| `columns[].alignment` | `columns[].align` — `'start' \| 'center' \| 'end'`(`'right'` 가 아니다 · 머리글은 `headerAlign`) |
+| `columns[].cellRender`(React JSX) | `columns[].render(value, row, col)` — Lit `html` 템플릿을 돌려준다 |
+| 내장 페이지네이션 | 없음 — `source.page` · `source.setPage` · `source.totalCount` 로 그린다 |
+| 내장 검색 패널 | 없음 — 입력을 `source.setSearch` 에 잇는다 |
+| 고정 필터 | `useODataSource(url, { fixedFilter: { IsActive: true } })` |
 
-```tsx
-// DevExtreme cellRender
-cellRender: (cell) => <span className={`badge--${cell.value}`}>{cell.value}</span>
-
-// flex-table renderer
+```ts
 import { html } from 'lit';
-renderer: (value) => html`<span class="badge--${value}">${value}</span>`
+import type { ColumnDefinition } from '@iyulab/flex-table';
+
+const status: ColumnDefinition = {
+  key: 'status',
+  label: '상태',
+  render: (value) => html`<span class="badge--${String(value)}">${value}</span>`,
+};
 ```
 
-### 2. 서버 사이드 페이징/정렬/검색
+## 체크리스트
 
-`useODataSource` 훅과 `FlexTableReact`를 조합합니다.
-
-```tsx
-import { FlexTableReact, useODataSource } from '@iyulab/flex-table/react';
-
-const source = useODataSource('/api/odata/items', {
-  key: 'Id',
-  // 추가 필터 (선택)
-  filter: ['IsActive', '=', true],
-});
-```
-
-### 3. 열 정렬 (alignment)
-
-DevExtreme의 `alignment` prop은 flex-table에 없습니다. renderer에서 인라인 스타일로 처리합니다.
-
-```tsx
-// DevExtreme
-{ dataField: 'amount', caption: '금액', alignment: 'right' }
-
-// flex-table
-{ field: 'amount', label: '금액',
-  renderer: (v) => html`<span style="display:block;text-align:right">${v}</span>` }
-```
-
-### 4. 페이지네이션 UI
-
-flex-table에는 내장 페이지네이션 UI가 없습니다. `useODataSource`가 반환하는 상태를 이용해 직접 구현합니다.
-
-```tsx
-const source = useODataSource('/api/odata/items', { key: 'Id' });
-
-// source.page, source.totalCount, source.setPage 등을 활용
-<FlexTableReact source={source} columns={columns} />
-<Pagination
-  page={source.page}
-  total={source.totalCount}
-  onChange={source.setPage}
-/>
-```
-
-### 5. 검색 패널
-
-내장 검색 패널이 없습니다. SearchBar + debounce를 직접 구현하고 `source`의 필터에 주입합니다.
-
-```tsx
-const [search, setSearch] = useState('');
-const source = useODataSource('/api/odata/items', {
-  key: 'Id',
-  filter: search ? [['Name', 'contains', search], 'or', ['Description', 'contains', search]] : undefined,
-});
-```
-
-### 6. `dataSourceUrl` 단일 prop → `useODataSource` 훅 조합
-
-DevExtreme의 `dataSourceUrl` 단일 prop 패턴이 `useODataSource(url, options)` + `FlexTableReact` 2단계로 분리됩니다. 이는 소비자가 데이터 소스 상태에 직접 접근할 수 있어 유연성이 높습니다.
-
-## 마이그레이션 체크리스트
-
-- [ ] `@iyulab/flex-table` 설치 (OData 필요 시 `/odata` 서브패키지 포함)
-- [ ] `UDataGrid` import → `FlexTableReact` + `useODataSource` import
-- [ ] `dataSourceUrl` + `keyField` → `useODataSource(url, { key })` 훅
-- [ ] `columns[].dataField` → `columns[].field`
-- [ ] `columns[].caption` → `columns[].label`
-- [ ] `columns[].cellRender` → `columns[].renderer` (JSX → Lit html)
-- [ ] `columns[].alignment` → renderer 인라인 스타일
-- [ ] 페이지네이션 UI 직접 구현
-- [ ] 검색 패널 직접 구현 (필요 시)
-- [ ] DevExtreme 라이선스 및 CSS 제거
-
-## 참고
-
-- [flex-table GitHub](https://github.com/iyulab/flex-table)
-- DevExtreme CSS 제거 후 `@iyulab/data-components/init` import도 제거 가능
+- [ ] `@iyulab/flex-table` 설치, `UDataGrid` import 제거
+- [ ] `dataSourceUrl`/`keyField` → `useODataSource(url)` + `dataMode="server"`
+- [ ] 열 정의: `dataField`→`key` · `caption`→`label` · `dataType`→`type` · `alignment`→`align`(`'end'`) · `cellRender`→`render`
+- [ ] 페이지네이션·검색 UI를 훅 상태로 직접 그리기
+- [ ] DevExtreme 라이선스·CSS 제거
