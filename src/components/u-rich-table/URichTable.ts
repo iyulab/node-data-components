@@ -37,6 +37,13 @@ export class URichTable extends LitElement {
   static styles = richTableStyles;
 
   // --- Properties ---
+  /**
+   * The table's accessible name, from the host's `aria-label` — like `flex-table`, whose host is the grid. Here the
+   * grid is the `<table>` inside the shadow root, which a host attribute does not reach, so it is forwarded; it also
+   * names the pagination landmark (`"<name> pagination"`), so two tables on one page have distinct landmarks.
+   */
+  @property({ attribute: 'aria-label' }) private hostLabel?: string;
+
   @property({ type: Array }) columns: ColumnDef[] = [];
   @property({ type: Array }) data: Record<string, unknown>[] = [];
   @property({ type: Number }) totalCount = 0;
@@ -273,7 +280,7 @@ export class URichTable extends LitElement {
     return html`
       ${this._renderToolbar()}
       <div class="table-wrap">
-        <table role="grid" class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
+        <table role="grid" aria-label=${this.hostLabel || nothing} class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
           ${this._renderHeader()}
           <tbody>
             ${this.filterable && this.columns.some(c => c.filterable) ? this._renderFilterRow() : ''}
@@ -608,7 +615,7 @@ export class URichTable extends LitElement {
     const end = Math.min(this.currentPage * this.pageSize, total);
 
     return html`
-      <div class="pagination" role="navigation" aria-label=${messages.text('pagination')}>
+      <div class="pagination" role="navigation" aria-label=${this.hostLabel ? messages.text('paginationOf', { name: this.hostLabel }) : messages.text('pagination')}>
         <span>${this.pageInfoFormatter(total, start, end)}</span>
         <div class="page-buttons">
           <button ?disabled=${this.currentPage <= 1} aria-label=${messages.text('previousPage')}

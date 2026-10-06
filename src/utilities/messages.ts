@@ -30,7 +30,7 @@ export type DataMessageKey =
   | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount'
   | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage' | 'selectRow'
   | 'columnMenu' | 'autoFitWidth' | 'wider' | 'narrower'
-  | 'pagination' | 'previousPage' | 'nextPage' | 'pageNumber' | 'pageSize'
+  | 'pagination' | 'paginationOf' | 'previousPage' | 'nextPage' | 'pageNumber' | 'pageSize'
   | 'filterColumn' | 'newRowColumn' | 'sheet';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
@@ -67,6 +67,7 @@ messages.register('en', {
   wider: 'Wider',
   narrower: 'Narrower',
   pagination: 'Pagination',
+  paginationOf: '{name} pagination',
   previousPage: 'Previous page',
   nextPage: 'Next page',
   pageNumber: 'Page {page}',
@@ -107,6 +108,7 @@ messages.register('ko', {
   wider: '넓게',
   narrower: '좁게',
   pagination: '페이지 이동',
+  paginationOf: '{name} 페이지 이동',
   previousPage: '이전 페이지',
   nextPage: '다음 페이지',
   pageNumber: '{page}페이지',

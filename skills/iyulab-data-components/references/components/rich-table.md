@@ -208,6 +208,7 @@ forever.
 
 | Property | Type | Default | Reflect | Description |
 |----------|------|---------|---------|-------------|
+| `aria-label` (attribute) | `string` | — | | The table's accessible name — forwarded to the grid inside the shadow root, and used for the pagination landmark (*"Orders pagination"*), so two tables on one screen have distinct landmarks. Name every table a screen has more than one of |
 | `columns` | `ColumnDef[]` | `[]` | | Column definitions — see *ColumnDef* below |
 | `data` | `Record<string, unknown>[]` | `[]` | | Rows of the **current page**. Give each a unique `_id` |
 | `totalCount` | `number` | `0` | | Total rows the query matches, across all pages |

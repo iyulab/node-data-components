@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.41.0] - 2026-10-07
+
+### Added
+
+- **`u-rich-table` takes its accessible name from the host's `aria-label`** — like `flex-table`, whose host is the
+  grid. Here the grid is the `<table>` inside the shadow root, which a host attribute does not reach, so it had no
+  name and no way to get one. The name is forwarded to the grid and names the pagination landmark
+  (`"Orders pagination"`, new locale key `paginationOf` — ko `"주문 페이지 이동"`); before, every table's pagination
+  was a landmark named "Pagination", so two tables on one screen gave two identical landmarks (axe
+  `landmark-unique`). An unnamed table keeps the plain "Pagination".
+
 ## [0.40.0] - 2026-10-07
 
 ### Changed
