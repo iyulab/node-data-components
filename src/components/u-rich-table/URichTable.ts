@@ -571,15 +571,20 @@ export class URichTable extends LitElement {
     const end = Math.min(this.currentPage * this.pageSize, total);
 
     return html`
-      <div class="pagination">
+      <div class="pagination" role="navigation" aria-label=${messages.text('pagination')}>
         <span>${this.pageInfoFormatter(total, start, end)}</span>
         <div class="page-buttons">
-          <button ?disabled=${this.currentPage <= 1} @click=${() => this._onPageChange(this.currentPage - 1)}>◀</button>
+          <button ?disabled=${this.currentPage <= 1} aria-label=${messages.text('previousPage')}
+            @click=${() => this._onPageChange(this.currentPage - 1)}>◀</button>
           ${this._getPageNumbers(totalPages).map(p => html`
-            <button class=${p === this.currentPage ? 'active' : ''} @click=${() => this._onPageChange(p)}>${p}</button>
+            <button class=${p === this.currentPage ? 'active' : ''} aria-current=${p === this.currentPage ? 'page' : nothing}
+              aria-label=${messages.text('pageNumber', { page: p })}
+              @click=${() => this._onPageChange(p)}>${p}</button>
           `)}
-          <button ?disabled=${this.currentPage >= totalPages} @click=${() => this._onPageChange(this.currentPage + 1)}>▶</button>
-          <select @change=${(e: Event) => this._onPageSizeChange(Number((e.target as HTMLSelectElement).value))}>
+          <button ?disabled=${this.currentPage >= totalPages} aria-label=${messages.text('nextPage')}
+            @click=${() => this._onPageChange(this.currentPage + 1)}>▶</button>
+          <select aria-label=${messages.text('pageSize')}
+            @change=${(e: Event) => this._onPageSizeChange(Number((e.target as HTMLSelectElement).value))}>
             ${[25, 50, 100].map(s => html`<option value=${s} ?selected=${s === this.pageSize}>${messages.text('rowsPerPage', { size: s })}</option>`)}
           </select>
         </div>

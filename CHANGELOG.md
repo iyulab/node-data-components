@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.37.2] - 2026-10-06
+
+### Fixed
+
+- **`u-rich-table`'s pager is named for assistive technology.** The previous and next buttons hold
+  only `◀` and `▶`, so their accessible names were the symbols' names. They are now named
+  "Previous page" and "Next page", each page button is named ("Page 2") and the current one carries
+  `aria-current="page"`, the rows-per-page select has a name, and the pager is a navigation region.
+  New message keys: `pagination`, `previousPage`, `nextPage`, `pageNumber`, `pageSize` (English and
+  Korean built in).
+
 ## [0.37.1] - 2026-10-06
 
 ### Fixed
