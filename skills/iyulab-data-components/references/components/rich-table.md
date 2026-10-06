@@ -349,11 +349,17 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 
 ## Keyboard
 
-The table is a grid with one Tab stop: the focused cell (the first cell before any). Clicking a cell
-or moving with the arrows puts keyboard focus on that cell, and the keys below apply to keys pressed on
-a cell — in a filter box, a row checkbox or a row button, keys are that control's own (arrows move the
-caret, Space types, Delete deletes text, `Ctrl`/`Cmd` + `A` selects the text). Ending an edit with
-Enter or Escape returns focus to the cell.
+The body is a grid with one Tab stop: the focused cell (the first data cell before any). The header's
+controls — select all, sort, filter boxes — come before it in Tab order. Clicking a cell or moving
+with the arrows puts keyboard focus on that cell, and the keys below apply to keys pressed on a cell.
+
+The row checkbox, the expand button and the row-actions buttons sit in cells of their own and are
+reached with the arrows, not Tab: ← from the first data cell lands on the selection cell (Space
+toggles the row), Enter on the expand cell opens or closes the detail row, and Enter on the
+row-actions cell moves into its buttons (← / → between them, Enter presses one, Escape returns to the
+cell). In a filter box keys are the box's own (arrows move the caret, Space types, Delete deletes
+text, `Ctrl`/`Cmd` + `A` selects the text). Ending an edit with Enter or Escape returns focus to the
+cell.
 
 | Keys | Action |
 |---|---|

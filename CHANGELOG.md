@@ -10,6 +10,14 @@
   `aria-current="page"`, the rows-per-page select has a name, and the pager is a navigation region.
   New message keys: `pagination`, `previousPage`, `nextPage`, `pageNumber`, `pageSize` (English and
   Korean built in).
+- **`u-rich-table`'s row controls are grid cells, not Tab stops.** The documentation promised one
+  Tab stop for the body, but with `selectable` every row checkbox was its own Tab stop — 27 presses
+  to cross a 25-row page — and the arrows never reached the checkbox column; the expand button and
+  the row-actions buttons were Tab stops too. The selection, expand and row-actions columns are now
+  cells in the roving focus: ← from the first data cell reaches the selection cell, Enter on the
+  expand cell toggles the detail row, and Enter on the row-actions cell moves into its buttons
+  (← / → between them, Escape back to the cell). A clicked row checkbox keeps its own Space, and the
+  arrows move on from its cell.
 
 ## [0.37.1] - 2026-10-06
 

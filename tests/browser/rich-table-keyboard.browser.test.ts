@@ -112,6 +112,74 @@ describe('u-rich-table keyboard — cells hold focus', () => {
   });
 });
 
+describe('u-rich-table keyboard — row controls are grid cells, not Tab stops', () => {
+  const inTable = () => {
+    const el = table.shadowRoot!.activeElement as HTMLElement | null;
+    if (document.activeElement !== table || !el) return null;
+    return el.hasAttribute('data-cell') ? `cell ${el.dataset.row},${el.dataset.col}` : `${el.localName}.${el.className}`;
+  };
+
+  it('Tab crosses the body once — no row checkbox or row button is a Tab stop', async () => {
+    const before = await mount();
+    const after = document.createElement('button');
+    after.textContent = 'after';
+    document.body.append(after);
+    before.focus();
+    const seen: string[] = [];
+    for (let i = 0; i < 30 && document.activeElement !== after; i++) {
+      await press('{Tab}');
+      const at = inTable();
+      if (at) seen.push(at);
+    }
+    expect(document.activeElement).toBe(after);
+    // 머리 줄의 컨트롤(전체 선택 · 필터)은 각자 Tab 정지점이다 — 본문은 셀 하나만.
+    const bodyStops = seen.filter((s) => s.startsWith('cell '));
+    expect(bodyStops).toEqual(['cell 0,0']);
+    expect(seen.some((s) => s.startsWith('button.row-delete'))).toBe(false);
+    expect(seen.filter((s) => s.startsWith('input.')).length).toBeLessThanOrEqual(1 + 2); // 전체 선택 + 필터 둘
+  });
+
+  it('ArrowLeft reaches the selection cell; Space there toggles the row once', async () => {
+    await mount();
+    await userEvent.click(cell(1, 0));
+    await settle();
+    await press('{ArrowLeft}');
+    expect(focused()).toEqual([1, -1]);
+    await press(' ');
+    expect([...table.selectedRowIds]).toEqual(['r1']);
+    await press('{ArrowRight}');
+    expect(focused()).toEqual([1, 0]);
+  });
+
+  it('a clicked row checkbox: arrows move the cell, Space is the checkbox’s (one toggle)', async () => {
+    await mount();
+    const box = cell(1, -1).querySelector('input')!;
+    await userEvent.click(box);
+    await settle();
+    expect([...table.selectedRowIds]).toEqual(['r1']);
+    await press(' ');
+    expect([...table.selectedRowIds]).toEqual([]);
+    await press('{ArrowRight}');
+    expect(focused()).toEqual([1, 0]);
+  });
+
+  it('the row-actions cell: Enter goes in, Escape comes back, ↑/↓ move rows', async () => {
+    await mount();
+    const deleted: unknown[] = [];
+    table.addEventListener('row-delete', (e) => deleted.push((e as CustomEvent).detail.row._id));
+    await userEvent.click(cell(0, 1));
+    await settle();
+    await press('{ArrowRight}');
+    expect(focused()).toEqual([0, 2]);
+    await press('{Enter}');
+    expect(inTable()).toMatch(/^button\.row-delete/);
+    await press('{Escape}');
+    expect(focused()).toEqual([0, 2]);
+    await press('{ArrowDown}{Enter}{Enter}');
+    expect(deleted).toEqual(['r1']);
+  });
+});
+
 describe('u-rich-table keyboard — keys in a filter box are the box’s', () => {
   it('Space and ArrowLeft type and move the caret; they do not toggle a row or move the cell', async () => {
     await mount();

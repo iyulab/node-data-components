@@ -15,6 +15,9 @@ import { copyFromKey, isTextEntry, pasteFromKey } from '@iyulab/components/dist/
 // The date cell editor (registers `u-date-picker`).
 import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
 
+/** 펼침 열의 셀 이동 번호 — 앞쪽 제어 열은 음수다(`_firstCol` 참조). 선택 열은 펼침 열이 있으면 그 앞(-2). */
+const EXPAND_COL = -1;
+const ARROW_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
 /**
  * 행 삭제 버튼의 휴지통 — 이 컴포넌트 자신의 크롬이라 직접 그린다(`u-data-view` 와 같은 이유).
@@ -410,13 +413,17 @@ export class URichTable extends LitElement {
       return html`
         <tr class="${isSelected ? 'selected' : ''} ${hasError ? 'error' : ''} ${this.editingCell?.rowIndex === rowIdx ? 'editing' : ''}">
           ${this.selectable ? html`
-            <td class="checkbox-cell">
+            <td class="checkbox-cell ${this._isFocusedCell(rowIdx, this._selectCol) ? 'focused-cell' : ''}"
+              data-cell data-row=${rowIdx} data-col=${this._selectCol}
+              tabindex=${this._isTabStop(rowIdx, this._selectCol) ? '0' : '-1'}
+              @focusin=${() => this._onCellFocus(rowIdx, this._selectCol)}>
               <!-- ⚠라벨은 «장식»이 아니라 포인터 타깃이다 — 네이티브 체크박스는 13x13 이라
                    WCAG 2.2 SC 2.5.8 의 24px 하한에 못 미치는데, 입력 자체에 치수를 주면
                    브라우저가 체크 글리프를 함께 키워 시각이 바뀐다. 라벨을 누르면 네이티브가
-                   토글해 주므로 «보이는 것은 그대로, 잡히는 영역만 24px» 이 된다. -->
+                   토글해 주므로 «보이는 것은 그대로, 잡히는 영역만 24px» 이 된다.
+                   ⚠체크박스는 Tab 정지점이 아니다(tabindex=-1) — 그리드는 하나의 Tab 정지점이고 이 셀은 화살표로 닿는다. -->
               <label class="checkbox-hit">
-                <input type="checkbox" .checked=${isSelected}
+                <input type="checkbox" tabindex="-1" .checked=${isSelected}
                   aria-label=${messages.text('selectRow')}
                   @change=${() => this._onRowSelect(rowId)}
                   @click=${(e: MouseEvent) => e.shiftKey && this._onShiftSelect(rowIdx)} />
@@ -424,19 +431,26 @@ export class URichTable extends LitElement {
             </td>
           ` : ''}
           ${this.expandable ? html`
-            <td class="expand-cell">
-              <button type="button" class="expand-button" aria-expanded=${isExpanded ? 'true' : 'false'}
+            <td class="expand-cell ${this._isFocusedCell(rowIdx, EXPAND_COL) ? 'focused-cell' : ''}"
+              data-cell data-row=${rowIdx} data-col=${EXPAND_COL}
+              tabindex=${this._isTabStop(rowIdx, EXPAND_COL) ? '0' : '-1'}
+              @focusin=${() => this._onCellFocus(rowIdx, EXPAND_COL)}>
+              <button type="button" class="expand-button" tabindex="-1" aria-expanded=${isExpanded ? 'true' : 'false'}
                 aria-label=${messages.text(isExpanded ? 'collapseRow' : 'expandRow')}
                 @click=${() => this._onExpandToggle(rowId)}>${isExpanded ? '▼' : '▶'}</button>
             </td>
           ` : ''}
           ${this.columns.map((col, colIdx) => this._renderCell(row, rowIdx, col, colIdx))}
-          ${this._hasActionsColumn ? html`<td class="actions-cell">
+          ${this._hasActionsColumn ? html`<td class="actions-cell ${this._isFocusedCell(rowIdx, this._actionsCol) ? 'focused-cell' : ''}"
+            data-cell data-row=${rowIdx} data-col=${this._actionsCol}
+            tabindex=${this._isTabStop(rowIdx, this._actionsCol) ? '0' : '-1'}
+            @focusin=${() => this._onCellFocus(rowIdx, this._actionsCol)}
+            @keydown=${this._onActionsKeyDown}>
             ${(this.rowActions ?? []).map(action => html`
-              <button type="button" class="row-action" title=${action.label} aria-label=${action.label}
+              <button type="button" class="row-action" tabindex="-1" title=${action.label} aria-label=${action.label}
                 @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</button>
             `)}
-            ${this.deletable ? html`<button type="button" class="row-delete" aria-label=${messages.text('deleteRow')}
+            ${this.deletable ? html`<button type="button" class="row-delete" tabindex="-1" aria-label=${messages.text('deleteRow')}
               title=${messages.text('deleteRow')} @click=${() => this._onRowDelete(row)}>${DELETE_ICON}</button>` : ''}
           </td>` : ''}
         </tr>
@@ -688,9 +702,45 @@ export class URichTable extends LitElement {
    */
   private _isTabStop(rowIdx: number, colIdx: number): boolean {
     const f = this.focusedCell;
-    const inView = f && f.rowIndex < this._view.length && f.colIndex < this.columns.length;
+    const inView = f && f.rowIndex < this._view.length && f.colIndex >= this._firstCol && f.colIndex <= this._lastCol;
     return inView ? f.rowIndex === rowIdx && f.colIndex === colIdx : rowIdx === 0 && colIdx === 0;
   }
+
+  private _isFocusedCell(rowIdx: number, colIdx: number): boolean {
+    return this.focusedCell?.rowIndex === rowIdx && this.focusedCell.colIndex === colIdx;
+  }
+
+  /*
+   * 셀 이동이 닿는 열 — 데이터 열은 `0..columns.length-1` 그대로 두고(편집·복사·검증이 그 번호를 쓴다),
+   * 앞쪽 제어 열(선택 · 펼침)은 음수, 행 동작 열은 `columns.length` 다. APG Grid: 셀 안의 위젯은 Tab 정지점이
+   * 아니라 셀 이동으로 닿는다 — 선택 체크박스가 행마다 Tab 정지점이면 25행 표 하나를 지나는 데 Tab 이 27번 든다.
+   */
+  private get _firstCol(): number { return -((this.selectable ? 1 : 0) + (this.expandable ? 1 : 0)); }
+  private get _selectCol(): number { return this._firstCol; }
+  private get _actionsCol(): number { return this.columns.length; }
+  private get _lastCol(): number { return this.columns.length - 1 + (this._hasActionsColumn ? 1 : 0); }
+
+  /**
+   * 행 동작 셀 안: ←/→ 는 버튼 사이, ↑/↓ 는 위아래 행의 같은 셀, Escape 는 셀로. 셀 자체에서의 Enter 는
+   * 첫 버튼으로 들어간다(`_onGlobalKeyDown`). 버튼의 Enter/Space 는 버튼 자신의 것이다.
+   */
+  private _onActionsKeyDown = (e: KeyboardEvent): void => {
+    const origin = e.composedPath()[0];
+    if (!(origin instanceof HTMLButtonElement)) return;
+    const cell = origin.closest('td')!;
+    const buttons = [...cell.querySelectorAll<HTMLButtonElement>('button')];
+    const i = buttons.indexOf(origin);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      buttons[Math.max(0, Math.min(buttons.length - 1, i + (e.key === 'ArrowRight' ? 1 : -1)))]?.focus();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      this._moveFocus(0, e.key === 'ArrowDown' ? 1 : -1);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cell.focus();
+    }
+  };
 
   /** Tab or a click put DOM focus on a cell — it is the focused cell. */
   private _onCellFocus(rowIdx: number, colIdx: number): void {
@@ -1039,13 +1089,32 @@ export class URichTable extends LitElement {
     // 셀 키보드 모델은 셀에서 온 키만 — 필터 입력·행 체크박스·행 동작 버튼의 키는 그 컨트롤의 것이다
     // (←/→ 는 캐럿을, Space 는 글자·체크를, Delete 는 글자를). 호스트 자체에 보낸 키는 그대로 받는다.
     const fromCell = origin === this || (origin instanceof HTMLElement && origin.hasAttribute('data-cell'));
+    // 선택·펼침 셀의 컨트롤(클릭으로 포커스가 들어간 체크박스·버튼)에서는 화살표만 셀 이동이다 —
+    // Space·Enter 는 그 컨트롤의 것(체크·펼침)이라 여기서 다시 처리하면 두 번 토글된다.
+    if (!fromCell && !this.editingCell && this.focusedCell && ARROW_KEYS.has(e.key)
+      && origin instanceof HTMLElement && origin.closest('td.checkbox-cell, td.expand-cell')) {
+      e.preventDefault();
+      this._moveByArrow(e.key);
+      return;
+    }
     if (!fromCell) return;
+    // 제어 열 셀에서의 Enter — 펼침 셀은 펼치기/접기, 행 동작 셀은 첫 버튼으로 들어간다.
+    if (!this.editingCell && this.focusedCell && e.key === 'Enter' && !isImeComposing(e)
+      && (this.focusedCell.colIndex < 0 || this.focusedCell.colIndex >= this.columns.length)) {
+      const { rowIndex, colIndex } = this.focusedCell;
+      const r = this._view[rowIndex];
+      if (colIndex === EXPAND_COL && this.expandable && r) {
+        e.preventDefault();
+        this._onExpandToggle(this._rowId(r, rowIndex));
+      } else if (colIndex === this._actionsCol) {
+        e.preventDefault();
+        (origin as HTMLElement).querySelector?.<HTMLButtonElement>('button')?.focus();
+      }
+      return;
+    }
     // Arrow key navigation (비편집 모드)
     if (!this.editingCell && this.focusedCell) {
-      if (e.key === 'ArrowUp') { e.preventDefault(); this._moveFocus(0, -1); }
-      if (e.key === 'ArrowDown') { e.preventDefault(); this._moveFocus(0, 1); }
-      if (e.key === 'ArrowLeft') { e.preventDefault(); this._moveFocus(-1, 0); }
-      if (e.key === 'ArrowRight') { e.preventDefault(); this._moveFocus(1, 0); }
+      if (ARROW_KEYS.has(e.key)) { e.preventDefault(); this._moveByArrow(e.key); }
       if (e.key === 'Enter' && !isImeComposing(e)) {
         const col = this.columns[this.focusedCell.colIndex];
         if (col?.editable) {
@@ -1105,9 +1174,16 @@ export class URichTable extends LitElement {
     }));
   }
 
+  private _moveByArrow(key: string): void {
+    if (key === 'ArrowUp') this._moveFocus(0, -1);
+    else if (key === 'ArrowDown') this._moveFocus(0, 1);
+    else if (key === 'ArrowLeft') this._moveFocus(-1, 0);
+    else if (key === 'ArrowRight') this._moveFocus(1, 0);
+  }
+
   private _moveFocus(dx: number, dy: number): void {
     if (!this.focusedCell) return;
-    const newCol = Math.max(0, Math.min(this.columns.length - 1, this.focusedCell.colIndex + dx));
+    const newCol = Math.max(this._firstCol, Math.min(this._lastCol, this.focusedCell.colIndex + dx));
     const newRow = Math.max(0, Math.min(this._view.length - 1, this.focusedCell.rowIndex + dy));
     this.focusedCell = { rowIndex: newRow, colIndex: newCol };
     this._focusCellAfterUpdate = true;
