@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.38.0] - 2026-10-06
+
+### Changed
+
+- **`u-rich-table`'s header and filter rows are grid rows** (WAI-ARIA APG grid). The select-all box,
+  the sort buttons and the filter inputs are no longer separate Tab stops — the whole table is one Tab
+  stop, and ↑ from the first row moves to the filter row, then the header row. On a header cell, Enter
+  or Space sorts (sortable column) or selects the page (selection column). On a filter cell, typing goes
+  straight into the filter, and Enter or F2 enters it; inside a text filter ←/→ move the caret, ↑/↓ leave
+  for the next row and Escape returns to the cell (a list filter keeps ↑/↓ for its value — leave with
+  Escape). An empty table's Tab stop is the first header cell.
+
+### Fixed
+
+- Header cells show the keyboard focus ring the body cells already had.
+
 ## [0.37.5] - 2026-10-06
 
 ### Fixed

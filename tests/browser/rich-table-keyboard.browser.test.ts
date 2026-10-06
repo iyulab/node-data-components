@@ -14,7 +14,7 @@ import '../../src/components/u-rich-table/URichTable';
  */
 
 type Table = HTMLElement & {
-  columns: { key: string; label: string; editable?: boolean; filterable?: boolean }[];
+  columns: { key: string; label: string; editable?: boolean; filterable?: boolean; sortable?: boolean }[];
   data: Record<string, unknown>[];
   filterable: boolean;
   deletable: boolean;
@@ -63,8 +63,7 @@ describe('u-rich-table keyboard — cells hold focus', () => {
   it('Tab enters the grid on the first cell; arrows move DOM focus between cells', async () => {
     const before = await mount();
     before.focus();
-    // The header and filter controls come first in Tab order; Tab until a cell has focus.
-    for (let i = 0; i < 10 && !Array.isArray(focused()); i++) await press('{Tab}');
+    await press('{Tab}');
     expect(focused()).toEqual([0, 0]);
     await press('{ArrowDown}{ArrowRight}');
     expect(focused()).toEqual([1, 1]);
@@ -132,11 +131,8 @@ describe('u-rich-table keyboard — row controls are grid cells, not Tab stops',
       if (at) seen.push(at);
     }
     expect(document.activeElement).toBe(after);
-    // 머리 줄의 컨트롤(전체 선택 · 필터)은 각자 Tab 정지점이다 — 본문은 셀 하나만.
-    const bodyStops = seen.filter((s) => s.startsWith('cell '));
-    expect(bodyStops).toEqual(['cell 0,0']);
-    expect(seen.some((s) => s.startsWith('button.row-delete'))).toBe(false);
-    expect(seen.filter((s) => s.startsWith('input.')).length).toBeLessThanOrEqual(1 + 2); // 전체 선택 + 필터 둘
+    // 그리드 전체가 Tab 정지점 하나다 — 머리 줄의 전체 선택 · 정렬 · 필터도 셀 이동으로 닿는다(APG Grid).
+    expect(seen).toEqual(['cell 0,0']);
   });
 
   it('ArrowLeft reaches the selection cell; Space there toggles the row once', async () => {
@@ -204,5 +200,79 @@ describe('u-rich-table keyboard — keys in a filter box are the box’s', () =>
     expect(deleted).toEqual([]);
     await press('{Control>}a{/Control}');
     expect([...table.selectedRowIds]).toEqual(['r0']);
+  });
+});
+
+
+describe('u-rich-table keyboard — the header and filter rows are grid rows', () => {
+  const headCell = (r: number, c: number) =>
+    table.shadowRoot!.querySelector<HTMLElement>(`[data-cell][data-row="${r}"][data-col="${c}"]`)!;
+  const mountSortable = async () => {
+    const before = await mount();
+    table.columns = [
+      { key: 'name', label: 'Name', editable: true, filterable: true, sortable: true } as Table['columns'][number],
+      { key: 'note', label: 'Note' },
+    ];
+    await settle();
+    return before;
+  };
+
+  it('↑ from the first row reaches the filter row, then the header row; header widgets are not Tab stops', async () => {
+    await mountSortable();
+    await userEvent.click(cell(0, 0));
+    await settle();
+    await press('{ArrowUp}');
+    expect(focused()).toEqual([-1, 0]);
+    await press('{ArrowUp}');
+    expect(focused()).toEqual([-2, 0]);
+    expect(table.shadowRoot!.querySelector('.sort-button')!.getAttribute('tabindex')).toBe('-1');
+    expect(table.shadowRoot!.querySelector('thead input')!.getAttribute('tabindex')).toBe('-1');
+    expect(filterInput().getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('Enter on a sortable header cell sorts; Space on the select-all header cell selects the page', async () => {
+    await mountSortable();
+    const sorts: string[] = [];
+    table.addEventListener('sort-change', (e) => sorts.push(`${(e as CustomEvent).detail.field}:${(e as CustomEvent).detail.direction}`));
+    await userEvent.click(cell(0, 0));
+    await settle();
+    await press('{ArrowUp}{ArrowUp}');
+    await press('{Enter}');
+    expect(sorts).toEqual(['name:asc']);
+    expect(headCell(-2, 0).getAttribute('aria-sort')).toBe('ascending');
+    expect(focused(), 'focus stays on the header cell after the re-render').toEqual([-2, 0]);
+    await press('{ArrowLeft}');
+    expect(focused()).toEqual([-2, -1]);
+    await press(' ');
+    expect([...table.selectedRowIds].sort()).toEqual(['r0', 'r1', 'r2']);
+  });
+
+  it('on a filter cell, typing goes into the filter; Escape returns to the cell; ↓ from the input goes to the body', async () => {
+    await mountSortable();
+    const filters: string[] = [];
+    table.addEventListener('filter-change', (e) => filters.push(JSON.stringify((e as CustomEvent).detail.filters)));
+    await userEvent.click(cell(0, 0));
+    await settle();
+    await press('{ArrowUp}');
+    expect(focused()).toEqual([-1, 0]);
+    await press('n');
+    expect(focused()).toBe('input');
+    expect(filterInput().value).toBe('n');
+    await press('{Escape}');
+    expect(focused()).toEqual([-1, 0]);
+    await press('{Enter}');
+    expect(focused()).toBe('input');
+    await press('{ArrowDown}');
+    expect(focused()).toEqual([0, 0]);
+    expect(filters.length).toBeGreaterThan(0);
+  });
+
+  it('an empty table keeps one Tab stop — the first header cell', async () => {
+    const before = await mount();
+    table.data = [];
+    await settle();
+    before.focus();
+    await press('{Tab}');
+    expect(focused()).toEqual([-2, -1]);
   });
 });

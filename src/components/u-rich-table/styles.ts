@@ -168,7 +168,8 @@ export const richTableStyles = css`
     display: flex;
     align-items: center;
     inline-size: 100%;
-    padding: 8px;\n    min-block-size: var(--u-target-size, 0px);
+    padding: 8px;
+    min-block-size: var(--u-target-size, 0px);
     font: inherit;
     color: inherit;
     cursor: pointer;
@@ -224,9 +225,11 @@ export const richTableStyles = css`
   }
 
   /* 포커스된 셀 — 그리드가 키보드 포커스를 가질 때만(로빙 tabindex 의 그 셀). */
+  thead th[data-cell]:focus,
   tbody td[data-cell]:focus {
     outline: none;
   }
+  thead th[data-cell]:focus-visible,
   tbody td[data-cell]:focus-visible {
     outline: 2px solid var(--u-primary-color, #1976D2);
     outline-offset: -2px;

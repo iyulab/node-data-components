@@ -17,6 +17,12 @@ import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
 
 /** 펼침 열의 셀 이동 번호 — 앞쪽 제어 열은 음수다(`_firstCol` 참조). 선택 열은 펼침 열이 있으면 그 앞(-2). */
 const EXPAND_COL = -1;
+/*
+ * 머리 줄과 필터 줄도 셀 이동의 행이다 — 본문 행 번호(0..)는 그대로 두고(편집·선택·복사가 그 번호를 쓴다) 위로 음수.
+ * APG Grid: 머리 칸의 위젯(정렬 버튼 · 전체 선택)과 필터 입력은 Tab 정지점이 아니라 셀 이동으로 닿는다.
+ */
+const HEADER_ROW = -2;
+const FILTER_ROW = -1;
 const ARROW_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
 
 /**
@@ -342,19 +348,19 @@ export class URichTable extends LitElement {
     return html`
       <thead>
         <tr>
-          ${this.selectable ? html`<th class="checkbox-cell">
+          ${this.selectable ? html`<th class="checkbox-cell" data-cell data-row=${HEADER_ROW} data-col=${this._selectCol} tabindex=${this._isTabStop(HEADER_ROW, this._selectCol) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, this._selectCol)}>
             <!-- 전체 선택은 행 체크박스와 **같은 열**에 둔다 — 체크 상태는 «이 페이지» 기준이다(툴바 주석 참조). -->
             <label class="checkbox-hit">
-              <input type="checkbox"
+              <input type="checkbox" tabindex="-1"
                 aria-label=${messages.text('selectAllOnPage')}
                 .checked=${this._view.length > 0 && onPage === this._view.length}
                 .indeterminate=${onPage > 0 && onPage < this._view.length}
                 @change=${this._onSelectAll} />
             </label>
           </th>` : ''}
-          ${this.expandable ? html`<th class="expand-cell"></th>` : ''}
-          ${this.columns.map((col) => html`
-            <th
+          ${this.expandable ? html`<th class="expand-cell" data-cell data-row=${HEADER_ROW} data-col=${EXPAND_COL} tabindex=${this._isTabStop(HEADER_ROW, EXPAND_COL) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, EXPAND_COL)}></th>` : ''}
+          ${this.columns.map((col, colIdx) => html`
+            <th data-cell data-row=${HEADER_ROW} data-col=${colIdx} tabindex=${this._isTabStop(HEADER_ROW, colIdx) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, colIdx)}
               class=${col.sortable ? 'sortable' : ''}
               style=${this._headerStyle(col)}
               aria-sort=${col.sortable
@@ -362,7 +368,7 @@ export class URichTable extends LitElement {
                 : nothing}>
               ${col.sortable
                 // 정렬은 머리 칸을 채우는 버튼이다 — 클릭만 받는 th 는 키보드로 닿지 않았다.
-                ? html`<button type="button" class="sort-button" part="sort-button"
+                ? html`<button type="button" class="sort-button" part="sort-button" tabindex="-1"
                     style=${this._headerAlign(col) === 'end' ? 'justify-content: flex-end' : this._headerAlign(col) === 'center' ? 'justify-content: center' : ''}
                     @click=${() => this._onSortClick(col.key)}>
                     ${col.label}
@@ -373,7 +379,7 @@ export class URichTable extends LitElement {
                 : col.label}
             </th>
           `)}
-          ${this._hasActionsColumn ? html`<th class="actions-cell"></th>` : ''}
+          ${this._hasActionsColumn ? html`<th class="actions-cell" data-cell data-row=${HEADER_ROW} data-col=${this._actionsCol} tabindex=${this._isTabStop(HEADER_ROW, this._actionsCol) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, this._actionsCol)}></th>` : ''}
         </tr>
       </thead>
     `;
@@ -382,25 +388,27 @@ export class URichTable extends LitElement {
   private _renderFilterRow(): TemplateResult {
     return html`
       <tr class="filter-row">
-        ${this.selectable ? html`<td></td>` : ''}
-        ${this.expandable ? html`<td></td>` : ''}
-        ${this.columns.map(col => html`
-          <td>
+        ${this.selectable ? html`<td data-cell data-row=${FILTER_ROW} data-col=${this._selectCol} tabindex=${this._isTabStop(FILTER_ROW, this._selectCol) ? '0' : '-1'} @focusin=${() => this._onCellFocus(FILTER_ROW, this._selectCol)}></td>` : ''}
+        ${this.expandable ? html`<td data-cell data-row=${FILTER_ROW} data-col=${EXPAND_COL} tabindex=${this._isTabStop(FILTER_ROW, EXPAND_COL) ? '0' : '-1'} @focusin=${() => this._onCellFocus(FILTER_ROW, EXPAND_COL)}></td>` : ''}
+        ${this.columns.map((col, colIdx) => html`
+          <td data-cell data-row=${FILTER_ROW} data-col=${colIdx} tabindex=${this._isTabStop(FILTER_ROW, colIdx) ? '0' : '-1'} @focusin=${() => this._onCellFocus(FILTER_ROW, colIdx)}>
             ${col.filterable ? (
               col.filterType === 'select' && col.options
-                ? html`<select aria-label=${messages.text('filterColumn', { col: col.label })}
+                ? html`<select tabindex="-1" aria-label=${messages.text('filterColumn', { col: col.label })}
+                    @keydown=${this._onFilterControlKeyDown}
                     @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
                     <option value="">${this.filterAllLabel || messages.text('filterAll')}</option>
                     ${col.options.map(o => html`<option value=${o.value}>${o.label}</option>`)}
                   </select>`
-                : html`<input
+                : html`<input tabindex="-1"
                     aria-label=${messages.text('filterColumn', { col: col.label })}
+                    @keydown=${this._onFilterControlKeyDown}
                     placeholder=${this.filterPlaceholder || messages.text('filterPlaceholder')}
                     @input=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLInputElement).value)} />`
             ) : ''}
           </td>
         `)}
-        ${this._hasActionsColumn ? html`<td></td>` : ''}
+        ${this._hasActionsColumn ? html`<td data-cell data-row=${FILTER_ROW} data-col=${this._actionsCol} tabindex=${this._isTabStop(FILTER_ROW, this._actionsCol) ? '0' : '-1'} @focusin=${() => this._onCellFocus(FILTER_ROW, this._actionsCol)}></td>` : ''}
       </tr>
     `;
   }
@@ -706,9 +714,35 @@ export class URichTable extends LitElement {
    */
   private _isTabStop(rowIdx: number, colIdx: number): boolean {
     const f = this.focusedCell;
-    const inView = f && f.rowIndex < this._view.length && f.colIndex >= this._firstCol && f.colIndex <= this._lastCol;
-    return inView ? f.rowIndex === rowIdx && f.colIndex === colIdx : rowIdx === 0 && colIdx === 0;
+    const inView = f && f.rowIndex >= this._topRow && f.rowIndex < this._view.length
+      && f.colIndex >= this._firstCol && f.colIndex <= this._lastCol;
+    if (inView) return f.rowIndex === rowIdx && f.colIndex === colIdx;
+    // 처음 들어올 때: 본문 첫 행 첫 데이터 칸(종전 그대로) — 본문이 비면 머리 줄 첫 칸이 그리드의 Tab 정지점이다.
+    return this._view.length > 0 ? rowIdx === 0 && colIdx === 0 : rowIdx === HEADER_ROW && colIdx === this._firstCol;
   }
+
+  /** 셀 이동이 닿는 가장 위 행 — 머리 줄. 필터 줄은 그려질 때만 그 아래 행이다. */
+  private get _topRow(): number { return HEADER_ROW; }
+  private get _hasFilterRow(): boolean { return this.filterable && this.columns.some(c => c.filterable); }
+
+  /**
+   * 필터 입력 안의 키 — ←/→ · 글자 · Space 는 입력의 것이다. Escape 는 칸으로 나오고, 글자 입력 칸의 ↑/↓ 는 줄을 옮긴다
+   * (select 의 ↑/↓ 는 값을 바꾸는 네이티브 키라 두고, Escape 로 나온다).
+   */
+  private _onFilterControlKeyDown = (e: KeyboardEvent): void => {
+    const control = e.currentTarget as HTMLElement;
+    const cell = control.closest<HTMLElement>('td[data-cell]');
+    if (!cell) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      cell.focus();
+    } else if (control instanceof HTMLInputElement && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      e.stopPropagation();
+      this._moveFocus(0, e.key === 'ArrowDown' ? 1 : -1);
+    }
+  };
 
   private _isFocusedCell(rowIdx: number, colIdx: number): boolean {
     return this.focusedCell?.rowIndex === rowIdx && this.focusedCell.colIndex === colIdx;
@@ -758,7 +792,7 @@ export class URichTable extends LitElement {
   private _focusFocusedCell(): void {
     const f = this.focusedCell;
     if (!f) return;
-    this.shadowRoot?.querySelector<HTMLElement>(`td[data-cell][data-row="${f.rowIndex}"][data-col="${f.colIndex}"]`)?.focus();
+    this.shadowRoot?.querySelector<HTMLElement>(`[data-cell][data-row="${f.rowIndex}"][data-col="${f.colIndex}"]`)?.focus();
   }
 
   private _onCellClick(rowIdx: number, colIdx: number): void {
@@ -1070,12 +1104,16 @@ export class URichTable extends LitElement {
     // 선택·펼침 셀의 컨트롤(클릭으로 포커스가 들어간 체크박스·버튼)에서는 화살표만 셀 이동이다 —
     // Space·Enter 는 그 컨트롤의 것(체크·펼침)이라 여기서 다시 처리하면 두 번 토글된다.
     if (!fromCell && !this.editingCell && this.focusedCell && ARROW_KEYS.has(e.key)
-      && origin instanceof HTMLElement && origin.closest('td.checkbox-cell, td.expand-cell')) {
+      && origin instanceof HTMLElement && origin.closest('td.checkbox-cell, td.expand-cell, th[data-cell]')) {
       e.preventDefault();
       this._moveByArrow(e.key);
       return;
     }
     if (!fromCell) return;
+    if (!this.editingCell && this.focusedCell && this.focusedCell.rowIndex < 0) {
+      this._onHeadCellKeyDown(e, origin as HTMLElement);
+      return;
+    }
     // 제어 열 셀에서의 Enter — 펼침 셀은 펼치기/접기, 행 동작 셀은 첫 버튼으로 들어간다.
     if (!this.editingCell && this.focusedCell && e.key === 'Enter' && !isImeComposing(e)
       && (this.focusedCell.colIndex < 0 || this.focusedCell.colIndex >= this.columns.length)) {
@@ -1146,6 +1184,33 @@ export class URichTable extends LitElement {
     this._emit('clipboard-error', { action, error });
   }
 
+  /**
+   * 머리·필터 줄 칸의 키. 화살표는 셀 이동. 머리 칸: Enter/Space 가 그 칸의 위젯(정렬 · 전체 선택)을 누른다.
+   * 필터 칸: Enter/F2 는 입력으로 들어가고, 글자 하나는 입력으로 들어가 그대로 쓰인다(포커스를 먼저 옮기면 브라우저가
+   * 그 글자를 새 포커스에 준다).
+   */
+  private _onHeadCellKeyDown(e: KeyboardEvent, cell: HTMLElement): void {
+    if (ARROW_KEYS.has(e.key)) {
+      e.preventDefault();
+      this._moveByArrow(e.key);
+      return;
+    }
+    const control = cell.querySelector<HTMLElement>('input, select, button');
+    if (!control) return;
+    if (this.focusedCell!.rowIndex === HEADER_ROW) {
+      if ((e.key === 'Enter' || e.key === ' ') && !isImeComposing(e)) {
+        e.preventDefault();
+        control.click();
+      }
+      return;
+    }
+    const printable = e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey && e.key !== ' ';
+    if (e.key === 'Enter' || e.key === 'F2' || (printable && control instanceof HTMLInputElement)) {
+      if (!printable) e.preventDefault();
+      control.focus();
+    }
+  }
+
   private _moveByArrow(key: string): void {
     if (key === 'ArrowUp') this._moveFocus(0, -1);
     else if (key === 'ArrowDown') this._moveFocus(0, 1);
@@ -1156,7 +1221,11 @@ export class URichTable extends LitElement {
   private _moveFocus(dx: number, dy: number): void {
     if (!this.focusedCell) return;
     const newCol = Math.max(this._firstCol, Math.min(this._lastCol, this.focusedCell.colIndex + dx));
-    const newRow = Math.max(0, Math.min(this._view.length - 1, this.focusedCell.rowIndex + dy));
+    let newRow = this.focusedCell.rowIndex + dy;
+    // 그려지지 않은 필터 줄은 건너뛴다.
+    if (newRow === FILTER_ROW && !this._hasFilterRow) newRow += dy < 0 ? -1 : 1;
+    const bottom = this._view.length > 0 ? this._view.length - 1 : (this._hasFilterRow ? FILTER_ROW : HEADER_ROW);
+    newRow = Math.max(this._topRow, Math.min(bottom, newRow));
     this.focusedCell = { rowIndex: newRow, colIndex: newCol };
     this._focusCellAfterUpdate = true;
   }
