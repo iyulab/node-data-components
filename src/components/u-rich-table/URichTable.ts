@@ -140,7 +140,8 @@ export class URichTable extends LitElement {
     if (this._focusCellAfterUpdate && !this.editingCell) this._focusFocusedCell();
     this._focusCellAfterUpdate = false;
   }
-  @state() private validationErrors = new Map<string, string>();
+  /** 편집 칸의 검증 오류 — 우리 문장은 «그릴 때 찾는» 함수로 둔다(런타임 로캘 전환에 따라오게), 소비자 `validator` 문장은 그대로. */
+  @state() private validationErrors = new Map<string, string | (() => string)>();
   @state() private rowErrors = new Map<string, string>();
 
   // --- Public API ---
@@ -498,7 +499,8 @@ export class URichTable extends LitElement {
     const value = row[col.key];
 
     if (isEditing && col.editable) {
-      const validationError = this.validationErrors.get(`${rowIdx}-${colIdx}`);
+      const stored = this.validationErrors.get(`${rowIdx}-${colIdx}`);
+      const validationError = typeof stored === 'function' ? stored() : stored;
       if (col.type === 'select' && col.options) {
         return html`
           <td>
@@ -911,7 +913,7 @@ export class URichTable extends LitElement {
         (HTMLElement & { validity?: ValidityState; validationMessage?: string }) | null;
       if (picker?.validity?.badInput) {
         this.validationErrors = new Map(this.validationErrors)
-          .set(`${rowIndex}-${colIndex}`, picker.validationMessage || Locale.getValue('valueMissing'));
+          .set(`${rowIndex}-${colIndex}`, () => picker.validationMessage || Locale.getValue('valueMissing'));
         return;
       }
     }
@@ -925,7 +927,7 @@ export class URichTable extends LitElement {
 
     // Validation
     if (col.required && !newValue && newValue !== 0) {
-      this.validationErrors = new Map(this.validationErrors).set(`${rowIndex}-${colIndex}`, Locale.getValue('valueMissing'));
+      this.validationErrors = new Map(this.validationErrors).set(`${rowIndex}-${colIndex}`, () => Locale.getValue('valueMissing'));
       return;
     }
     if (col.validator) {
@@ -1079,14 +1081,24 @@ export class URichTable extends LitElement {
   }
 
   // --- Lifecycle ---
+  /** 런타임 로캘 전환 — `UElement` 계열은 기반 클래스가 구독하지만 이 표는 `LitElement` 를 직접 잇는다. */
+  private unsubscribeLocale?: () => void;
+  private detachedLocaleRevision?: number;
+
   connectedCallback(): void {
     super.connectedCallback();
     this.addEventListener('keydown', this._onGlobalKeyDown);
+    this.unsubscribeLocale = Locale.subscribe(() => this.requestUpdate());
+    if (this.detachedLocaleRevision !== undefined && this.detachedLocaleRevision !== Locale.revision) this.requestUpdate();
+    this.detachedLocaleRevision = undefined;
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeEventListener('keydown', this._onGlobalKeyDown);
+    this.unsubscribeLocale?.();
+    this.unsubscribeLocale = undefined;
+    this.detachedLocaleRevision = Locale.revision;
   }
 
   // --- Clipboard & Keyboard ---

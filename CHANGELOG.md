@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.40.0] - 2026-10-07
+
+### Changed
+
+- **Requires `@iyulab/components` 2.8.0** (peer `>=2.8.0`) — for its locale change notification.
+
+### Fixed
+
+- **`u-rich-table` follows a runtime locale switch.** `Locale.set()`/`Locale.register()` re-render the table at once —
+  header, menus, and the validation message of a cell being edited (now looked up when drawn, not stored as text).
+  The table is a plain `LitElement`, so it did not get the re-render other components get, and kept the old language
+  until something else redrew it. A table detached during the switch catches up when attached again.
+
 ## [0.39.3] - 2026-10-06
 
 ### Documentation
