@@ -42,6 +42,27 @@ npx skills add ./node_modules/@iyulab/data-components/skills/iyulab-data-compone
 
 ## Quick Start
 
+```html
+<u-simple-sheet id="sheet" style="height: 300px;"></u-simple-sheet>
+
+<script type="module">
+  import '@iyulab/data-components';
+
+  const sheet = document.getElementById('sheet');
+  sheet.columns = [
+    { key: 'name',  label: 'Name',  width: 150 },
+    { key: 'email', label: 'Email', width: 220 },
+  ];
+  sheet.data = [
+    ['Hong Gildong', 'hong@example.com'],
+    ['Kim Cheolsu', 'kim@example.com'],
+  ];
+  sheet.addEventListener('change', () => console.log(sheet.getDataAsObjects()));
+</script>
+```
+
+아래는 Lit 템플릿 안에서 쓰는 형태입니다(`.prop=${…}` 바인딩).
+
 ### USimpleSheet
 
 ```html

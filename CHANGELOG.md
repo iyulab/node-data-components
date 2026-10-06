@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.37.3] - 2026-10-06
+
+### Documentation
+
+- **The README's Quick Start opens with a page that runs as written** — markup plus a module script
+  that sets `columns` and `data` on a `u-simple-sheet`. The examples that followed are Lit template
+  fragments (`.rows=${20}`) and cannot be pasted into a page; they stay, introduced as Lit usage.
+
 ## [0.37.2] - 2026-10-06
 
 ### Fixed
