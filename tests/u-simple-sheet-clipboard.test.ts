@@ -3,12 +3,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { USimpleSheet } from '../src/components/simple-sheet/USimpleSheet.js';
 
 /**
- * Ctrl+C 복사가 동작하지 않는 결함의 회귀 테스트.
+ * 클립보드 키의 «Clipboard API 경로» — 브라우저가 copy/paste 이벤트를 내지 않을 때의 대체 경로다.
  *
- * 근본원인: 셀 선택이 `_sel`(내부 상태)로만 관리되고 실제 브라우저 텍스트 선택(Range)을
- * 만들지 않아, 네이티브 `copy` 이벤트가 절대 발생하지 않았다(모든 주요 브라우저의 표준
- * 동작). `_onContainerKeyDown`은 Ctrl+C/V를 명시 감지하지 않고 통과시키고 있었다.
- * 형제 컴포넌트 `URichTable`은 이미 Clipboard API 직접 호출 패턴으로 구현돼 있다.
+ * Safari 는 텍스트 선택이 없으면 `copy` 를 내지 않는다(셀 선택은 `_sel` 내부 상태라 텍스트 선택이
+ * 아니다). Chromium·Firefox 는 포커스된 요소에 낸다 — 그 경로는 브라우저 시험
+ * `tests/browser/grid-clipboard.browser.test.ts` 가 실제 키로 잰다. 여기(happy-dom)의 합성 keydown 은
+ * 이벤트를 일으키지 않으므로 이 파일은 대체 경로만 잰다.
  */
 
 function mount(data: string[][] = [['a', 'b'], ['c', 'd']]): USimpleSheet {

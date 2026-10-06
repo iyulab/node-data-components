@@ -97,7 +97,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | Event | `detail` | Fired when |
 |---|---|---|
 | `change` | `{ data: string[][] }` | Any edit, paste, fill or `setCell()` committed a value |
-| `clipboard-error` | `{ action: 'copy' \| 'paste', error: unknown }` | `Ctrl`/`Cmd` + `C`/`V` called the Clipboard API and it rejected (denied permission, insecure context) |
+| `clipboard-error` | `{ action: 'copy' \| 'paste', error: unknown }` | Neither the browser's clipboard event nor the Clipboard API took (or gave) the text — the keys use the event where the browser fires it and the Clipboard API where it does not (Safari) |
 | `paste-rejected` | `{ cells: { row: number; col: number }[] }` | A paste hit a `strict`+`options` column with a value not in the list — those cells were skipped (existing value kept), same rule as a rejected manual edit |
 
 ## SheetColumn

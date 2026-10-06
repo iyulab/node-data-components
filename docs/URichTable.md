@@ -249,8 +249,8 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |
 | `filter-change` | `{ filters, filteredCount? }` — `filteredCount` 는 `data-mode="client"` 에서만 |
 | `page-change` | `{ page, pageSize }` |
-| `paste` | `{ rows }` |
-| `clipboard-error` | `{ action: 'copy' | 'paste', error }` — `Ctrl`/`Cmd` + `C`/`V` 가 Clipboard API 를 불렀는데 거부됐다(권한 거부 · 안전하지 않은 문맥) |
+| `clipboard-paste` | `{ rows }` — `Ctrl`/`Cmd` + `V` 로 붙인 TSV 를 행으로 읽은 것(편집기 밖). 네이티브 `paste` 와 이름을 갈랐다 — 셀 편집기 안의 붙여넣기도 `paste` 로 버블되어 나온다 |
+| `clipboard-error` | `{ action: 'copy' \| 'paste', error }` — 브라우저의 클립보드 이벤트도 Clipboard API 도 텍스트를 받지/주지 못했다 |
 
 React에서는 `URichTableReact`가 이들을 `onSelectionChange` 형태로 노출합니다 — 목록이 표와
 어긋나면 **컴파일 에러**가 납니다(`src/react.ts`의 완전성 단언).
@@ -266,14 +266,15 @@ React에서는 `URichTableReact`가 이들을 `onSelectionChange` 형태로 노�
 | `Space` | 포커스된 행 선택 토글 (`selectable`) |
 | `Delete` | **현재 페이지의** 선택된 행마다 `row-delete` 발생 (`deletable`) |
 | `Ctrl`/`Cmd` + `C` | 선택 영역을 TSV로 복사 |
-| `Ctrl`/`Cmd` + `V` | TSV 붙여넣기 → `paste` 발생 |
+| `Ctrl`/`Cmd` + `V` | TSV 붙여넣기 → `clipboard-paste` 발생 |
 | `Ctrl`/`Cmd` + `A` | **현재 페이지** 전체 선택 (전체선택 체크박스와 같은 범위) |
 
 복사·붙여넣기는 TSV(탭 구분)라 스프레드시트와 그대로 오갑니다. 값 변환이 필요하면
 `clipboardParse` / `clipboardFormat`을 쓰세요.
 
-`Ctrl+V`는 `navigator.clipboard.readText()`를 쓰므로 **보안 컨텍스트(HTTPS 또는
-localhost)** 와 사용자 권한이 필요합니다.
+복사·붙여넣기 키는 브라우저의 copy/paste 이벤트로 처리합니다(권한·보안 컨텍스트 불필요). 이벤트가 오지
+않는 브라우저(Safari 는 텍스트 선택이 없으면 copy 를 내지 않는다)에서는 Clipboard API 로 대신합니다.
+셀 편집기 안에서는 편집기의 복사·붙여넣기가 그대로 동작합니다.
 
 ## 테마
 

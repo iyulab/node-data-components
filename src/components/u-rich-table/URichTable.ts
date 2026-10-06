@@ -11,8 +11,10 @@ import { columnLayout, headerWidth, type ColumnLayout } from './utils/column-lay
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
+import { copyFromKey, isTextEntry, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
 // The date cell editor (registers `u-date-picker`).
 import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
+
 
 /**
  * 행 삭제 버튼의 휴지통 — 이 컴포넌트 자신의 크롬이라 직접 그린다(`u-data-view` 와 같은 이유).
@@ -979,8 +981,8 @@ export class URichTable extends LitElement {
   // --- Clipboard & Keyboard ---
   private _onGlobalKeyDown = (e: KeyboardEvent): void => {
     if (e.ctrlKey || e.metaKey) {
-      if (e.key === 'c') this._handleCopy();
-      else if (e.key === 'v') this._handlePaste();
+      if (e.key === 'c') this._handleCopy(e);
+      else if (e.key === 'v') this._handlePaste(e);
       else if (e.key === 'a' && !this.editingCell) {
         e.preventDefault();
         this._selectAll();
@@ -1016,39 +1018,37 @@ export class URichTable extends LitElement {
     }
   };
 
-  private async _handleCopy(): Promise<void> {
+  /**
+   * Ctrl/Cmd + C · V on the table. The key is not prevented: `copyFromKey`/`pasteFromKey` take the
+   * browser's clipboard event where it fires and the Clipboard API where it does not (Safari fires no
+   * copy event without a text selection). A text field — the cell editor, a filter input — keeps its
+   * own clipboard.
+   */
+  private _handleCopy(e: KeyboardEvent): void {
+    if (this.editingCell || isTextEntry(e.composedPath()[0])) return;
     const rows = this.getSelectedRows();
     if (rows.length === 0) return;
-    const tsv = toTSV(rows, this.columns);
-    try {
-      await navigator.clipboard.writeText(tsv);
-    } catch (err) {
-      this.dispatchEvent(new CustomEvent('clipboard-error', {
-        detail: { action: 'copy', error: err },
-        bubbles: true, composed: true
-      }));
-    }
+    void copyFromKey(toTSV(rows, this.columns)).then((ok) => {
+      if (!ok) this._clipboardError('copy', new Error('The clipboard did not take the copied text'));
+    });
   }
 
-  private async _handlePaste(): Promise<void> {
-    if (this.editingCell) return; // 편집 중이면 브라우저 기본 동작
-    let text: string;
-    try {
-      text = await navigator.clipboard.readText();
-    } catch (err) {
-      this.dispatchEvent(new CustomEvent('clipboard-error', {
-        detail: { action: 'paste', error: err },
+  private _handlePaste(e: KeyboardEvent): void {
+    if (this.editingCell || isTextEntry(e.composedPath()[0])) return;
+    pasteFromKey().then((text) => {
+      if (!text.trim()) return;
+      const parsedRows = parseTSV(text, this.columns);
+      if (parsedRows.length === 0) return;
+      this.dispatchEvent(new CustomEvent('clipboard-paste', {
+        detail: { rows: parsedRows },
         bubbles: true, composed: true
       }));
-      return;
-    }
-    if (!text.trim()) return;
-    const parsedRows = parseTSV(text, this.columns);
+    }, (error) => this._clipboardError('paste', error));
+  }
 
-    if (parsedRows.length === 0) return;
-
-    this.dispatchEvent(new CustomEvent('paste', {
-      detail: { rows: parsedRows },
+  private _clipboardError(action: 'copy' | 'paste', error: unknown): void {
+    this.dispatchEvent(new CustomEvent('clipboard-error', {
+      detail: { action, error },
       bubbles: true, composed: true
     }));
   }

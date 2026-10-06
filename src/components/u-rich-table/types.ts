@@ -109,5 +109,11 @@ export interface RichTableEventMap {
   /** `filteredCount` is present in `data-mode="client"`: how many rows pass the filters, across all pages. */
   'filter-change': CustomEvent<{ filters: FilterState; filteredCount?: number }>;
   'page-change': CustomEvent<{ page: number; pageSize: number }>;
-  'paste': CustomEvent<{ rows: Record<string, unknown>[] }>;
+  /**
+   * TSV pasted onto the table (Ctrl/Cmd + V, not in an editor), parsed into rows for the app to insert.
+   * Named apart from the native `paste`, which also bubbles out of the cell editors.
+   */
+  'clipboard-paste': CustomEvent<{ rows: Record<string, unknown>[] }>;
+  /** Copy could not put the text on the clipboard, or paste could not read it. */
+  'clipboard-error': CustomEvent<{ action: 'copy' | 'paste'; error: unknown }>;
 }

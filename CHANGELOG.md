@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.37.0] - 2026-10-06
+
+### Changed
+
+- 🔴**Breaking: `u-rich-table` reports a paste as `clipboard-paste`, not `paste`** (React:
+  `onClipboardPaste`, not `onPaste`). The name was the native `paste` event's, which also bubbles out
+  of a cell editor when someone pastes into it — a `paste` listener (or React `onPaste`) received those
+  native events too, with no `detail`. Migration: rename the listener; `detail.rows` is unchanged.
+- `u-rich-table` types `clipboard-error` in its event map and exposes it to React as
+  `onClipboardError`.
+- Requires `@iyulab/components` 2.2.0 or later.
+
+### Fixed
+
+- **Copy and paste keys work without clipboard permission** (`u-simple-sheet`, `u-rich-table`).
+  Ctrl/Cmd + C and V went through the async Clipboard API alone, so a refused permission or a page
+  outside a secure context lost them. They now use the browser's copy/paste event where it fires
+  and the Clipboard API where it does not (Safari fires no copy event without a text selection);
+  `clipboard-error` comes only when neither path works.
+- **Ctrl+C in a `u-rich-table` cell editor copies the editor's text.** The table also wrote the
+  selected rows to the clipboard a moment later, replacing what the person had just copied.
+
+### Documentation
+
+- `u-rich-table` keyboard table: the Space, Delete and Ctrl/Cmd + A, C, V rows sat after a paragraph
+  and did not render as part of the table.
+
 ## [0.36.2] - 2026-10-06
 
 `0.36.1` was tagged on the wrong commit and never published; this is the release it was meant to be.

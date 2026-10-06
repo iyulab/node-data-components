@@ -10,6 +10,7 @@ import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { encodeTsv, decodeTsv } from '@iyulab/components/dist/utilities/tsv.js';
+import { copyFromKey, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
 
 export interface SheetColumn {
   /** 데이터 키 (getDataAsObjects() 반환시 객체 키로 사용) */
@@ -315,8 +316,6 @@ export class USimpleSheet extends UElement {
         ${ref(this._refContainer)}
         @keydown=${this._onContainerKeyDown}
         @focus=${this._onContainerFocus}
-        @copy=${this._onCopy}
-        @paste=${this._onPaste}
       >
         <div class="sheet-scroll">
           <table
@@ -520,20 +519,22 @@ export class USimpleSheet extends UElement {
         if (!this.readonly && this._sel) this._fillRight();
         return;
       }
-      // Ctrl+C: 복사 — 셀 선택은 실제 브라우저 텍스트 선택(Range)을 만들지 않으므로
-      // 네이티브 `copy` 이벤트(_onCopy)에 기대지 않고 Clipboard API를 직접 호출한다.
+      // Ctrl+C / Ctrl+V: 키는 막지 않는다 — 브라우저가 copy/paste 이벤트를 내면 그것으로(권한 불필요),
+      // 내지 않으면(Safari 는 텍스트 선택이 없으면 copy 를 내지 않는다) Clipboard API 로.
       if (e.key === 'c' || e.key === 'C') {
         if (this._sel) {
-          e.preventDefault();
-          void this._copySelection();
+          void copyFromKey(this._selectionToTSV()).then((ok) => {
+            if (!ok) this.fire('clipboard-error', { detail: { action: 'copy', error: new Error('The clipboard did not take the copied text') } });
+          });
         }
         return;
       }
-      // Ctrl+V: 붙여넣기 — 같은 이유로 Clipboard API를 직접 호출한다.
       if (e.key === 'v' || e.key === 'V') {
         if (!this.readonly && this._sel) {
-          e.preventDefault();
-          void this._pasteFromClipboard();
+          pasteFromKey().then(
+            (text) => this._pasteFromText(text),
+            (error) => this.fire('clipboard-error', { detail: { action: 'paste', error } }),
+          );
         }
         return;
       }
@@ -1065,40 +1066,6 @@ export class USimpleSheet extends UElement {
   // ──────────────────────────────────────────
   // 클립보드 (copy/paste)
   // ──────────────────────────────────────────
-
-  /** Ctrl+C 경로 전용 — 권한 거부·비보안 컨텍스트 등으로 Clipboard API가 실패해도
-   * 조용히 죽지 않고 `clipboard-error`를 낸다(flex-table의 동일 패턴 참조). */
-  private async _copySelection(): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(this._selectionToTSV());
-    } catch (err) {
-      this.fire('clipboard-error', { detail: { action: 'copy', error: err } });
-    }
-  }
-
-  /** Ctrl+V 경로 전용 — 위와 동일한 이유로 실패를 흡수한다. */
-  private async _pasteFromClipboard(): Promise<void> {
-    try {
-      const text = await navigator.clipboard.readText();
-      this._pasteFromText(text);
-    } catch (err) {
-      this.fire('clipboard-error', { detail: { action: 'paste', error: err } });
-    }
-  }
-
-  private _onCopy = (e: ClipboardEvent) => {
-    if (!this._sel || this._editing) return; // 편집 중엔 input 기본 복사 허용
-    e.preventDefault();
-    const tsv = this._selectionToTSV();
-    e.clipboardData?.setData('text/plain', tsv);
-  };
-
-  private _onPaste = (e: ClipboardEvent) => {
-    if (this.readonly || !this._sel) return;
-    e.preventDefault();
-    const text = e.clipboardData?.getData('text/plain') ?? '';
-    this._pasteFromText(text);
-  };
 
   private _selectionToTSV(): string {
     if (!this._sel) return '';

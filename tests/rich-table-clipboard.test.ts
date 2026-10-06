@@ -43,7 +43,7 @@ describe('URichTable — 클립보드 형식', () => {
     const el = table = await mount();
     vi.spyOn(navigator.clipboard, 'readText').mockResolvedValue('Name\tNote\r\nsecond\t"a\r\nb"\r\n');
     const paste = vi.fn();
-    el.addEventListener('paste', paste);
+    el.addEventListener('clipboard-paste', paste);
 
     el.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
     await vi.waitFor(() => expect(paste).toHaveBeenCalledTimes(1));
@@ -55,7 +55,7 @@ describe('URichTable — 클립보드 형식', () => {
     const el = table = await mount();
     vi.spyOn(navigator.clipboard, 'readText').mockResolvedValue('\tonly note\n');
     const paste = vi.fn();
-    el.addEventListener('paste', paste);
+    el.addEventListener('clipboard-paste', paste);
 
     el.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
     await vi.waitFor(() => expect(paste).toHaveBeenCalledTimes(1));

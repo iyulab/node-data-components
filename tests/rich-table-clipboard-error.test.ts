@@ -49,7 +49,7 @@ describe('URichTable — clipboard-error', () => {
     const errorHandler = vi.fn();
     const pasteHandler = vi.fn();
     el.addEventListener('clipboard-error', errorHandler);
-    el.addEventListener('paste', pasteHandler);
+    el.addEventListener('clipboard-paste', pasteHandler);
 
     el.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true }));
     await vi.waitFor(() => expect(errorHandler).toHaveBeenCalledTimes(1));

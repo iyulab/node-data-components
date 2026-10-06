@@ -56,7 +56,8 @@ const RICH_TABLE_EVENTS = {
   onSortChange: 'sort-change',
   onFilterChange: 'filter-change',
   onPageChange: 'page-change',
-  onPaste: 'paste',
+  onClipboardPaste: 'clipboard-paste',
+  onClipboardError: 'clipboard-error',
 } as const satisfies Record<string, keyof RichTableEventMap>;
 
 /**
