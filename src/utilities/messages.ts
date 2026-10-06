@@ -31,7 +31,7 @@ export type DataMessageKey =
   | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage' | 'selectRow'
   | 'columnMenu' | 'autoFitWidth' | 'wider' | 'narrower'
   | 'pagination' | 'previousPage' | 'nextPage' | 'pageNumber' | 'pageSize'
-  | 'filterColumn' | 'newRowColumn';
+  | 'filterColumn' | 'newRowColumn' | 'sheet';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
 
@@ -62,6 +62,7 @@ messages.register('en', {
   selectAllOnPage: 'Select all rows on this page',
   selectRow: 'Select row',
   columnMenu: 'Column {col}',
+  sheet: 'Spreadsheet',
   autoFitWidth: 'Auto-fit width',
   wider: 'Wider',
   narrower: 'Narrower',
@@ -101,6 +102,7 @@ messages.register('ko', {
   selectAllOnPage: '이 페이지 전체 선택',
   selectRow: '행 선택',
   columnMenu: '{col} 열',
+  sheet: '스프레드시트',
   autoFitWidth: '너비 자동 맞춤',
   wider: '넓게',
   narrower: '좁게',

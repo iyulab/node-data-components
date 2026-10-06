@@ -106,6 +106,69 @@ describe('u-simple-sheet 키보드 — 이동', () => {
   });
 });
 
+describe('u-simple-sheet 키보드 — 시트는 포커스를 가두지 않고, 활성 셀을 보조기기에 알린다', () => {
+  // 0.38 까지: 마지막 셀의 Tab(첫 셀의 Shift+Tab)도 막아 키보드로는 시트를 떠날 수 없었다(SC 2.1.2).
+  // 포커스를 쥔 컨테이너에는 역할도 이름도 없고 활성 셀은 클래스뿐이라, 보조기기는 이동을 읽지 못했다(SC 4.1.2).
+  const around = async (rows: number, cols: number) => {
+    const before = document.createElement('button');
+    const el = await mount(rows, cols);
+    const after = document.createElement('button');
+    el.before(before);
+    el.after(after);
+    return { el, before, after };
+  };
+  const grid = (el: Sheet) => el.shadowRoot!.querySelector<HTMLElement>('[role="grid"]')!;
+
+  it('마지막 셀의 Tab 은 시트를 떠난다 · 첫 셀의 Shift+Tab 도', async () => {
+    const { el, before, after } = await around(2, 2);
+    await userEvent.click(cell(el, 1, 0));
+    await press(el, '{Tab}');
+    expect(active(el)).toEqual([1, 1]);
+    await press(el, '{Tab}');
+    expect(document.activeElement, '마지막 셀 다음').toBe(after);
+
+    await userEvent.click(cell(el, 0, 1));
+    await press(el, '{Shift>}{Tab}{/Shift}');
+    expect(active(el)).toEqual([0, 0]);
+    await press(el, '{Shift>}{Tab}{/Shift}');
+    expect(document.activeElement, '첫 셀 앞').toBe(before);
+  });
+
+  it('편집 중 마지막 셀의 Tab 은 확정하고 떠난다', async () => {
+    const { el, after } = await around(2, 2);
+    await userEvent.click(cell(el, 1, 1));
+    await press(el, 'Z{Tab}');
+    expect(el.getData()[1][1]).toBe('Z');
+    expect(document.activeElement).toBe(after);
+  });
+
+  it('포커스를 쥔 요소는 이름 있는 grid 이고, aria-activedescendant 가 활성 셀(gridcell)을 가리킨다', async () => {
+    const el = await start(3, 2);
+    const g = grid(el);
+    expect(el.shadowRoot!.activeElement).toBe(g);
+    expect(g.getAttribute('aria-label')).toBe('Spreadsheet');
+    const target = () => el.shadowRoot!.getElementById(g.getAttribute('aria-activedescendant') ?? '');
+    expect(target()).toBe(cell(el, 3, 2));
+    expect(target()?.getAttribute('role')).toBe('gridcell');
+    await press(el, '{ArrowDown}{ArrowRight}');
+    expect(target()).toBe(cell(el, 4, 3));
+    expect(target()?.getAttribute('aria-selected')).toBe('true');
+    // 행은 row · 행 번호는 rowheader · 열 머리는 columnheader
+    expect(target()?.closest('[role="row"]')?.querySelector('[role="rowheader"]')?.textContent?.trim()).toBe('5');
+    expect(el.shadowRoot!.querySelectorAll('[role="columnheader"]').length).toBe(5);
+    // 편집 중에는 입력이 포커스를 쥐므로 가리키지 않는다
+    await press(el, '{F2}');
+    expect(g.hasAttribute('aria-activedescendant')).toBe(false);
+  });
+
+  it('label 이 그리드 이름을 정한다', async () => {
+    const el = await mount(2, 2);
+    (el as Sheet & { label: string }).label = 'Budget lines';
+    await el.updateComplete;
+    expect(grid(el).getAttribute('aria-label')).toBe('Budget lines');
+  });
+});
+
 describe('u-simple-sheet 키보드 — 편집', () => {
   it('F2 가 편집을 시작하고 Escape 가 값을 바꾸지 않고 취소한다', async () => {
     const el = await start(1, 1);

@@ -54,6 +54,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `rows` | `number` | `20` | | Row count when `data` is shorter |
 | `cols` | `number` | `10` | | Column count when neither `data` nor `columns` says otherwise |
 | `readonly` | `boolean` | `false` | | Blocks editing, paste and fill |
+| `label` | `string` | `''` | | The sheet's accessible name (falls back to the locale string, "Spreadsheet") |
 | `noMatchMessage` | `string` | `''` | | Text shown when a `strict` dropdown has no match (falls back to the locale string) |
 | `theme` | `'light'\|'dark'` | — | ✓ | Forces a theme. Unset follows the ancestor `theme`/`data-theme` context (`:host-context`, Chromium only) |
 
@@ -127,7 +128,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `F2`, or typing a character | Start editing (typing replaces the value) |
 | `Enter` while editing | Commit and move down (`Ctrl` + `Enter` commits and stays) |
 | `Escape` | Cancel editing |
-| `Tab` | Move right — from the last column to the next row (`Shift` + `Tab` moves left); while editing, commits first |
+| `Tab` | Move right — from the last column to the next row (`Shift` + `Tab` moves left); while editing, commits first. On the last cell (`Shift` + `Tab`: the first) it leaves the sheet |
 | `Delete` / `Backspace` | Clear the selected cells |
 | `Ctrl`/`Cmd` + `C` / `V` | Copy / paste the selection as TSV |
 | `Ctrl`/`Cmd` + `Z` | Undo (`Shift` + `Ctrl`/`Cmd` + `Z` redoes) |

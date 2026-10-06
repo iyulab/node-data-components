@@ -117,6 +117,9 @@ export class USimpleSheet extends UElement {
 
   /** 읽기 전용 모드 */
   @property({ type: Boolean }) readonly = false;
+
+  /** 시트(그리드)의 접근성 이름. 비우면 로캘 기본값(«Spreadsheet» · «스프레드시트»). */
+  @property({ type: String }) label = '';
   /** 드롭다운에 일치 항목이 없을 때 문구 */
   @property({ type: String }) noMatchMessage = '';
 
@@ -324,26 +327,35 @@ export class USimpleSheet extends UElement {
 
   private _renderSheet() {
     return html`
+      <!-- 포커스는 이 그리드가 쥐고, 활성 셀은 aria-activedescendant 로 가리킨다 — 보조기기가 이동마다 셀을 읽는다
+           (편집 중에는 입력이 포커스를 쥔다). 표는 구조만 주고(presentation) 행·셀 역할은 직접 단다. -->
       <div
         class="sheet-container${this._resizing ? ' is-resizing' : ''}"
         tabindex="0"
+        role="grid"
+        aria-label=${this.label || messages.text('sheet')}
+        aria-multiselectable="true"
+        aria-readonly=${this.readonly ? 'true' : nothing}
+        aria-activedescendant=${this._sel && !this._editing ? `sheet-cell-${this._sel.anchor.row}-${this._sel.anchor.col}` : nothing}
         ${ref(this._refContainer)}
         @keydown=${this._onContainerKeyDown}
         @focus=${this._onContainerFocus}
       >
         <div class="sheet-scroll">
           <table
+            role="presentation"
             class="sheet-table"
             style="width:${this._tableWidth()}px"
             @mousedown=${this._onTableMouseDown}
             @mouseover=${this._onTableMouseOver}
             @dblclick=${this._onTableDblClick}
           >
-            <thead>
-              <tr>
-                <th class="corner" @click=${this._onSelectAll}></th>
+            <thead role="presentation">
+              <tr role="row">
+                <th class="corner" role="columnheader" @click=${this._onSelectAll}></th>
                 ${Array.from({ length: this._colCount }, (_, c) => html`
                   <th
+                    role="columnheader"
                     class="col-header ${this._isColSelected(c) ? 'col-selected' : ''}"
                     style=${this._colWidthStyle(c)}
                     @mousedown=${(e: MouseEvent) => this._onColHeaderMouseDown(e, c)}
@@ -359,10 +371,11 @@ export class USimpleSheet extends UElement {
                 `)}
               </tr>
             </thead>
-            <tbody>
+            <tbody role="presentation">
               ${Array.from({ length: this._rowCount }, (_, r) => html`
-                <tr>
+                <tr role="row">
                   <td
+                    role="rowheader"
                     class="row-num ${this._isRowSelected(r) ? 'row-selected' : ''}"
                     @mousedown=${(e: MouseEvent) => this._onRowHeaderMouseDown(e, r)}
                   >${r + 1}</td>
@@ -405,6 +418,11 @@ export class USimpleSheet extends UElement {
 
     return html`
       <td
+        id="sheet-cell-${r}-${c}"
+        role="gridcell"
+        aria-selected=${isSelected ? 'true' : 'false'}
+        aria-readonly=${isColReadonly ? 'true' : nothing}
+        aria-invalid=${validationError ? 'true' : nothing}
         class=${classes}
         data-row=${r}
         data-col=${c}
@@ -459,6 +477,13 @@ export class USimpleSheet extends UElement {
   // ──────────────────────────────────────────
   // 컨테이너 이벤트
   // ──────────────────────────────────────────
+
+  /** Tab 이 시트를 떠나는 자리 — 마지막 셀의 Tab · 첫 셀의 Shift+Tab. */
+  private _isTabEdge(pos: { row: number; col: number }, back: boolean): boolean {
+    return back
+      ? pos.row === 0 && pos.col === 0
+      : pos.row === this._rowCount - 1 && pos.col === this._colCount - 1;
+  }
 
   private _onContainerFocus = () => {
     if (!this._sel) {
@@ -582,8 +607,10 @@ export class USimpleSheet extends UElement {
       return;
     }
 
-    // ── Tab: 사이클 이동 ──
+    // ── Tab: 사이클 이동 · 양 끝에서는 시트를 떠난다 ──
+    // 0.38 까지는 마지막 셀의 Tab(첫 셀의 Shift+Tab)도 막아, 키보드로는 시트를 벗어날 수 없었다(SC 2.1.2).
     if (e.key === 'Tab') {
+      if (this._isTabEdge(anchor, e.shiftKey)) return;
       e.preventDefault();
       if (e.shiftKey) {
         // Shift+Tab: 왼쪽, 첫 열에서 이전 행 마지막 열로
@@ -753,8 +780,13 @@ export class USimpleSheet extends UElement {
     }
 
     if (e.key === 'Tab') {
-      e.preventDefault();
       const pos = this._editing!;
+      // 마지막 셀의 Tab(첫 셀의 Shift+Tab)은 확정하고 시트를 떠난다 — 기본 동작을 막지 않는다(SC 2.1.2).
+      if (this._isTabEdge(pos, e.shiftKey)) {
+        this._commitEdit();
+        return;
+      }
+      e.preventDefault();
       this._commitEdit();
       if (e.shiftKey) {
         if (pos.col === 0 && pos.row > 0) {

@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.39.0] - 2026-10-06
+
+### Fixed
+
+- **`u-simple-sheet` no longer traps the focus.** Tab on the last cell (Shift+Tab on the first) was
+  swallowed, so keyboard focus could never leave the sheet (WCAG 2.1.2). It now leaves for the next
+  (previous) control on the page; while editing, it commits first. Tab elsewhere still moves cell to cell.
+- **`u-simple-sheet` tells assistive technology where the keyboard is.** The focused container had no
+  role and no name and the active cell was a class only, so screen readers announced nothing as the
+  arrow keys moved (WCAG 4.1.2). The container is now a named `role="grid"` whose
+  `aria-activedescendant` points at the active cell; rows, row numbers, column headers and cells carry
+  `row` / `rowheader` / `columnheader` / `gridcell` (with `aria-selected`, `aria-readonly`,
+  `aria-invalid`).
+
+### Added
+
+- `u-simple-sheet` `label` — the sheet's accessible name (defaults to the localized "Spreadsheet").
+
 ## [0.38.0] - 2026-10-06
 
 ### Changed

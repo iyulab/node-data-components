@@ -98,6 +98,7 @@ columns = [
 | `rows` | `number` | `20` | 초기 행 수 |
 | `cols` | `number` | `10` | 초기 열 수 (columns 미설정 시 사용) |
 | `readonly` | `boolean` | `false` | 전체 읽기 전용 모드 |
+| `label` | `string` | `''` | 시트(그리드)의 접근성 이름. 비우면 로캘 기본값(«Spreadsheet» · «스프레드시트») |
 
 ## SheetColumn
 
@@ -250,12 +251,15 @@ columns = [
 |--------|------|
 | `Arrow` | 셀 이동 |
 | `Shift+Arrow` | 선택 범위 확장 |
-| `Tab` / `Shift+Tab` | 오른쪽/왼쪽 이동 (마지막 열에서 다음/이전 행으로 사이클) |
+| `Tab` / `Shift+Tab` | 오른쪽/왼쪽 이동 (마지막 열에서 다음/이전 행으로 사이클) · 마지막 셀의 `Tab`(첫 셀의 `Shift+Tab`)은 시트를 떠난다 — 편집 중이면 확정하고 |
 | `Enter` | 아래 이동 |
 | `Shift+Enter` | 위 이동 |
 | `Home` / `End` | 행 처음/끝 |
 | `Ctrl+Home` / `Ctrl+End` | 시트 처음/끝 |
 | `Page Up` / `Page Down` | 10행 단위 이동 |
+
+시트는 Tab 정지점 하나다. 포커스를 쥔 요소는 이름 있는 `role="grid"` 이고 `aria-activedescendant` 가 활성 셀(`role="gridcell"`)을
+가리킨다 — 보조기기가 이동마다 행 번호(`rowheader`)·열 머리(`columnheader`)와 함께 셀을 읽는다. 편집 중에는 입력이 포커스를 쥔다.
 
 ### 편집
 
