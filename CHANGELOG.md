@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.44.0] - 2026-10-07
+
+### Changed (breaking)
+
+- **`u-data-view` takes the two tables' view vocabulary**: records are `data` (was `items`), and it adds `totalCount`
+  (what the toolbar's item count counts — a server-paged list passes the whole count, not one page), `loading` /
+  `loadingMessage` (shown in place of the content), `error` (`{ message }`, shown as an alert — a failed load read as
+  "no data") and `emptyMessage`. A data source's state can be handed over as is, so a list shows as cards with the same
+  binding as a table.
+
+### Migration
+
+- `.items=${rows}` → `.data=${rows}` (`el.items = …` → `el.data = …`).
+
+### Fixed
+
+- The `u-data-view` examples in the README and `docs/UDataView.md` listened to a `select` event the element never
+  fires; they no longer do.
+
 ## [0.43.2] - 2026-10-07
 
 ### Fixed

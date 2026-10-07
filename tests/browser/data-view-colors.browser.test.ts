@@ -53,9 +53,9 @@ describe('UDataView 계산색 회귀망', () => {
       else document.documentElement.removeAttribute('theme');
 
       const el = document.createElement('u-data-view') as HTMLElement & {
-        items: unknown[]; mode: string; updateComplete: Promise<unknown>;
+        data: unknown[]; mode: string; updateComplete: Promise<unknown>;
       };
-      el.items = [{ a: 1, b: 'x' }, { a: 2, b: 'y' }];
+      el.data = [{ a: 1, b: 'x' }, { a: 2, b: 'y' }];
       el.mode = 'table';
       document.body.appendChild(el);
       await el.updateComplete;

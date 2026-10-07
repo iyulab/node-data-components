@@ -38,13 +38,33 @@ const VIEW_ICONS = {
 /**
  * Data View Component
  * 데이터를 3가지 레이아웃(grid, list, table)으로 표시하는 컴포넌트
+ *
+ * 두 표(`flex-table` · `u-rich-table`)와 **같은 뷰 어휘**를 받는다 — `data` · `totalCount` · `loading` · `error` ·
+ * `emptyMessage` · `loadingMessage`. 같은 데이터 소스(`createODataSource`·`createArraySource`)의 상태를 그대로 넘기면
+ * 표 대신 카드로 같은 목록을 그린다(목록 키트의 «표 ↔ 카드» 가 속성 하나로 바뀌는 근거).
  */
 @customElement('u-data-view')
 export class UDataView extends UElement {
   static styles = [super.styles, styles];
 
-  /** 표시할 데이터 배열 */
-  @property({ type: Array }) items: DataItem[] = [];
+  /** 표시할 레코드 — 두 표의 `data` 와 같은 이름·같은 뜻(서버 페이지 목록이면 지금 페이지). */
+  @property({ type: Array }) data: DataItem[] = [];
+  /**
+   * 전체 건수 — 툴바의 «N items» 가 이것을 센다. 서버 페이지 목록은 `data` 가 한 페이지라 소스의 `totalCount` 를 준다.
+   * 주지 않으면 `data.length`.
+   */
+  @property({ type: Number, attribute: 'total-count' }) totalCount?: number;
+  /** 불러오는 중 — 내용 대신 `loadingMessage` 를 그린다(지난 결과를 «지금 결과» 로 보이지 않게). */
+  @property({ type: Boolean }) loading = false;
+  /** 불러오는 중 문구. 비우면 로케일 문장(`loading`). */
+  @property({ type: String, attribute: 'loading-message' }) loadingMessage = '';
+  /**
+   * 마지막 불러오기의 실패, 없으면 `null`. 있는 동안(그리고 `loading` 이 아닌 동안) 내용 대신 `error.message` 를 경보로
+   * 그린다 — 실패한 조회가 «데이터 없음» 으로 보이지 않게. 데이터 소스의 `error` 를 그대로 받는다(`{ message }` 면 된다).
+   */
+  @property({ attribute: false }) error: { message: string } | null = null;
+  /** `data` 가 비었을 때의 문구. 비우면 로케일 문장(`empty`). */
+  @property({ type: String, attribute: 'empty-message' }) emptyMessage = '';
   /** 현재 뷰 모드 */
   @property({ type: String }) mode: ViewMode = 'grid';
   /** 표시할 컬럼 설정 (미지정시 자동 감지) */
@@ -77,7 +97,7 @@ export class UDataView extends UElement {
           ${this.renderViewButton('table', VIEW_ICONS.table, messages.text('viewTable'))}
         </div>
         <div class="info">
-          ${messages.text('itemCount', { count: this.items.length })}
+          ${messages.text('itemCount', { count: this.totalCount ?? this.data.length })}
         </div>
       </div>
     `;
@@ -109,8 +129,15 @@ export class UDataView extends UElement {
   }
 
   private renderContent() {
-    if (!this.items?.length) {
-      return html`<div class="empty">${messages.text('empty')}</div>`;
+    // 표와 같은 순서 — 불러오는 중이 먼저(지난 오류·지난 결과를 지금 것으로 보이지 않게), 그다음 실패, 그다음 빈 결과.
+    if (this.loading) {
+      return html`<div class="state loading" aria-busy="true">${this.loadingMessage || messages.text('loading')}</div>`;
+    }
+    if (this.error) {
+      return html`<div class="state error" role="alert">${this.error.message}</div>`;
+    }
+    if (!this.data?.length) {
+      return html`<div class="state empty">${this.emptyMessage || messages.text('empty')}</div>`;
     }
 
     switch (this.mode) {
@@ -123,7 +150,7 @@ export class UDataView extends UElement {
   private renderGrid() {
     return html`
       <div class="grid" style="--min-width: ${this.gridMinWidth}; --gap: ${this.gap};">
-        ${this.items.map((item, index) => this.renderGridItem(item, index))}
+        ${this.data.map((item, index) => this.renderGridItem(item, index))}
       </div>
     `;
   }
@@ -131,7 +158,7 @@ export class UDataView extends UElement {
   private renderList() {
     return html`
       <div class="list" style="--gap: ${this.gap};">
-        ${this.items.map((item, index) => this.renderListItem(item, index))}
+        ${this.data.map((item, index) => this.renderListItem(item, index))}
       </div>
     `;
   }
@@ -152,7 +179,7 @@ export class UDataView extends UElement {
             </tr>
           </thead>
           <tbody>
-            ${this.items.map((item, index) => html`
+            ${this.data.map((item, index) => html`
               <tr>
                 ${cols.map(col => html`
                   <td>${this.getCellContent(item, col, index)}</td>
@@ -220,8 +247,8 @@ export class UDataView extends UElement {
     }
 
     // 자동 감지
-    if (this.items.length > 0) {
-      const firstItem = this.items[0];
+    if (this.data.length > 0) {
+      const firstItem = this.data[0];
       return Object.keys(firstItem).map(key => ({ key }));
     }
 

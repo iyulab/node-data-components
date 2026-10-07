@@ -13,9 +13,20 @@ import '@iyulab/data-components';
 
 ```html
 <u-data-view
-  .items=${myData}
+  .data=${myData}
   mode="grid"
-  @select=${(e) => console.log(e.detail)}
+></u-data-view>
+```
+
+데이터 소스(`@iyulab/flex-table/odata` 의 `createODataSource` 등)의 상태를 그대로 넘기면 표와 같은 목록을 카드로 그립니다 —
+두 표(`flex-table` · `u-rich-table`)와 같은 이름을 받습니다:
+
+```html
+<u-data-view
+  .data=${state.data}
+  .totalCount=${state.totalCount}
+  .loading=${state.loading}
+  .error=${state.error}
 ></u-data-view>
 ```
 
@@ -23,7 +34,12 @@ import '@iyulab/data-components';
 
 | 속성 | 타입 | 기본값 | 설명 |
 |------|------|--------|------|
-| `items` | `any[]` | `[]` | 표시할 데이터 배열 |
+| `data` | `DataItem[]` | `[]` | 표시할 레코드 — 두 표의 `data` 와 같다(서버 페이지 목록이면 지금 페이지) |
+| `totalCount` | `number` | `undefined` | 툴바의 «N items» 가 세는 전체 건수. 생략하면 `data.length` |
+| `loading` | `boolean` | `false` | 불러오는 중 — 내용 대신 `loadingMessage` |
+| `loadingMessage` | `string` | `''` | 불러오는 중 문구(비우면 로케일 문장) |
+| `error` | `{ message: string } \| null` | `null` | 마지막 불러오기의 실패 — 내용 대신 `role="alert"` 로 `error.message`(«데이터 없음» 과 구별) |
+| `emptyMessage` | `string` | `''` | `data` 가 비었을 때의 문구(비우면 로케일 문장) |
 | `mode` | `'grid' \| 'list' \| 'table'` | `'grid'` | 뷰 모드 |
 | `columns` | `DataColumn[]` | `undefined` | 컬럼 정의. 미설정 시 첫 번째 아이템의 키로 자동 감지 |
 | `gridMinWidth` | `string` | `'200px'` | Grid 모드 아이템 최소 너비 |
@@ -55,7 +71,7 @@ interface DataColumn {
 ```html
 <u-data-view
   mode="table"
-  .items=${products}
+  .data=${products}
   .columns=${[
     { key: 'name',     label: '상품명' },
     { key: 'category', label: '카테고리' },
@@ -69,7 +85,7 @@ interface DataColumn {
 
 ```typescript
 <u-data-view
-  .items=${products}
+  .data=${products}
   .renderCard=${(item, index) => html`
     <div class="product-card">
       <img src=${item.imageUrl} alt=${item.name} />
@@ -85,7 +101,7 @@ interface DataColumn {
 ```typescript
 <u-data-view
   mode="table"
-  .items=${products}
+  .data=${products}
   .renderCell=${(item, column, index) => {
     if (column.key === 'price') {
       return html`<strong>${item.price.toLocaleString()}원</strong>`;

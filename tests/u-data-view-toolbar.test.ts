@@ -13,7 +13,7 @@ import type { UDataView } from '../src/components/data-view/UDataView.js';
  */
 async function mount(): Promise<UDataView> {
   const el = document.createElement('u-data-view') as UDataView;
-  el.items = [{ id: 1, name: 'a' }, { id: 2, name: 'b' }];
+  el.data = [{ id: 1, name: 'a' }, { id: 2, name: 'b' }];
   document.body.appendChild(el);
   await el.updateComplete;
   return el;

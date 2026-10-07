@@ -26,7 +26,7 @@ import '../../src/components/data-view/UDataView';
  */
 
 type View = HTMLElement & {
-  items: Record<string, unknown>[];
+  data: Record<string, unknown>[];
   mode: 'grid' | 'list' | 'table';
   updateComplete: Promise<unknown>;
 };
@@ -52,7 +52,7 @@ afterEach(() => {
 async function mount(height: string | null, mode: View['mode'], n = 40): Promise<View> {
   const el = document.createElement('u-data-view') as View;
   el.mode = mode;
-  el.items = items(n);
+  el.data = items(n);
   if (height) el.style.height = height;
   host.appendChild(el);
   await el.updateComplete;

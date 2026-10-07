@@ -53,7 +53,7 @@ export class PreviewLitApp extends LitElement {
         </p>
         
         <u-data-view
-          .items=${this.sampleData}
+          .data=${this.sampleData}
           mode="grid"
           gridMinWidth="250px"
           gap="1rem"
@@ -71,7 +71,7 @@ export class PreviewLitApp extends LitElement {
 
         <u-data-view
           mode="table"
-          .items=${this.sampleData}
+          .data=${this.sampleData}
           .columns=${[
             { key: 'name', label: '상품명' },
             { key: 'category', label: '카테고리' },

@@ -12,7 +12,7 @@ describe('u-data-view table column width', () => {
     const el = document.createElement('u-data-view') as UDataView;
     el.mode = 'table';
     el.columns = [{ key: 'a', label: 'A', width: 120 }, { key: 'b', label: 'B', width: '20%' }];
-    el.items = [{ a: 1, b: 2 }];
+    el.data = [{ a: 1, b: 2 }];
     document.body.appendChild(el);
     await el.updateComplete;
     const ths = [...el.shadowRoot!.querySelectorAll('th')] as HTMLElement[];

@@ -88,7 +88,7 @@ describe('data-components 표 문구 — 영어 기본 + 레지스트리', () =>
   it('u-data-view의 뷰 전환 버튼·항목 수 문구가 로케일을 따른다(2026-09-01 감사 — 이전엔 하드코딩 영어 리터럴이었다)', async () => {
     Locale.set('en');
     const en = document.createElement('u-data-view') as UDataView;
-    en.items = [{ id: 1 }, { id: 2 }];
+    en.data = [{ id: 1 }, { id: 2 }];
     document.body.appendChild(en);
     await en.updateComplete;
     const enButtons = [...en.shadowRoot!.querySelectorAll('.view-toggles u-button')];
@@ -99,7 +99,7 @@ describe('data-components 표 문구 — 영어 기본 + 레지스트리', () =>
 
     Locale.set('ko');
     const ko = document.createElement('u-data-view') as UDataView;
-    ko.items = [{ id: 1 }, { id: 2 }];
+    ko.data = [{ id: 1 }, { id: 2 }];
     document.body.appendChild(ko);
     await ko.updateComplete;
     const koButtons = [...ko.shadowRoot!.querySelectorAll('.view-toggles u-button')];
@@ -112,18 +112,18 @@ describe('data-components 표 문구 — 영어 기본 + 레지스트리', () =>
   it('u-data-view의 빈 상태 문구가 로케일을 따르고 표 컴포넌트의 empty 키를 공유한다', async () => {
     Locale.set('en');
     const en = document.createElement('u-data-view') as UDataView;
-    en.items = [];
+    en.data = [];
     document.body.appendChild(en);
     await en.updateComplete;
-    expect(en.shadowRoot!.querySelector('.empty')?.textContent?.trim()).toBe('No data');
+    expect(en.shadowRoot!.querySelector('.state.empty')?.textContent?.trim()).toBe('No data');
     document.body.removeChild(en);
 
     Locale.set('ko');
     const ko = document.createElement('u-data-view') as UDataView;
-    ko.items = [];
+    ko.data = [];
     document.body.appendChild(ko);
     await ko.updateComplete;
-    expect(ko.shadowRoot!.querySelector('.empty')?.textContent?.trim()).toBe('데이터가 없습니다');
+    expect(ko.shadowRoot!.querySelector('.state.empty')?.textContent?.trim()).toBe('데이터가 없습니다');
     document.body.removeChild(ko);
   });
 });

@@ -212,14 +212,18 @@ const baseStyles = css`
     color: var(--u-txt-color, #212121);
   }
 
-  /* Empty State */
-  .empty {
+  /* 내용 대신 서는 상태 — 불러오는 중 · 실패 · 빈 결과 */
+  .state {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 300px;
     color: var(--dc-empty-color);
     font-size: 1rem;
+  }
+
+  .state.error {
+    color: var(--u-danger-color, #D32F2F);
   }
 `;
 

@@ -15,7 +15,7 @@ a **table**, without the app rebuilding markup per layout.
 
 ```ts
 const view = document.querySelector('u-data-view')!;
-view.items = records;
+view.data = records;
 view.columns = [           // used by mode="table"; inferred from the first item when omitted
   { key: 'name',  label: 'Name' },
   { key: 'owner', label: 'Owner', width: '160px' },
@@ -69,7 +69,12 @@ component prints at its content height.
 
 | Property | Type | Default | Reflect | Description |
 |----------|------|---------|---------|-------------|
-| `items` | `DataItem[]` | `[]` | | Records to display. `DataItem` is `Record<string, any>` — the component deliberately does not constrain the app's domain type |
+| `data` | `DataItem[]` | `[]` | | Records to display — the same name as both tables' `data` (one page for a server-paged list). `DataItem` is `Record<string, any>` — the component deliberately does not constrain the app's domain type |
+| `totalCount` | `number` | — | | What the toolbar's item count counts; `data.length` when omitted. A server-paged list passes the source's `totalCount` |
+| `loading` | `boolean` | `false` | | Shows `loadingMessage` in place of the content |
+| `loadingMessage` | `string` | `''` | | Loading text; the locale string when empty |
+| `error` | `{ message: string } \| null` | `null` | | The last load failure — shown as an alert (`role="alert"`) in place of the content, so a failed query does not read as "no data". A data source's `error` as is |
+| `emptyMessage` | `string` | `''` | | Text for an empty `data`; the locale string when empty |
 | `mode` | `'grid'\|'list'\|'table'` | `'grid'` | | Current layout |
 | `columns` | `DataColumn[]` | — | | Columns for `mode="table"`; inferred from the first item when omitted |
 | `gridMinWidth` | `string` | `'200px'` | | Minimum card width in `mode="grid"` (CSS length) |

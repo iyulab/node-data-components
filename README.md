@@ -114,10 +114,16 @@ npx skills add ./node_modules/@iyulab/data-components/skills/iyulab-data-compone
 
 ```html
 <u-data-view
-  .items=${myData}
+  .data=${myData}
   mode="grid"
-  @select=${(e) => console.log(e.detail)}
 ></u-data-view>
+```
+
+`data` · `totalCount` · `loading` · `error` · `emptyMessage` 은 두 표와 같은 이름이라, 데이터 소스의 상태를 그대로 넘기면 같은 목록을
+카드로 그립니다:
+
+```html
+<u-data-view .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading} .error=${s.error}></u-data-view>
 ```
 
 **크기 (`0.23.0~`)**: 기본은 **내용 크기**입니다 — 높이를 주지 않으면 항목 수에 따라 늘어나고 페이지가 스크롤됩니다.
