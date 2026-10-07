@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.45.1] - 2026-10-07
+
+### Fixed
+
+- The skill reference for `u-data-view` split its Properties table in two: the new Events section sat in the middle, so
+  `mode`, `columns`, `gridMinWidth`, `gap`, `renderCard` and `renderCell` read as events. The table is whole again and
+  the Events section follows it.
+- `docs/UDataView.md` showed listeners for `select` and `mode-change`, which the element never fires; it now shows
+  `row-activate`.
+
 ## [0.45.0] - 2026-10-07
 
 ### Added

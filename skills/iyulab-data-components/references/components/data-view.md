@@ -85,18 +85,18 @@ component prints at its content height.
 | `loadingMessage` | `string` | `''` | | Loading text; the locale string when empty |
 | `error` | `{ message: string } \| null` | `null` | | The last load failure — shown as an alert (`role="alert"`) in place of the content, so a failed query does not read as "no data". A data source's `error` as is |
 | `emptyMessage` | `string` | `''` | | Text for an empty `data`; the locale string when empty |
-
-## Events
-
-| Event | Detail | When |
-|---|---|---|
-| `row-activate` | `{ row, id, via }` | A record was opened — clicked (`via: 'click'`) or Enter on the focused record (`'keyboard'`). Typed by `DataViewEventMap`; React `onRowActivate` |
 | `mode` | `'grid'\|'list'\|'table'` | `'grid'` | | Current layout |
 | `columns` | `DataColumn[]` | — | | Columns for `mode="table"`; inferred from the first item when omitted |
 | `gridMinWidth` | `string` | `'200px'` | | Minimum card width in `mode="grid"` (CSS length) |
 | `gap` | `string` | `'1rem'` | | Gap between cards or rows (CSS length) |
 | `renderCard` | `(item, index) => TemplateResult` | — | | Replaces card content in `grid` / `list` |
 | `renderCell` | `(item, column, index) => TemplateResult \| string` | — | | Replaces cell content in `table` |
+
+## Events
+
+| Event | Detail | When |
+|---|---|---|
+| `row-activate` | `{ row, id, via }` | A record was opened — clicked (`via: 'click'`) or Enter on the focused record (`'keyboard'`). Typed by `DataViewEventMap`; React `onRowActivate` |
 
 ## CSS Custom Properties
 

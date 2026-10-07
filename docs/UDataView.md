@@ -120,13 +120,9 @@ interface DataColumn {
 ```typescript
 const view = document.querySelector('u-data-view');
 
-view.addEventListener('select', (e) => {
-  const { item, index } = e.detail;
-  console.log('선택된 아이템:', item);
-});
-
-view.addEventListener('mode-change', (e) => {
-  console.log('현재 모드:', e.detail.mode); // 'grid' | 'list' | 'table'
+view.addEventListener('row-activate', (e) => {
+  const { row, id, via } = e.detail; // via: 'click' | 'keyboard'
+  openDetail(id);
 });
 ```
 
