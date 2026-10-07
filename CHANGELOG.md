@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.45.0] - 2026-10-07
+
+### Added
+
+- **`u-data-view` opens records the way the tables open rows**: a click on a card, list item or table row, or Enter on
+  the focused one, fires `row-activate { row, id, via }` — the same event and detail as `u-rich-table` and
+  `flex-table`. Before, a click did nothing and the keyboard could not reach a record, so switching a list from table to
+  cards lost "open". `id` is the record's `_id` (`#<index>` without one); a click on a control a card renders is not an
+  activation. The records are one Tab stop with arrow keys, Home and End between them. `DataViewEventMap` types the
+  listener; `UDataViewReact` takes `onRowActivate`.
+
+### Fixed
+
+- `docs/UDataView.md` listed `select` and `mode-change` events the element never fired.
+
 ## [0.44.0] - 2026-10-07
 
 ### Changed (breaking)

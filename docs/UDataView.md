@@ -61,8 +61,9 @@ interface DataColumn {
 
 | 이벤트 | 페이로드 | 설명 |
 |--------|----------|------|
-| `select` | `{ item: any, index: number }` | 아이템 선택 시 |
-| `mode-change` | `{ mode: ViewMode }` | 뷰 모드 변경 시 |
+| `row-activate` | `{ row, id, via }` | 레코드를 열었다 — 카드·목록 항목·표 행 클릭(`via: 'click'`) 또는 포커스된 레코드에서 `Enter`(`'keyboard'`). `flex-table`·`u-rich-table` 과 같은 이벤트·같은 detail. `id` 는 `_id`(없으면 `#<위치>`). 항목이 그린 컨트롤(링크·버튼)을 누른 것은 활성이 아니다 |
+
+레코드는 Tab 정지점 하나다 — Tab 이 첫(또는 마지막으로 머문) 레코드에 서고, 화살표가 옮기고, Home/End 가 끝으로 간다.
 
 ## 예시
 

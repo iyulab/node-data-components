@@ -16,7 +16,7 @@ import './utilities/shadowDomProtection';
 
 import { USimpleSheet } from './components/simple-sheet/USimpleSheet';
 import type { SimpleSheetEventMap } from './components/simple-sheet/USimpleSheet';
-import { UDataView } from './components/data-view/UDataView';
+import { UDataView, type DataViewEventMap } from './components/data-view/UDataView';
 import { URichTable } from './components/u-rich-table/URichTable';
 import type { ColumnDef, RichTableEventMap } from './components/u-rich-table/types';
 
@@ -32,11 +32,28 @@ export const USimpleSheetReact = createComponent({
   },
 });
 
-/** UDataView React 래퍼 */
+/** `DataViewEventMap` → React `onXxx` prop — 완전성은 아래 단언이 컴파일 시간에 잰다(표와 같은 규칙). */
+const DATA_VIEW_EVENTS = {
+  onRowActivate: 'row-activate',
+} as const satisfies Record<string, keyof DataViewEventMap>;
+
+type UncoveredDataViewEvents = Exclude<
+  keyof DataViewEventMap,
+  (typeof DATA_VIEW_EVENTS)[keyof typeof DATA_VIEW_EVENTS]
+>;
+const _dataViewEventsAreExhaustive: UncoveredDataViewEvents extends never
+  ? true
+  : UncoveredDataViewEvents = true;
+void _dataViewEventsAreExhaustive;
+
+/** UDataView React 래퍼 — `onRowActivate` 는 두 표의 것과 같다. */
 export const UDataViewReact = createComponent({
   tagName: 'u-data-view',
   elementClass: UDataView,
   react: React,
+  events: DATA_VIEW_EVENTS as {
+    [K in keyof typeof DATA_VIEW_EVENTS]: EventName<DataViewEventMap[(typeof DATA_VIEW_EVENTS)[K]]>;
+  },
 });
 
 /**
@@ -284,7 +301,7 @@ URichTableReact.displayName = 'URichTableReact';
 
 export { USimpleSheet, UDataView, URichTable };
 export type { SheetColumn } from './components/simple-sheet/USimpleSheet';
-export type { DataColumn, ViewMode } from './components/data-view/UDataView';
+export type { DataColumn, ViewMode, DataViewEventMap } from './components/data-view/UDataView';
 export type {
   ColumnDef,
   CellPosition,

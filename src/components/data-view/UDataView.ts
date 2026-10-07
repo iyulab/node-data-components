@@ -1,8 +1,9 @@
 ﻿import { html, svg, type SVGTemplateResult, type TemplateResult } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
+import { property, state, customElement } from 'lit/decorators.js';
 
 import '@iyulab/components/dist/components/button/UButton.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
+import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 import { messages } from '../../utilities/messages.js';
 import { styles } from './UDataView.styles';
 
@@ -17,6 +18,19 @@ export type ViewMode = 'grid' | 'list' | 'table';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type DataItem = Record<string, any>;
+
+/**
+ * Every event `<u-data-view>` dispatches, by name — bubbling and composed. The same `row-activate` as `flex-table` and
+ * `u-rich-table`, so a list that opens a record works the same whichever view shows it.
+ */
+export interface DataViewEventMap {
+  /**
+   * "Open this record": a click on a card, list item or table row (`via: 'click'`), or Enter on the focused one
+   * (`via: 'keyboard'`). Not a click on a control the item renders (a link, a button). `id` is the record's `_id`
+   * (`#<index>` when it has none) — the identity the tables use.
+   */
+  'row-activate': CustomEvent<{ row: DataItem; id: string; via: 'click' | 'keyboard' }>;
+}
 
 export interface DataColumn {
   key: string;
@@ -44,6 +58,7 @@ const VIEW_ICONS = {
  * 표 대신 카드로 같은 목록을 그린다(목록 키트의 «표 ↔ 카드» 가 속성 하나로 바뀌는 근거).
  */
 @customElement('u-data-view')
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
 export class UDataView extends UElement {
   static styles = [super.styles, styles];
 
@@ -65,6 +80,84 @@ export class UDataView extends UElement {
   @property({ attribute: false }) error: { message: string } | null = null;
   /** `data` 가 비었을 때의 문구. 비우면 로케일 문장(`empty`). */
   @property({ type: String, attribute: 'empty-message' }) emptyMessage = '';
+
+  /**
+   * 키보드가 서는 항목 — 항목 전체가 탭 정지점 하나(로빙 tabindex)이고 화살표가 옮긴다. 두 표가 «표 전체가 Tab 정지점 하나»
+   * 인 것과 같은 규칙이라, 긴 목록을 Tab 으로 지나갈 때 항목 수만큼 누르지 않는다.
+   */
+  @state() private _activeIndex = 0;
+  private _focusAfterUpdate = false;
+
+  updated(): void {
+    if (!this._focusAfterUpdate) return;
+    this._focusAfterUpdate = false;
+    this.shadowRoot?.querySelector<HTMLElement>(`[data-index="${this._clampedActive()}"]`)?.focus();
+  }
+
+  private _clampedActive(): number {
+    return Math.min(Math.max(this._activeIndex, 0), Math.max(this.data.length - 1, 0));
+  }
+
+  /** 항목 하나의 상호작용 속성 — 로빙 tabindex 와 위치. */
+  private _itemTabIndex(index: number): string {
+    return index === this._clampedActive() ? '0' : '-1';
+  }
+
+  /** 레코드의 정체성 — 두 표와 같은 `_id`(없으면 `#<위치>`). */
+  private _rowId(item: DataItem, index: number): string {
+    const id = item._id;
+    return id !== undefined && id !== null ? String(id) : `#${index}`;
+  }
+
+  private _itemIndexOf(e: Event): number | null {
+    for (const node of e.composedPath()) {
+      if (node === e.currentTarget) return null;
+      if (node instanceof HTMLElement && node.dataset.index !== undefined) return Number(node.dataset.index);
+    }
+    return null;
+  }
+
+  private _onItemsClick = (e: MouseEvent) => {
+    const index = this._itemIndexOf(e);
+    if (index === null) return;
+    this._activeIndex = index;
+    // 항목이 그린 컨트롤(링크 · 버튼)을 누른 것은 그 컨트롤의 일 — «이 레코드를 연다» 가 아니다(두 표와 같은 판정).
+    if (isFromControl(e, e.currentTarget as EventTarget)) return;
+    this._activate(index, 'click');
+  };
+
+  private _onItemsKeyDown = (e: KeyboardEvent) => {
+    const index = this._itemIndexOf(e);
+    if (index === null) return;
+    // 항목 안의 컨트롤에서 누른 키는 그 컨트롤의 것이다 — 항목 자신(포커스된 항목)에서 누른 키만 다룬다.
+    if (!(e.composedPath()[0] instanceof HTMLElement && (e.composedPath()[0] as HTMLElement).dataset.index !== undefined)) return;
+    const last = this.data.length - 1;
+    let next: number;
+    switch (e.key) {
+      case 'Enter':
+        e.preventDefault();
+        this._activate(index, 'keyboard');
+        return;
+      case 'ArrowDown': case 'ArrowRight': next = Math.min(index + 1, last); break;
+      case 'ArrowUp': case 'ArrowLeft': next = Math.max(index - 1, 0); break;
+      case 'Home': next = 0; break;
+      case 'End': next = last; break;
+      default: return;
+    }
+    e.preventDefault();
+    this._activeIndex = next;
+    this._focusAfterUpdate = true;
+  };
+
+  private _activate(index: number, via: 'click' | 'keyboard'): void {
+    const row = this.data[index];
+    if (!row) return;
+    this.dispatchEvent(new CustomEvent('row-activate', {
+      detail: { row, id: this._rowId(row, index), via },
+      bubbles: true,
+      composed: true,
+    }));
+  }
   /** 현재 뷰 모드 */
   @property({ type: String }) mode: ViewMode = 'grid';
   /** 표시할 컬럼 설정 (미지정시 자동 감지) */
@@ -149,7 +242,8 @@ export class UDataView extends UElement {
 
   private renderGrid() {
     return html`
-      <div class="grid" style="--min-width: ${this.gridMinWidth}; --gap: ${this.gap};">
+      <div class="grid" role="list" style="--min-width: ${this.gridMinWidth}; --gap: ${this.gap};"
+        @click=${this._onItemsClick} @keydown=${this._onItemsKeyDown}>
         ${this.data.map((item, index) => this.renderGridItem(item, index))}
       </div>
     `;
@@ -157,7 +251,8 @@ export class UDataView extends UElement {
 
   private renderList() {
     return html`
-      <div class="list" style="--gap: ${this.gap};">
+      <div class="list" role="list" style="--gap: ${this.gap};"
+        @click=${this._onItemsClick} @keydown=${this._onItemsKeyDown}>
         ${this.data.map((item, index) => this.renderListItem(item, index))}
       </div>
     `;
@@ -178,9 +273,9 @@ export class UDataView extends UElement {
               `)}
             </tr>
           </thead>
-          <tbody>
+          <tbody @click=${this._onItemsClick} @keydown=${this._onItemsKeyDown}>
             ${this.data.map((item, index) => html`
-              <tr>
+              <tr data-index=${index} tabindex=${this._itemTabIndex(index)}>
                 ${cols.map(col => html`
                   <td>${this.getCellContent(item, col, index)}</td>
                 `)}
@@ -198,7 +293,7 @@ export class UDataView extends UElement {
       : this.renderDefaultCard(item);
 
     return html`
-      <div class="card">
+      <div class="card" role="listitem" data-index=${index} tabindex=${this._itemTabIndex(index)}>
         ${content}
       </div>
     `;
@@ -210,7 +305,7 @@ export class UDataView extends UElement {
       : this.renderDefaultCard(item);
 
     return html`
-      <div class="card list-card">
+      <div class="card list-card" role="listitem" data-index=${index} tabindex=${this._itemTabIndex(index)}>
         ${content}
       </div>
     `;
@@ -269,6 +364,20 @@ export class UDataView extends UElement {
     if (typeof value === 'object') return JSON.stringify(value);
     return String(value);
   }
+}
+
+/**
+ * Typed listeners for {@link DataViewEventMap} — the DOM's own pattern (`HTMLMediaElement` with
+ * `HTMLMediaElementEventMap`). Element-scoped: `row-activate` is generic and other libraries use it too.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
+export interface UDataView {
+  addEventListener<K extends keyof DataViewEventMap>(type: K, listener: (this: UDataView, ev: DataViewEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: UDataView, ev: HTMLElementEventMap[K]) => unknown, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  removeEventListener<K extends keyof DataViewEventMap>(type: K, listener: (this: UDataView, ev: DataViewEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: UDataView, ev: HTMLElementEventMap[K]) => unknown, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
 }
 
 declare global {

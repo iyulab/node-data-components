@@ -36,11 +36,21 @@ view.renderCard = (item, index) => html`<strong>${item.name}</strong>`;
 view.renderCell = (item, column) => column.key === 'size' ? formatBytes(item.size) : item[column.key];
 ```
 
-## Display only
+## Opening a record
 
-`u-data-view` renders records; it does not select, sort, page or emit events.
-When the user needs to act on rows — selection, inline edit, server paging — use
-[`u-rich-table`](./rich-table.md).
+A click on a card, list item or table row, or Enter on the focused one, fires `row-activate` — the same event, with
+the same detail, as `u-rich-table` and `flex-table`, so a list that opens a record behaves the same in whichever view
+shows it:
+
+```ts
+view.addEventListener('row-activate', (e) => openDetail(e.detail.id)); // { row, id, via: 'click' | 'keyboard' }
+```
+
+`id` is the record's `_id` (`#<index>` when it has none). A click on a control an item renders (a link, a button) is
+that control's, not an activation. The records are one Tab stop: Tab reaches the first (or last focused) record,
+arrow keys move between records, Home / End jump to the ends.
+
+It does not select, sort, page or edit — for that use [`u-rich-table`](./rich-table.md).
 
 ## Sizing
 
@@ -75,6 +85,12 @@ component prints at its content height.
 | `loadingMessage` | `string` | `''` | | Loading text; the locale string when empty |
 | `error` | `{ message: string } \| null` | `null` | | The last load failure — shown as an alert (`role="alert"`) in place of the content, so a failed query does not read as "no data". A data source's `error` as is |
 | `emptyMessage` | `string` | `''` | | Text for an empty `data`; the locale string when empty |
+
+## Events
+
+| Event | Detail | When |
+|---|---|---|
+| `row-activate` | `{ row, id, via }` | A record was opened — clicked (`via: 'click'`) or Enter on the focused record (`'keyboard'`). Typed by `DataViewEventMap`; React `onRowActivate` |
 | `mode` | `'grid'\|'list'\|'table'` | `'grid'` | | Current layout |
 | `columns` | `DataColumn[]` | — | | Columns for `mode="table"`; inferred from the first item when omitted |
 | `gridMinWidth` | `string` | `'200px'` | | Minimum card width in `mode="grid"` (CSS length) |
