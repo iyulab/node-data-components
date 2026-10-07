@@ -55,6 +55,18 @@ describe('u-rich-table — 소스와 같은 정렬·페이지 모양', () => {
     expect([...heads].map((h) => h.getAttribute('aria-sort'))).toEqual(['none', 'descending']);
   });
 
+  it('🔴error 가 있으면 행·빈 상태 대신 그 문장을 경고 줄로 그린다(로딩 중이면 로딩)', async () => {
+    const el = await mount() as Table & { error: { message: string } | null; loading: boolean };
+    el.error = { message: 'Request failed (500)' };
+    await el.updateComplete;
+    const alert = el.shadowRoot!.querySelector('tbody [role="alert"]');
+    expect(alert?.textContent).toBe('Request failed (500)');
+    expect(el.shadowRoot!.querySelectorAll('tbody tr')).toHaveLength(1);
+    el.loading = true;
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('tbody [role="alert"]')).toBeNull();
+  });
+
   it('🔴page 는 0 기준 — page=1 이면 페이저의 «2» 가 현재 · 다음은 page 2 를 낸다', async () => {
     const el = await mount({ page: 1 });
     const pages: number[] = [];

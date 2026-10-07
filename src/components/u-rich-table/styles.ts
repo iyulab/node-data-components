@@ -409,12 +409,17 @@ export const richTableStyles = css`
     color: var(--dc-muted-color);
   }
 
-  .empty-message {
+  .empty-message,
+  .error-message {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 40px;
     color: var(--dc-empty-color);
+  }
+
+  .error-message {
+    color: var(--u-danger-color, #D32F2F);
   }
 
 

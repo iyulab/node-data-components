@@ -65,7 +65,13 @@ export class URichTable extends LitElement {
   @property({ type: Boolean }) loading = false;
   @property({ type: String }) emptyMessage = '';
   /** `data-mode="client"` 에서 걸러낸 결과가 비었을 때의 문구 — `data` 자체가 빈 것과 다른 상태다. */
-  @property({ type: String }) noMatchMessage = '';
+  @property({ type: String }) noMatchingMessage = '';
+  /**
+   * The last load failure, or `null`. While set (and not `loading`), the body shows `error.message` in an alert row
+   * instead of rows or the empty state — a failed query otherwise looks like "no data". Takes a data source's
+   * `error` as is (`createODataSource`/`useODataSource` from `@iyulab/flex-table/odata`): any `{ message }`.
+   */
+  @property({ attribute: false }) error: { message: string } | null = null;
   /** 로딩 표시 문구 */
   @property({ type: String }) loadingMessage = '';
   /** 필터 입력 placeholder */
@@ -434,10 +440,13 @@ export class URichTable extends LitElement {
     if (this.loading) {
       return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div></td></tr>`;
     }
+    if (this.error) {
+      return html`<tr><td colspan=${this._colSpan()}><div class="error-message" role="alert">${this.error.message}</div></td></tr>`;
+    }
     if (this._view.length === 0) {
       // client 모드에서 데이터는 있는데 거른 결과가 비었으면 «일치 없음» — «데이터 없음» 과 다른 다음 행동(조건 완화)을 가리킨다.
       const noMatch = this.dataMode === 'client' && this.data.length > 0;
-      const text = noMatch ? (this.noMatchMessage || messages.text('noMatch')) : (this.emptyMessage || messages.text('empty'));
+      const text = noMatch ? (this.noMatchingMessage || messages.text('noMatch')) : (this.emptyMessage || messages.text('empty'));
       return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${text}</div></td></tr>`;
     }
     return this._view.map((row, rowIdx) => {

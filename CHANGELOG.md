@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.43.0] - 2026-10-07
+
+### Added
+
+- **`u-rich-table` `error`** property — the last load failure (`{ message }`; a data source's `error` goes in as is).
+  While set and not loading, the body shows `error.message` in an alert row instead of rows or the empty state.
+
+### Changed (breaking)
+
+- **`noMatchMessage` is now `noMatchingMessage`** on `u-rich-table` and `u-simple-sheet` — the name `flex-table` uses
+  for the same state. Migrate: rename the property.
+
 ## [0.42.0] - 2026-10-07
 
 ### Changed (breaking)

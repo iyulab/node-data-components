@@ -31,7 +31,7 @@ Lit 은 `ODataSourceController`)와 **같은 모양**입니다 — 이벤트 det
 
 ```typescript
 const s = this.orders.state;               // ODataSourceController
-html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading}
+html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading} .error=${s.error}
   .page=${s.page} .sortCriteria=${s.sortCriteria}
   @page-change=${(e) => this.orders.source.setPage(e.detail.page)}
   @sort-change=${(e) => this.orders.source.setSort(e.detail.criteria)}></u-rich-table>`;
@@ -98,6 +98,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `sortCriteria` | `SortCriteria[]` | `[]` | 정렬 `[{ key, direction }]`(길이 0·1) — 헤더 표시. 서버 모드에서 복원한 정렬을 넘긴다 |
 | `dataMode` | `'client' \| 'server'` | `'server'` | 필터 행·정렬·페이지를 누가 적용하는가 — `'client'` 면 `data` 전체를 표가 직접 거르고 정렬하고 나눈다(`totalCount` 무시, 이벤트는 그대로). 속성명 `data-mode` |
 | `loading` | `boolean` | `false` | 로딩 표시 |
+| `error` | `{ message: string } \| null` | `null` | 마지막 적재 실패 — 있으면 행·빈 상태 대신 `error.message` 를 경고 줄로 그린다(로딩 중이면 로딩). 데이터 소스의 `error` 를 그대로 넘긴다 |
 | `emptyMessage` | `string` | `'데이터가 없습니다'` | 빈 상태 문구 |
 | `selectable` | `boolean` | `false` | 체크박스 선택 열 |
 | `editable` | `boolean` | `false` | 셀 인라인 편집 |
@@ -113,7 +114,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | 속성 | 타입 | 기본값 |
 |------|------|--------|
 | `emptyMessage` | `string` | `'데이터가 없습니다'` |
-| `noMatchMessage` | `string` | `'일치하는 항목 없음'` — `data-mode="client"` 에서 데이터는 있는데 걸러낸 결과가 빌 때 |
+| `noMatchingMessage` | `string` | `'일치하는 항목 없음'` — `data-mode="client"` 에서 데이터는 있는데 걸러낸 결과가 빌 때 |
 | `loadingMessage` | `string` | `'로딩 중...'` |
 | `filterPlaceholder` | `string` | `'필터...'` |
 | `filterAllLabel` | `string` | `'전체'` |

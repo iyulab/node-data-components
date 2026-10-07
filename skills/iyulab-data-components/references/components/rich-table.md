@@ -59,7 +59,7 @@ Sort (`criteria`) and page (zero-based) have the same shape as the data source i
 
 ```ts
 const s = this.orders.state; // ODataSourceController
-html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading}
+html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading} .error=${s.error}
   .page=${s.page} .sortCriteria=${s.sortCriteria}
   @page-change=${(e) => this.orders.source.setPage(e.detail.page)}
   @sort-change=${(e) => this.orders.source.setSort(e.detail.criteria)}></u-rich-table>`;
@@ -228,8 +228,9 @@ forever.
 | `sortCriteria` | `SortCriteria[]` | `[]` | | Sort shown in the header, `[{ key, direction }]` (0 or 1 entries). Pass a restored sort in server mode |
 | `dataMode` | `'client' \| 'server'` | `'server'` | | Who applies the filter row, sorting and paging (attribute `data-mode`) — `'client'`: the table does, over `data` as the whole set (`0.27.0~`) |
 | `loading` | `boolean` | `false` | | Shows the loading message instead of rows |
+| `error` | `{ message: string } \| null` | `null` | | Load failure: `error.message` in an alert row instead of rows / the empty state (loading wins). Pass a data source's `error` as is |
 | `emptyMessage` | `string` | `''` | | Text shown when there are no rows (falls back to the locale string) |
-| `noMatchMessage` | `string` | `''` | | `data-mode="client"`: text shown when `data` has rows but none pass the filters — a different state from "no data" (falls back to the locale string) |
+| `noMatchingMessage` | `string` | `''` | | `data-mode="client"`: text shown when `data` has rows but none pass the filters — a different state from "no data" (falls back to the locale string) |
 | `loadingMessage` | `string` | `''` | | Text shown while `loading` |
 | `filterPlaceholder` | `string` | `''` | | Placeholder of the column filter inputs |
 | `filterAllLabel` | `string` | `''` | | Label of the "all" option in `select` filters |
@@ -403,6 +404,6 @@ the ISO day string, as before. Leaving an empty cell empty is not an edit (no `r
 
 ## Localization
 
-`emptyMessage`, `noMatchMessage`, `loadingMessage`, `filterPlaceholder`, `filterAllLabel` and
+`emptyMessage`, `noMatchingMessage`, `loadingMessage`, `filterPlaceholder`, `filterAllLabel` and
 `addRowLabel` default to `''` and fall back to the package's locale strings —
 set them only to override the translation for a specific table.

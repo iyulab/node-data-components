@@ -55,7 +55,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `cols` | `number` | `10` | | Column count when neither `data` nor `columns` says otherwise |
 | `readonly` | `boolean` | `false` | | Blocks editing, paste and fill |
 | `label` | `string` | `''` | | The sheet's accessible name (falls back to the locale string, "Spreadsheet") |
-| `noMatchMessage` | `string` | `''` | | Text shown when a `strict` dropdown has no match (falls back to the locale string) |
+| `noMatchingMessage` | `string` | `''` | | Text shown when a `strict` dropdown has no match (falls back to the locale string) |
 | `theme` | `'light'\|'dark'` | — | ✓ | Forces a theme. Unset follows the ancestor `theme`/`data-theme` context (`:host-context`, Chromium only) |
 
 ## CSS Custom Properties

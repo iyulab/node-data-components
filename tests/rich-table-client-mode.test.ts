@@ -17,7 +17,7 @@ type Table = HTMLElement & {
   updateComplete: Promise<unknown>;
   selectedRowIds: ReadonlySet<string>;
   filteredRowCount: number;
-  noMatchMessage: string;
+  noMatchingMessage: string;
   emptyMessage: string;
 };
 
@@ -132,7 +132,7 @@ describe('u-rich-table dataMode="client"', () => {
   });
 
   it('🔴데이터는 있는데 걸러낸 결과가 비면 «일치 없음», data 가 비면 «데이터 없음»', async () => {
-    const el = await mount({ dataMode: 'client', noMatchMessage: 'No orders match', emptyMessage: 'No orders yet' });
+    const el = await mount({ dataMode: 'client', noMatchingMessage: 'No orders match', emptyMessage: 'No orders yet' });
     await type(el, 0, 'zzz');
     expect(el.shadowRoot!.querySelector('.empty-message')!.textContent).toBe('No orders match');
     el.data = [];

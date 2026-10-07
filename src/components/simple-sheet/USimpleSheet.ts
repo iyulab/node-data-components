@@ -121,7 +121,7 @@ export class USimpleSheet extends UElement {
   /** 시트(그리드)의 접근성 이름. 비우면 로캘 기본값(«Spreadsheet» · «스프레드시트»). */
   @property({ type: String }) label = '';
   /** 드롭다운에 일치 항목이 없을 때 문구 */
-  @property({ type: String }) noMatchMessage = '';
+  @property({ type: String }) noMatchingMessage = '';
 
   /**
    * 명시 테마. 'dark'이면 다크 스타일을 적용합니다.
@@ -458,7 +458,7 @@ export class USimpleSheet extends UElement {
             </div>
           ` : noMatch && isStrict ? html`
             <div class="cell-dropdown">
-              <div class="dropdown-empty">${this.noMatchMessage || messages.text('noMatch')}</div>
+              <div class="dropdown-empty">${this.noMatchingMessage || messages.text('noMatch')}</div>
             </div>
           ` : ''}
         ` : this._formatValue(value, c, r)}
