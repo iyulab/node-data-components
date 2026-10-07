@@ -1,4 +1,4 @@
-﻿import { html, svg, type SVGTemplateResult, type TemplateResult } from 'lit';
+﻿import { html, nothing, svg, type SVGTemplateResult, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 
 import '@iyulab/components/dist/components/button/UButton.js';
@@ -181,10 +181,42 @@ export class UDataView extends UElement {
     `;
   }
 
+  /**
+   * 보기 전환 단추 셋은 툴바 하나 — Tab 정지점 하나(로빙)이고 ←/→ · Home/End 가 단추 사이를 옮긴다(APG Toolbar). 레코드가
+   * 정지점 하나인 것과 같은 규칙이라, 이 요소 전체가 Tab 두 번(툴바 · 레코드)에 지나간다.
+   *
+   * 정지점이 아닌 단추는 **호스트에** `tabindex="-1"` 을 단다 — 음수 tabindex 를 가진 섀도 호스트는 그 섀도 전체를 순차
+   * 탐색에서 뺀다(HTML «scoped focus navigation»). `u-button` 의 안쪽 단추를 건드리지 않고 정지점을 고른다. 포커스 위임
+   * (`u-button.focus()`)은 순차 탐색 밖이어도 동작한다.
+   */
+  @state() private _toolIndex: number | null = null;
+
+  private static readonly MODES: ViewMode[] = ['grid', 'list', 'table'];
+
+  private _toolStop(): number {
+    return this._toolIndex ?? Math.max(0, UDataView.MODES.indexOf(this.mode));
+  }
+
+  private _onToolbarKeyDown = (e: KeyboardEvent) => {
+    const last = UDataView.MODES.length - 1;
+    const at = this._toolStop();
+    let next: number;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': next = at === last ? 0 : at + 1; break;
+      case 'ArrowLeft': case 'ArrowUp': next = at === 0 ? last : at - 1; break;
+      case 'Home': next = 0; break;
+      case 'End': next = last; break;
+      default: return;
+    }
+    e.preventDefault();
+    this._toolIndex = next;
+    this.shadowRoot?.querySelectorAll<HTMLElement>('.view-toggles u-button')[next]?.focus();
+  };
+
   private renderToolbar() {
     return html`
       <div class="toolbar">
-        <div class="view-toggles">
+        <div class="view-toggles" role="toolbar" aria-label=${messages.text('viewLayout')} @keydown=${this._onToolbarKeyDown}>
           ${this.renderViewButton('grid', VIEW_ICONS.grid, messages.text('viewGrid'))}
           ${this.renderViewButton('list', VIEW_ICONS.list, messages.text('viewList'))}
           ${this.renderViewButton('table', VIEW_ICONS.table, messages.text('viewTable'))}
@@ -207,14 +239,16 @@ export class UDataView extends UElement {
    */
   private renderViewButton(mode: ViewMode, icon: SVGTemplateResult, label: string) {
     const selected = this.mode === mode;
+    const index = UDataView.MODES.indexOf(mode);
     return html`
       <u-button
+        tabindex=${index === this._toolStop() ? nothing : '-1'}
         appearance=${selected ? 'solid' : 'plain'}
         color=${selected ? 'primary' : 'neutral'}
         title=${label}
         aria-label=${label}
         aria-pressed=${selected ? 'true' : 'false'}
-        @click=${() => { this.mode = mode; }}
+        @click=${() => { this.mode = mode; this._toolIndex = index; }}
       >
         <svg viewBox="0 0 16 16" width="1em" height="1em" fill="currentColor" aria-hidden="true">${icon}</svg>
       </u-button>

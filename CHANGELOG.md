@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.46.1] - 2026-10-07
+
+### Fixed
+
+- **`u-data-view`'s layout switcher is one Tab stop.** Its three buttons were three stops before the records; now
+  they are a named toolbar (`role="toolbar"`) that Tab enters once, at the selected layout, with ← / → (wrapping),
+  Home and End between the buttons — the same rule as the records below it.
+
 ## [0.46.0] - 2026-10-07
 
 ### Changed (breaking)

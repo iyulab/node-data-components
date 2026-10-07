@@ -48,7 +48,8 @@ view.addEventListener('row-activate', (e) => openDetail(e.detail.id)); // { row,
 
 `id` is the record's `_id` (`#<index>` when it has none). A click on a control an item renders (a link, a button) is
 that control's, not an activation. The records are one Tab stop: Tab reaches the first (or last focused) record,
-arrow keys move between records, Home / End jump to the ends.
+arrow keys move between records, Home / End jump to the ends. The layout switcher above them is one Tab stop too — a
+named toolbar whose buttons the arrow keys move between — so the whole component takes two Tabs to pass.
 
 It does not select, sort, page or edit — for that use [`u-rich-table`](./rich-table.md).
 

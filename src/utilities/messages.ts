@@ -27,7 +27,7 @@ export type DataMessageKey =
   | 'empty' | 'loading' | 'filterPlaceholder' | 'filterAll' | 'addRow' | 'pageInfo'
   | 'noMatch' | 'selected' | 'selectedAcrossPages'
   | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError' | 'pickerSearch'
-  | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount'
+  | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount' | 'viewLayout'
   | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage' | 'selectRow'
   | 'columnMenu' | 'autoFitWidth' | 'wider' | 'narrower'
   | 'pagination' | 'paginationOf'
@@ -55,6 +55,7 @@ messages.register('en', {
   viewList: 'List',
   viewTable: 'Table',
   itemCount: '{count} items',
+  viewLayout: 'Layout',
   deleteRow: 'Delete row',
   expandRow: 'Expand row',
   collapseRow: 'Collapse row',
@@ -91,6 +92,7 @@ messages.register('ko', {
   viewList: '목록',
   viewTable: '표',
   itemCount: '{count}개 항목',
+  viewLayout: '보기 방식',
   deleteRow: '행 삭제',
   expandRow: '행 펼치기',
   collapseRow: '행 접기',
