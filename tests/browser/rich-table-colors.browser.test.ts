@@ -21,7 +21,8 @@ beforeAll(() => {
 const SELECTORS = [
   ':host', '.toolbar', '.toolbar .selection-info', '.toolbar .search-input',
   '.toolbar .btn-primary', '.toolbar .btn-success', 'thead th', '.sort-indicator',
-  'tbody tr', 'tbody td', '.pagination', '.pagination button', '.empty-message',
+  // 페이저 버튼은 0.46.0 부터 `u-pagination` 의 섀도 안이다 — 그 색은 components 가 잰다. 여기서는 띠(`.pagination`)만.
+  'tbody tr', 'tbody td', '.pagination', '.empty-message',
   // ⚠상태 틴트 — 이것들을 렌더하지 않으면 "색이 이렇게 바뀐다"는 주장이 소스 대조에
   // 머문다. 오늘 잡힌 회귀 둘(.pagination button 색 소실, :host 가 color 를 소유한 적
   // 없음)이 전부 **규칙이 적용되는가** 의 문제였지 hex 값의 문제가 아니었다.

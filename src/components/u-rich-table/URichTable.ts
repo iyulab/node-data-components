@@ -15,6 +15,9 @@ import { copyFromKey, isTextEntry, pasteFromKey } from '@iyulab/components/dist/
 import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 // The date cell editor (registers `u-date-picker`).
 import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
+// The pager — the same `u-pagination` a list uses on its own, so a table's pager and a page's pager are one component.
+import '@iyulab/components/dist/components/pagination/UPagination.js';
+import type { PageChangeDetail } from '@iyulab/components/dist/components/pagination/UPagination.js';
 
 /** 펼침 열의 셀 이동 번호 — 앞쪽 제어 열은 음수다(`_firstCol` 참조). 선택 열은 펼침 열이 있으면 그 앞(-2). */
 const EXPAND_COL = -1;
@@ -81,6 +84,23 @@ export class URichTable extends LitElement {
   @property({ type: String }) filterAllLabel = '';
   /** 새 행 추가 버튼 문구 */
   @property({ type: String }) addRowLabel = '';
+  /**
+   * The page sizes the pager offers («rows per page»). Empty hides that choice. Attribute: a comma list
+   * (`page-sizes="20,50,100"`) — the same as `u-pagination`'s.
+   */
+  @property({
+    attribute: 'page-sizes',
+    converter: {
+      fromAttribute: (v: string | null) => (v ?? '').split(',').map((s) => Number(s.trim())).filter((n) => Number.isFinite(n) && n > 0),
+      toAttribute: (v: number[]) => v.join(','),
+    },
+  })
+  pageSizes: number[] = [25, 50, 100];
+  /**
+   * Hides the built-in pager — for a list that pages with its own `u-pagination` (bound to the same data source), so
+   * the screen does not show two pagers.
+   */
+  @property({ type: Boolean, attribute: 'hide-pagination' }) hidePagination = false;
   /**
    * 페이지 정보 문구. (전체, 시작, 끝) 을 받아 문자열을 만든다.
    * 언어마다 어순이 달라 템플릿 문자열이 아니라 함수로 연다.
@@ -669,35 +689,32 @@ export class URichTable extends LitElement {
     `;
   }
 
-  private _renderPagination(): TemplateResult {
+  private _renderPagination(): TemplateResult | typeof nothing {
+    if (this.hidePagination) return nothing;
     const total = this.dataMode === 'client' ? this._viewTotal : this.totalCount;
-    if (total <= 0) return html``;
-    const totalPages = Math.ceil(total / this.pageSize);
-    const current = this.page + 1;
-    const start = this.page * this.pageSize + 1;
-    const end = Math.min(current * this.pageSize, total);
-
+    if (total <= 0) return nothing;
+    // 이름은 표의 것 — 한 화면의 표 둘이 서로 다른 랜드마크가 되게(«<이름> pagination»).
+    const label = this.hostLabel ? messages.text('paginationOf', { name: this.hostLabel }) : messages.text('pagination');
     return html`
-      <div class="pagination" role="navigation" aria-label=${this.hostLabel ? messages.text('paginationOf', { name: this.hostLabel }) : messages.text('pagination')}>
-        <span>${this.pageInfoFormatter(total, start, end)}</span>
-        <div class="page-buttons">
-          <button ?disabled=${this.page <= 0} aria-label=${messages.text('previousPage')}
-            @click=${() => this._onPageChange(this.page - 1)}>◀</button>
-          ${this._getPageNumbers(totalPages).map(p => html`
-            <button class=${p === current ? 'active' : ''} aria-current=${p === current ? 'page' : nothing}
-              aria-label=${messages.text('pageNumber', { page: p })}
-              @click=${() => this._onPageChange(p - 1)}>${p}</button>
-          `)}
-          <button ?disabled=${current >= totalPages} aria-label=${messages.text('nextPage')}
-            @click=${() => this._onPageChange(this.page + 1)}>▶</button>
-          <select aria-label=${messages.text('pageSize')}
-            @change=${(e: Event) => this._onPageSizeChange(Number((e.target as HTMLSelectElement).value))}>
-            ${[25, 50, 100].map(s => html`<option value=${s} ?selected=${s === this.pageSize}>${messages.text('rowsPerPage', { size: s })}</option>`)}
-          </select>
-        </div>
-      </div>
+      <u-pagination class="pagination" size="sm"
+        .page=${this.page} .pageSize=${this.pageSize} .totalCount=${total} .pageSizes=${this.pageSizes}
+        .label=${label}
+        .formatRange=${(start: number, end: number, all: number) => this.pageInfoFormatter(all, start, end)}
+        @page-change=${this._onPagerChange}></u-pagination>
     `;
   }
+
+  /**
+   * 안쪽 페이저의 `page-change` 는 이 표의 것으로 바꿔 낸다 — 안쪽 것은 섀도를 넘어 호스트에서 한 번 더 보이면 안 되고
+   * (같은 이름 둘), 페이지 상태의 주인은 표다(클라이언트 모드는 스스로, 서버 모드는 소비자가 `page` 를 준다).
+   */
+  private _onPagerChange = (e: CustomEvent<PageChangeDetail>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const { page, pageSize } = e.detail;
+    if (pageSize !== this.pageSize) this._onPageSizeChange(pageSize);
+    else this._onPageChange(page);
+  };
 
   // --- Event Handlers ---
   /**
@@ -1109,14 +1126,6 @@ export class URichTable extends LitElement {
 
   private _getOptionLabel(col: ColumnDef, value: unknown): string {
     return col.options?.find(o => o.value === String(value))?.label ?? String(value ?? '');
-  }
-
-  private _getPageNumbers(totalPages: number): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.page + 1 - 2);
-    const end = Math.min(totalPages, start + 4);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
   }
 
   /** Tab 이 편집을 옮길 다음(`reverse` 면 이전) 편집 가능 칸 — 행을 넘어 이어지고, 양 끝에서는 없다(`null`). */

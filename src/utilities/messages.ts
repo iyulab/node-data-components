@@ -25,12 +25,12 @@ import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
  */
 export type DataMessageKey =
   | 'empty' | 'loading' | 'filterPlaceholder' | 'filterAll' | 'addRow' | 'pageInfo'
-  | 'noMatch' | 'selected' | 'selectedAcrossPages' | 'rowsPerPage'
+  | 'noMatch' | 'selected' | 'selectedAcrossPages'
   | 'pickerDialogTitle' | 'pickerFind' | 'pickerCancel' | 'pickerConfirm' | 'pickerSearchError' | 'pickerSearch'
   | 'viewGrid' | 'viewList' | 'viewTable' | 'itemCount'
   | 'deleteRow' | 'expandRow' | 'collapseRow' | 'selectAllOnPage' | 'selectRow'
   | 'columnMenu' | 'autoFitWidth' | 'wider' | 'narrower'
-  | 'pagination' | 'paginationOf' | 'previousPage' | 'nextPage' | 'pageNumber' | 'pageSize'
+  | 'pagination' | 'paginationOf'
   | 'filterColumn' | 'newRowColumn' | 'sheet';
 
 export const messages = Locale.namespace<DataMessageKey>('@iyulab/data-components');
@@ -45,7 +45,6 @@ messages.register('en', {
   noMatch: 'No matching item',
   selected: '{count} selected',
   selectedAcrossPages: '{count} selected ({onPage} on this page)',
-  rowsPerPage: '{size} rows',
   pickerDialogTitle: 'Select a record',
   pickerFind: 'Find',
   pickerCancel: 'Cancel',
@@ -68,10 +67,6 @@ messages.register('en', {
   narrower: 'Narrower',
   pagination: 'Pagination',
   paginationOf: '{name} pagination',
-  previousPage: 'Previous page',
-  nextPage: 'Next page',
-  pageNumber: 'Page {page}',
-  pageSize: 'Rows per page',
   filterColumn: 'Filter {col}',
   newRowColumn: 'New row: {col}',
 });
@@ -86,7 +81,6 @@ messages.register('ko', {
   noMatch: '일치하는 항목 없음',
   selected: '{count}건 선택됨',
   selectedAcrossPages: '{count}건 선택됨 (이 페이지 {onPage}건)',
-  rowsPerPage: '{size}행',
   pickerDialogTitle: '레코드 선택',
   pickerFind: '찾기',
   pickerCancel: '취소',
@@ -109,10 +103,6 @@ messages.register('ko', {
   narrower: '좁게',
   pagination: '페이지 이동',
   paginationOf: '{name} 페이지 이동',
-  previousPage: '이전 페이지',
-  nextPage: '다음 페이지',
-  pageNumber: '{page}페이지',
-  pageSize: '페이지당 행 수',
   filterColumn: '{col} 필터',
   newRowColumn: '새 행: {col}',
 });

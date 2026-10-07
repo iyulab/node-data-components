@@ -49,6 +49,14 @@ const $$ = (el: Table, sel: string) => [...el.shadowRoot!.querySelectorAll(sel)]
 /** 데이터 행의 이름 열 — 필터 행은 제외한다. */
 const names = (el: Table) => $$(el, 'tbody tr:not(.filter-row)').map((tr) => tr.querySelectorAll('td')[0]?.textContent?.trim());
 /** i 번째 필터 컨트롤 — 선택 칸이 있으면 필터 행 앞에 빈 칸이 붙으므로 칸이 아니라 컨트롤로 센다. */
+/** 페이저는 `u-pagination` — 그 섀도의 쪽 번호 버튼을 누른다. */
+const pager = async (el: Table) => {
+  const p = el.shadowRoot!.querySelector('u-pagination') as HTMLElement & { updateComplete: Promise<unknown> };
+  await p.updateComplete;
+  return p;
+};
+const pageButton = (p: HTMLElement, label: string) =>
+  [...p.shadowRoot!.querySelectorAll<HTMLElement>('[part="page"]')].find((b) => b.textContent!.trim() === label)!;
 const filterInput = (el: Table, i: number) => $$(el, '.filter-row input, .filter-row select')[i] as HTMLInputElement;
 const type = async (el: Table, i: number, value: string, ev = 'input') => {
   const input = filterInput(el, i);
@@ -89,15 +97,16 @@ describe('u-rich-table dataMode="client"', () => {
   it('🔴페이지를 직접 나누고, 푸터는 «걸러진» 건수를 말한다', async () => {
     const el = await mount({ dataMode: 'client', pageSize: 2 });
     expect(names(el)).toEqual(['Aster', 'Blue Harbor']);
-    expect(el.shadowRoot!.querySelector('.pagination span')!.textContent).toMatch(/1\D+2\D+4/);
-    ($$(el, '.page-buttons button').find((b) => b.textContent === '2')!).click();
+    const p = await pager(el);
+    expect(p.shadowRoot!.querySelector('[part="range"]')!.textContent).toMatch(/1\D+2\D+4/);
+    pageButton(p, '2').click();
     await el.updateComplete;
     expect(names(el)).toEqual(['Cedar', 'aster two']);
   });
 
   it('🔴새 필터 조건은 첫 페이지로 돌아간다', async () => {
     const el = await mount({ dataMode: 'client', pageSize: 2 });
-    ($$(el, '.page-buttons button').find((b) => b.textContent === '2')!).click();
+    pageButton(await pager(el), '2').click();
     await el.updateComplete;
     await type(el, 0, 'a');
     expect(el.page).toBe(0);

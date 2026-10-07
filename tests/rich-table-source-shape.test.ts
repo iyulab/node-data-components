@@ -35,7 +35,11 @@ const mount = async (props: Partial<Table> = {}) => {
 };
 
 const sortButton = (el: Table, i: number) => el.shadowRoot!.querySelectorAll<HTMLElement>('.sort-button')[i];
-const pageButtons = (el: Table) => [...el.shadowRoot!.querySelectorAll<HTMLButtonElement>('.page-buttons button')];
+/** 페이저는 `u-pagination` — 그 섀도의 이전 · 쪽 번호 · 다음 버튼(순서대로). */
+const pageButtons = (el: Table) => {
+  const p = el.shadowRoot!.querySelector('u-pagination')!;
+  return [...p.shadowRoot!.querySelectorAll<HTMLElement>('[part="prev"], [part="page"], [part="next"]')];
+};
 
 describe('u-rich-table — 소스와 같은 정렬·페이지 모양', () => {
   it('🔴sort-change 는 criteria 를 낸다 — 오름 · 내림 · 없음', async () => {
@@ -69,6 +73,7 @@ describe('u-rich-table — 소스와 같은 정렬·페이지 모양', () => {
 
   it('🔴page 는 0 기준 — page=1 이면 페이저의 «2» 가 현재 · 다음은 page 2 를 낸다', async () => {
     const el = await mount({ page: 1 });
+    await (el.shadowRoot!.querySelector('u-pagination') as HTMLElement & { updateComplete: Promise<unknown> }).updateComplete;
     const pages: number[] = [];
     el.addEventListener('page-change', (e) => pages.push((e as CustomEvent<{ page: number }>).detail.page));
     const current = pageButtons(el).find((b) => b.getAttribute('aria-current') === 'page');

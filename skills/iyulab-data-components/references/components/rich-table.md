@@ -73,7 +73,7 @@ entry in `data`. If you already hold the full result set in memory, slice it
 yourself before assigning `data`:
 
 ```ts
-table.data = allRows.slice((page - 1) * pageSize, page * pageSize);
+table.data = allRows.slice(page * pageSize, (page + 1) * pageSize); // page is zero-based
 table.totalCount = allRows.length;
 ```
 
@@ -224,6 +224,8 @@ forever.
 | `data` | `Record<string, unknown>[]` | `[]` | | Rows of the **current page**. Give each a unique `_id` |
 | `totalCount` | `number` | `0` | | Total rows the query matches, across all pages |
 | `pageSize` | `number` | `25` | | Rows per page |
+| `pageSizes` | `number[]` | `[25, 50, 100]` | | The sizes the pager offers; empty hides that choice. Attribute: `page-sizes="20,50,100"` |
+| `hidePagination` | `boolean` | `false` | | Draws no pager — for a list that pages with its own `u-pagination` bound to the same source, so the screen does not show two |
 | `page` | `number` | `0` | | Zero-based page (the pager shows it from 1) |
 | `sortCriteria` | `SortCriteria[]` | `[]` | | Sort shown in the header, `[{ key, direction }]` (0 or 1 entries). Pass a restored sort in server mode |
 | `dataMode` | `'client' \| 'server'` | `'server'` | | Who applies the filter row, sorting and paging (attribute `data-mode`) — `'client'`: the table does, over `data` as the whole set (`0.27.0~`) |
@@ -236,6 +238,8 @@ forever.
 | `filterAllLabel` | `string` | `''` | | Label of the "all" option in `select` filters |
 | `addRowLabel` | `string` | `''` | | Label of the add-row button |
 | `pageInfoFormatter` | `(total, start, end) => string` | locale string | | Builds the pager caption. A function rather than a template, because word order differs per language |
+
+The pager is `u-pagination` (`@iyulab/components`) — the same pager a list uses on its own. Its button names, the current page (`aria-current`) and the page-size choice are that component's; the table names the navigation after itself (`aria-label` → *"Orders pagination"*).
 | `selectable` | `boolean` | `false` | | Renders the selection column |
 | `editable` | `boolean` | `false` | | Enables inline cell editing on columns marked `editable` |
 | `addable` | `boolean` | `false` | | Renders the add-row control |

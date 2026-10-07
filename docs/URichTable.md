@@ -45,7 +45,7 @@ html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.load
 클라이언트에서 직접 자르세요:
 
 ```typescript
-table.data = allRows.slice((page - 1) * pageSize, page * pageSize);
+table.data = allRows.slice(page * pageSize, (page + 1) * pageSize); // page 는 0 기준
 table.totalCount = allRows.length;
 ```
 
@@ -93,7 +93,9 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `columns` | `ColumnDef[]` | `[]` | 컬럼 정의 |
 | `data` | `Record<string, unknown>[]` | `[]` | 현재 페이지에 표시할 행. 정렬·필터가 **이미 적용된** 상태여야 합니다 |
 | `totalCount` | `number` | `0` | 전체 건수. `0`이면 페이지네이션 미표시 |
-| `pageSize` | `number` | `25` | 페이지당 행 수 (선택 UI: 25 / 50 / 100) |
+| `pageSize` | `number` | `25` | 페이지당 행 수 |
+| `pageSizes` | `number[]` | `[25, 50, 100]` | 페이저가 고르게 하는 크기 — 비우면 선택을 그리지 않는다. 속성: `page-sizes="20,50,100"` |
+| `hidePagination` | `boolean` | `false` | 페이저를 그리지 않는다 — 같은 소스에 묶은 `u-pagination` 을 따로 쓰는 목록(페이저가 둘 그려지지 않게) |
 | `page` | `number` | `0` | 현재 페이지 (**0 기준** — 페이저는 1부터 보인다) |
 | `sortCriteria` | `SortCriteria[]` | `[]` | 정렬 `[{ key, direction }]`(길이 0·1) — 헤더 표시. 서버 모드에서 복원한 정렬을 넘긴다 |
 | `dataMode` | `'client' \| 'server'` | `'server'` | 필터 행·정렬·페이지를 누가 적용하는가 — `'client'` 면 `data` 전체를 표가 직접 거르고 정렬하고 나눈다(`totalCount` 무시, 이벤트는 그대로). 속성명 `data-mode` |

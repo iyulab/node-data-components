@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.46.0] - 2026-10-07
+
+### Changed (breaking)
+
+- **`u-rich-table`'s pager is `u-pagination`** (`@iyulab/components` 2.16) — the same pager a list uses on its own,
+  instead of a second implementation inside the table. It looks like the other controls of the size scale (buttons,
+  a select for the size), wraps on a narrow host, and names its navigation after the table as before
+  (*"Orders pagination"*); `pageInfoFormatter` still words the range. Its `page-change` stays the table's: one event per
+  click, the same `{ page, pageSize }`.
+- The pager's texts come from the `@iyulab/components` locale (`pagination` stays here). The data-components message
+  keys `previousPage`, `nextPage`, `pageNumber`, `pageSize` and `rowsPerPage` are gone; register those texts with
+  `Locale` of `@iyulab/components` instead.
+
+### Added
+
+- `pageSizes` (`page-sizes="20,50,100"`) — the sizes the pager offers (was fixed at 25 / 50 / 100); empty hides the
+  choice.
+- `hidePagination` (`hide-pagination`) — draws no pager, for a list that pages with its own `u-pagination` bound to
+  the same data source; such a screen showed two pagers.
+
+### Fixed
+
+- The slicing example in the skill reference and `docs/URichTable.md` used one-based page arithmetic
+  (`(page - 1) * pageSize`) although `page` is zero-based since 0.42.0.
+
 ## [0.45.1] - 2026-10-07
 
 ### Fixed
