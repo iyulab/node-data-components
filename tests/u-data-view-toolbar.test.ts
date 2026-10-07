@@ -76,4 +76,19 @@ describe('u-data-view 툴바', () => {
       expect(b.hasAttribute('active')).toBe(false);
     }
   });
+
+  it('hide-toolbar 면 툴바(전환 · 건수)를 그리지 않고 내용은 그대로 그린다 — 바깥이 보기와 건수를 맡는 목록', async () => {
+    const el = await mount();
+    el.setAttribute('hide-toolbar', '');
+    el.mode = 'list';
+    await el.updateComplete;
+    expect(el.hideToolbar).toBe(true);
+    expect(el.shadowRoot!.querySelector('.toolbar')).toBeNull();
+    expect(el.shadowRoot!.textContent).toContain('a');
+  });
+
+  it('🔴NEGATIVE — 기본은 툴바를 그린다', async () => {
+    const el = await mount();
+    expect(el.shadowRoot!.querySelector('.toolbar')).not.toBeNull();
+  });
 });

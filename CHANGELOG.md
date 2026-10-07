@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`u-data-view` `hide-toolbar`.** In a list that switches between views and counts results itself (a table and a
+  card view under one switch, with a pager bound to the same data source), the card view's own layout switcher and
+  item count were a second switch and a second count. `hide-toolbar` leaves them out — the same convention as
+  `u-rich-table`'s `hide-pagination`; `mode` still sets the layout.
+
+### Fixed
+
+- **A hidden `u-rich-table` is hidden.** Its host's `display: flex` outranked the browser's `[hidden]` rule, so
+  `hidden` did nothing — a list that switches between a table and a card view (which hides the view it is not
+  showing) drew both.
+
 ## [0.46.1] - 2026-10-07
 
 ### Fixed

@@ -86,6 +86,7 @@ component prints at its content height.
 | `loadingMessage` | `string` | `''` | | Loading text; the locale string when empty |
 | `error` | `{ message: string } \| null` | `null` | | The last load failure — shown as an alert (`role="alert"`) in place of the content, so a failed query does not read as "no data". A data source's `error` as is |
 | `emptyMessage` | `string` | `''` | | Text for an empty `data`; the locale string when empty |
+| `hideToolbar` | `boolean` | `false` | | Leaves out the built-in toolbar (layout switcher and item count) — for a list that switches views and counts results itself (`u-list-page`'s `view`, a bound `u-pagination`). `mode` still sets the layout. Attribute `hide-toolbar` |
 | `mode` | `'grid'\|'list'\|'table'` | `'grid'` | | Current layout |
 | `columns` | `DataColumn[]` | — | | Columns for `mode="table"`; inferred from the first item when omitted |
 | `gridMinWidth` | `string` | `'200px'` | | Minimum card width in `mode="grid"` (CSS length) |

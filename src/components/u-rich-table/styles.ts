@@ -50,6 +50,11 @@ export const richTableStyles = css`
     overflow: hidden;
   }
 
+  /* 위의 display 가 [hidden] 의 UA 규칙을 이긴다 — 숨긴 표가 그려지지 않게(목록 골격이 보이지 않는 뷰에 hidden 을 건다). */
+  :host([hidden]) {
+    display: none;
+  }
+
   /* 행 영역만 스크롤한다 — 툴바와 페이지네이션은 자리를 지킨다. */
   .table-wrap {
     flex: 1 1 auto;

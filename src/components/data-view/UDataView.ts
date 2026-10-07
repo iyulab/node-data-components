@@ -80,6 +80,11 @@ export class UDataView extends UElement {
   @property({ attribute: false }) error: { message: string } | null = null;
   /** `data` 가 비었을 때의 문구. 비우면 로케일 문장(`empty`). */
   @property({ type: String, attribute: 'empty-message' }) emptyMessage = '';
+  /**
+   * 내장 툴바(레이아웃 전환 · 건수)를 그리지 않는다 — 보기 전환과 건수를 바깥이 맡는 목록(`u-list-page` 의 `view` · 같은 소스에
+   * 묶인 `u-pagination`)에서. `u-rich-table` 의 `hide-pagination` 과 같은 관례다. `mode` 는 그대로 속성으로 정한다.
+   */
+  @property({ type: Boolean, attribute: 'hide-toolbar' }) hideToolbar = false;
 
   /**
    * 키보드가 서는 항목 — 항목 전체가 탭 정지점 하나(로빙 tabindex)이고 화살표가 옮긴다. 두 표가 «표 전체가 Tab 정지점 하나»
@@ -175,7 +180,7 @@ export class UDataView extends UElement {
   render() {
     return html`
       <div class="data-view">
-        ${this.renderToolbar()}
+        ${this.hideToolbar ? nothing : this.renderToolbar()}
         ${this.renderContent()}
       </div>
     `;
