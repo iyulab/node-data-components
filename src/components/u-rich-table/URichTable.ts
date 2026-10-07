@@ -143,6 +143,7 @@ export class URichTable extends LitElement {
     if (this.dataMode !== 'client') {
       this._view = this.data;
       this._dataIndex.clear();
+      this._followEditingRow();
       return;
     }
     this._dataIndex = new Map(this.data.map((row, i) => [row, i]));
@@ -154,6 +155,28 @@ export class URichTable extends LitElement {
     if (this.page > pages - 1) this.page = pages - 1;
     const start = this.page * this.pageSize;
     this._view = ordered.slice(start, start + this.pageSize);
+    this._followEditingRow();
+  }
+
+  /**
+   * An open editor belongs to the row it was started on (`_editingRowId`). When the page changes under it — a
+   * refresh put rows above it, a sort moved it — the edit moves with the row; a row that left the page ends it.
+   * Without this the confirm read `_view[rowIndex]`, and `row-update` named whatever row stood there.
+   */
+  private _followEditingRow(): void {
+    const cell = this.editingCell;
+    if (!cell || this._editingRowId === null) return;
+    const at = this._view.findIndex((row, i) => this._rowId(row, i) === this._editingRowId);
+    if (at < 0) {
+      this.editingCell = null;
+      this.editValue = '';
+      this._editingRowId = null;
+      return;
+    }
+    if (at === cell.rowIndex) return;
+    this.editingCell = { rowIndex: at, colIndex: cell.colIndex };
+    this.focusedCell = { rowIndex: at, colIndex: cell.colIndex };
+    this._refocusEditor = true;
   }
 
   protected updated(changed: PropertyValues<this>): void {
@@ -161,6 +184,26 @@ export class URichTable extends LitElement {
     // 다른 편집이 열렸으면(Enter/Tab 이 다음 셀을 편집) 그 편집기가 포커스를 갖는다.
     if (this._focusCellAfterUpdate && !this.editingCell) this._focusFocusedCell();
     this._focusCellAfterUpdate = false;
+    // The editor was drawn again in its row's new place — it takes the focus back, the caret after the text.
+    if (this._refocusEditor) {
+      this._refocusEditor = false;
+      const input = this.shadowRoot?.querySelector<HTMLInputElement>('input.cell-edit-input');
+      if (input) {
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+      } else {
+        this.shadowRoot?.querySelector<HTMLElement>('.cell-edit-input')?.focus();
+      }
+    }
+  }
+
+  /** The row the open editor belongs to (`_rowId`) — see `_followEditingRow`. */
+  private _editingRowId: string | null = null;
+  private _refocusEditor = false;
+
+  /** Validation messages are kept per row and column, so they stay on their cell when the page reorders. */
+  private _errorKey(row: Record<string, unknown> | undefined, rowIdx: number, colIdx: number): string {
+    return `${row ? this._rowId(row, rowIdx) : `#${rowIdx}`}\u0000${colIdx}`;
   }
   /** 편집 칸의 검증 오류 — 우리 문장은 «그릴 때 찾는» 함수로 둔다(런타임 로캘 전환에 따라오게), 소비자 `validator` 문장은 그대로. */
   @state() private validationErrors = new Map<string, string | (() => string)>();
@@ -524,7 +567,7 @@ export class URichTable extends LitElement {
     const value = row[col.key];
 
     if (isEditing && col.editable) {
-      const stored = this.validationErrors.get(`${rowIdx}-${colIdx}`);
+      const stored = this.validationErrors.get(this._errorKey(row, rowIdx, colIdx));
       const validationError = typeof stored === 'function' ? stored() : stored;
       if (col.type === 'select' && col.options) {
         return html`
@@ -838,6 +881,8 @@ export class URichTable extends LitElement {
 
   private _onCellDblClick(rowIdx: number, colIdx: number, value: unknown): void {
     this.editingCell = { rowIndex: rowIdx, colIndex: colIdx };
+    const editedRow = this._view[rowIdx];
+    this._editingRowId = editedRow ? this._rowId(editedRow, rowIdx) : null;
     this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
     this.editValue = String(value ?? '');
     this.requestUpdate();
@@ -935,7 +980,7 @@ export class URichTable extends LitElement {
         (HTMLElement & { validity?: ValidityState; validationMessage?: string }) | null;
       if (picker?.validity?.badInput) {
         this.validationErrors = new Map(this.validationErrors)
-          .set(`${rowIndex}-${colIndex}`, () => picker.validationMessage || Locale.getValue('valueMissing'));
+          .set(this._errorKey(row, rowIndex, colIndex), () => picker.validationMessage || Locale.getValue('valueMissing'));
         return;
       }
     }
@@ -949,20 +994,20 @@ export class URichTable extends LitElement {
 
     // Validation
     if (col.required && !newValue && newValue !== 0) {
-      this.validationErrors = new Map(this.validationErrors).set(`${rowIndex}-${colIndex}`, () => Locale.getValue('valueMissing'));
+      this.validationErrors = new Map(this.validationErrors).set(this._errorKey(row, rowIndex, colIndex), () => Locale.getValue('valueMissing'));
       return;
     }
     if (col.validator) {
       const error = col.validator(newValue, row);
       if (error) {
-        this.validationErrors = new Map(this.validationErrors).set(`${rowIndex}-${colIndex}`, error);
+        this.validationErrors = new Map(this.validationErrors).set(this._errorKey(row, rowIndex, colIndex), error);
         return;
       }
     }
 
     // Clear validation
     const nextErrors = new Map(this.validationErrors);
-    nextErrors.delete(`${rowIndex}-${colIndex}`);
+    nextErrors.delete(this._errorKey(row, rowIndex, colIndex));
     this.validationErrors = nextErrors;
 
     if (newValue !== oldValue) {

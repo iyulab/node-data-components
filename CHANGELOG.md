@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.43.1] - 2026-10-07
+
+### Fixed
+
+- **`u-rich-table` confirms an edit on the row it was started on.** The open cell editor remembered a position on the
+  page, so a refresh that put a row above the one being edited moved the editor onto the new row and `row-update`
+  named that row — the host saved the typed value into another record. The editor now follows its row (by `_id`),
+  keeping the typed text and the focus; an edit whose row left the page is cancelled.
+- Validation messages of the editor are kept per row, so they stay on their cell when the page reorders.
+
 ## [0.43.0] - 2026-10-07
 
 ### Added
