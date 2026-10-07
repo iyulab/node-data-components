@@ -443,6 +443,10 @@ async function mount(html: string, settle = 0): Promise<void> {
  */
 const registered: string[] = [];
 
+// 배럴(형제 + 자기)을 처음 불러오는 훅이다 — 변환이 이 시간 안에 든다. 가장 무거운 배럴(monaco)은 단독으로도 20초 가까이
+// 걸려 기본 30초는 부하 아래에서 넘쳤다. 이 제한은 느림이 아니라 멈춤을 잡는다.
+const BARREL_LOAD_TIMEOUT = 120_000;
+
 beforeAll(async () => {
   const original = customElements.define.bind(customElements);
   customElements.define = ((name: string, ctor: CustomElementConstructor, opts?: ElementDefinitionOptions) => {
@@ -460,7 +464,7 @@ beforeAll(async () => {
   // 형제가 실제로 무언가를 등록했는지 확인한다 — 0 이면 위 «걸러내기»가 아무 일도 하지 않은
   // 것이고, 그러면 아래 분류표에 남의 태그가 섞여 들어와도 알 방법이 없다.
   if (foreign === 0) throw new Error('형제 배럴이 아무 태그도 등록하지 않았다 — 소유 판정이 무의미하다');
-});
+}, BARREL_LOAD_TIMEOUT);
 
 describe('WCAG 2.2 SC 2.5.8 — 타깃 크기(최소) 게이트', () => {
   beforeEach(() => {
