@@ -21,9 +21,20 @@ import '@iyulab/data-components';
 
 ```typescript
 table.addEventListener('sort-change', (e) => {
-  const { field, direction } = e.detail;   // direction: 'asc' | 'desc' | null
-  table.data = mySort(rows, field, direction);
+  const [sort] = e.detail.criteria;        // [{ key, direction: 'asc' | 'desc' }] — 해제하면 []
+  table.data = sort ? mySort(rows, sort.key, sort.direction) : rows;
 });
+```
+
+정렬(`criteria`)과 페이지(0 기준 `page`)는 `@iyulab/flex-table/odata` 의 데이터 소스(`createODataSource` ·
+Lit 은 `ODataSourceController`)와 **같은 모양**입니다 — 이벤트 detail 을 그대로 넘기면 됩니다:
+
+```typescript
+const s = this.orders.state;               // ODataSourceController
+html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading}
+  .page=${s.page} .sortCriteria=${s.sortCriteria}
+  @page-change=${(e) => this.orders.source.setPage(e.detail.page)}
+  @sort-change=${(e) => this.orders.source.setSort(e.detail.criteria)}></u-rich-table>`;
 ```
 
 `totalCount`는 **전체 건수**입니다(현재 페이지 길이가 아닙니다). 이 값이 `0`이면
@@ -83,7 +94,8 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `data` | `Record<string, unknown>[]` | `[]` | 현재 페이지에 표시할 행. 정렬·필터가 **이미 적용된** 상태여야 합니다 |
 | `totalCount` | `number` | `0` | 전체 건수. `0`이면 페이지네이션 미표시 |
 | `pageSize` | `number` | `25` | 페이지당 행 수 (선택 UI: 25 / 50 / 100) |
-| `currentPage` | `number` | `1` | 현재 페이지 (1-based) |
+| `page` | `number` | `0` | 현재 페이지 (**0 기준** — 페이저는 1부터 보인다) |
+| `sortCriteria` | `SortCriteria[]` | `[]` | 정렬 `[{ key, direction }]`(길이 0·1) — 헤더 표시. 서버 모드에서 복원한 정렬을 넘긴다 |
 | `dataMode` | `'client' \| 'server'` | `'server'` | 필터 행·정렬·페이지를 누가 적용하는가 — `'client'` 면 `data` 전체를 표가 직접 거르고 정렬하고 나눈다(`totalCount` 무시, 이벤트는 그대로). 속성명 `data-mode` |
 | `loading` | `boolean` | `false` | 로딩 표시 |
 | `emptyMessage` | `string` | `'데이터가 없습니다'` | 빈 상태 문구 |
@@ -246,9 +258,9 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `row-delete` | `{ row }` — `deletable`일 때 액션 셀 휴지통 클릭 또는 `Delete` 키 |
 | `row-expand` | `{ row, expanded }` |
 | `row-activate` | `{ row, id, via }` — 행을 클릭했거나, 편집할 수 없는 셀에 포커스를 둔 채 `Enter` 를 눌렀다(`via` 는 `'click'` · `'keyboard'`). `selectable` 과 무관하다 — 선택은 «무엇에 작업할지», 활성은 «무엇을 볼지» |
-| `sort-change` | `{ field, direction: 'asc' \| 'desc' \| null }` |
+| `sort-change` | `{ criteria: SortCriteria[] }` — 해제하면 `[]` |
 | `filter-change` | `{ filters, filteredCount? }` — `filteredCount` 는 `data-mode="client"` 에서만 |
-| `page-change` | `{ page, pageSize }` |
+| `page-change` | `{ page, pageSize }` — `page` 는 0 기준 |
 | `clipboard-paste` | `{ rows }` — `Ctrl`/`Cmd` + `V` 로 붙인 TSV 를 행으로 읽은 것(편집기 밖). 네이티브 `paste` 와 이름을 갈랐다 — 셀 편집기 안의 붙여넣기도 `paste` 로 버블되어 나온다 |
 | `clipboard-error` | `{ action: 'copy' \| 'paste', error }` — 브라우저의 클립보드 이벤트도 Clipboard API 도 텍스트를 받지/주지 못했다 |
 

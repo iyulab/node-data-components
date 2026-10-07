@@ -12,7 +12,7 @@ type Table = HTMLElement & {
   data: Record<string, unknown>[];
   dataMode: 'client' | 'server';
   pageSize: number;
-  currentPage: number;
+  page: number;
   totalCount: number;
   updateComplete: Promise<unknown>;
   selectedRowIds: ReadonlySet<string>;
@@ -100,7 +100,7 @@ describe('u-rich-table dataMode="client"', () => {
     ($$(el, '.page-buttons button').find((b) => b.textContent === '2')!).click();
     await el.updateComplete;
     await type(el, 0, 'a');
-    expect(el.currentPage).toBe(1);
+    expect(el.page).toBe(0);
     expect(names(el)[0]).toBe('Aster');
   });
 

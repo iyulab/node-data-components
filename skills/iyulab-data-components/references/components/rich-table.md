@@ -22,7 +22,7 @@ table.columns = [
 ];
 table.data = rows;          // the CURRENT page only
 table.totalCount = 1240;    // the total the query matches
-table.currentPage = 1;
+table.page = 0;             // zero-based
 table.pageSize = 25;
 ```
 
@@ -50,8 +50,19 @@ slices. It renders the page you give it and tells you what the user asked for:
 
 ```ts
 table.addEventListener('page-change',   e => load({ page: e.detail.page, size: e.detail.pageSize }));
-table.addEventListener('sort-change',   e => load({ sort: e.detail.field, dir: e.detail.direction }));
+table.addEventListener('sort-change',   e => load({ sort: e.detail.criteria })); // [{ key, direction }] or []
 table.addEventListener('filter-change', e => load({ filters: e.detail.filters }));
+```
+
+Sort (`criteria`) and page (zero-based) have the same shape as the data source in `@iyulab/flex-table/odata`
+(`createODataSource`, or `ODataSourceController` in a Lit element), so the event details go straight in:
+
+```ts
+const s = this.orders.state; // ODataSourceController
+html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading}
+  .page=${s.page} .sortCriteria=${s.sortCriteria}
+  @page-change=${(e) => this.orders.source.setPage(e.detail.page)}
+  @sort-change=${(e) => this.orders.source.setSort(e.detail.criteria)}></u-rich-table>`;
 ```
 
 `totalCount` is what the pager counts — not `data.length`. Setting `data` alone
@@ -213,7 +224,8 @@ forever.
 | `data` | `Record<string, unknown>[]` | `[]` | | Rows of the **current page**. Give each a unique `_id` |
 | `totalCount` | `number` | `0` | | Total rows the query matches, across all pages |
 | `pageSize` | `number` | `25` | | Rows per page |
-| `currentPage` | `number` | `1` | | 1-based page number |
+| `page` | `number` | `0` | | Zero-based page (the pager shows it from 1) |
+| `sortCriteria` | `SortCriteria[]` | `[]` | | Sort shown in the header, `[{ key, direction }]` (0 or 1 entries). Pass a restored sort in server mode |
 | `dataMode` | `'client' \| 'server'` | `'server'` | | Who applies the filter row, sorting and paging (attribute `data-mode`) — `'client'`: the table does, over `data` as the whole set (`0.27.0~`) |
 | `loading` | `boolean` | `false` | | Shows the loading message instead of rows |
 | `emptyMessage` | `string` | `''` | | Text shown when there are no rows (falls back to the locale string) |
@@ -269,9 +281,9 @@ type SelectionChange = RichTableEventMap['selection-change'];
 |---|---|---|
 | `selection-change` | `{ selectedRows, selectedIds }` | Selection changed by any route |
 | `select-all` | `{ checked, pageRowIds }` | The header checkbox was toggled |
-| `sort-change` | `{ field, direction }` | A sortable header was clicked (`direction` is `null` when cleared) |
+| `sort-change` | `{ criteria }` | A sortable header was clicked: `[{ key, direction }]`, or `[]` when cleared |
 | `filter-change` | `{ filters, filteredCount? }` | A column filter changed. `filteredCount` is present in `data-mode="client"` |
-| `page-change` | `{ page, pageSize }` | The pager or page-size selector moved |
+| `page-change` | `{ page, pageSize }` | The pager or page-size selector moved (`page` zero-based) |
 | `row-update` | `{ row, field, value, oldValue }` | An inline edit was committed |
 | `row-create` | `{ row }` | The add-row control produced a row |
 | `row-delete` | `{ row }` | The trash-can delete button was clicked, or `Delete` was pressed on selected rows (only when `deletable`) |

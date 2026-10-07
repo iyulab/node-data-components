@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.42.0] - 2026-10-07
+
+### Changed (breaking)
+
+Sorting and paging on `u-rich-table` now have the shape of the data source in `@iyulab/flex-table/odata`
+(`createODataSource`, `useODataSource`, `ODataSourceController`), so the event details go straight into it. Before,
+the sort detail had another shape under the same event name, and wiring the source to the table silently did nothing.
+
+- **`sort-change` detail is `{ criteria }`** — `[{ key, direction }]`, or `[]` when the sort is cleared. It was
+  `{ field, direction }` with `direction: null` when cleared. Migrate: `e.detail.field` → `e.detail.criteria[0]?.key`,
+  `e.detail.direction` → `e.detail.criteria[0]?.direction ?? null`.
+- **`currentPage` (one-based) is now `page` (zero-based)**, and `page-change` reports a zero-based `page`. The pager
+  still shows pages from 1. Migrate: `currentPage = n` → `page = n - 1`; in a `page-change` handler the value is
+  already the new axis.
+- The `SortState` type (`{ field, direction }`) is now `SortCriteria` (`{ key, direction }`).
+
+### Added
+
+- **`sortCriteria`** property — the sort the header shows. Pass a restored sort in server mode (a source's
+  `sortCriteria`); header clicks update it.
+
 ## [0.41.0] - 2026-10-07
 
 ### Added

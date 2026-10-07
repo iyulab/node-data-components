@@ -25,7 +25,7 @@ export * from './components/u-record-picker/URecordPicker';
 export type {
   ColumnDef,
   CellPosition,
-  SortState,
+  SortCriteria,
   FilterState,
   RichTableEventMap,
   RowAction,

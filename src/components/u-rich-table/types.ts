@@ -64,8 +64,12 @@ export interface RowActionEventDetail {
   row: Record<string, unknown>;
 }
 
-export interface SortState {
-  field: string;
+/**
+ * 정렬 기준 하나 — `flex-table`·`createODataSource` 와 같은 모양이다(`{ key, direction }`). `u-rich-table` 은 한 열로
+ * 정렬하므로 길이는 0 또는 1 이다.
+ */
+export interface SortCriteria {
+  key: string;
   direction: 'asc' | 'desc';
 }
 
@@ -105,7 +109,7 @@ export interface RichTableEventMap {
    * 셀 편집 진입 신호이므로 그 경우는 내지 않는다(`via: 'keyboard'` 는 비-editable 열에서만 발생).
    */
   'row-activate': CustomEvent<{ row: Record<string, unknown>; id: string; via: 'click' | 'keyboard' }>;
-  'sort-change': CustomEvent<{ field: string; direction: 'asc' | 'desc' | null }>;
+  'sort-change': CustomEvent<{ criteria: SortCriteria[] }>;
   /** `filteredCount` is present in `data-mode="client"`: how many rows pass the filters, across all pages. */
   'filter-change': CustomEvent<{ filters: FilterState; filteredCount?: number }>;
   'page-change': CustomEvent<{ page: number; pageSize: number }>;

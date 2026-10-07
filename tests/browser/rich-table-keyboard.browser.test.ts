@@ -233,7 +233,7 @@ describe('u-rich-table keyboard — the header and filter rows are grid rows', (
   it('Enter on a sortable header cell sorts; Space on the select-all header cell selects the page', async () => {
     await mountSortable();
     const sorts: string[] = [];
-    table.addEventListener('sort-change', (e) => sorts.push(`${(e as CustomEvent).detail.field}:${(e as CustomEvent).detail.direction}`));
+    table.addEventListener('sort-change', (e) => sorts.push((e as CustomEvent<{ criteria: { key: string; direction: string }[] }>).detail.criteria.map((c) => `${c.key}:${c.direction}`).join(',')));
     await userEvent.click(cell(0, 0));
     await settle();
     await press('{ArrowUp}{ArrowUp}');

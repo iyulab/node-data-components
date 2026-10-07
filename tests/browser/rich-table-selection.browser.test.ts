@@ -7,7 +7,7 @@ import '../../src/components/u-rich-table/URichTable';
  *
  * ## 왜 이 파일이 생겼는가
  *
- * `URichTable` 은 `totalCount`/`currentPage`/`page-change` 로 서버 페이징을 표방하고
+ * `URichTable` 은 `totalCount`/`page`/`page-change` 로 서버 페이징을 표방하고
  * `selectedIds` 는 `data` 가 바뀌어도 초기화되지 않는다 — 즉 **선택은 페이지를 넘어 살아남는다.**
  * 그런데 그 사실을 아는 코드와 모르는 코드가 한 컴포넌트 안에 섞여 있었다:
  *
@@ -29,7 +29,7 @@ type Table = HTMLElement & {
   columns: { key: string; label: string }[];
   data: Record<string, unknown>[];
   totalCount: number;
-  currentPage: number;
+  page: number;
   pageSize: number;
   updateComplete: Promise<unknown>;
   getSelectedRows(): Record<string, unknown>[];
@@ -48,7 +48,7 @@ const mount = async () => {
   el.columns = [{ key: 'name', label: 'Name' }];
   el.pageSize = PAGE_SIZE;
   el.totalCount = PAGE_SIZE * 3; // 서버 페이징 활성 — 3페이지
-  el.currentPage = 1;
+  el.page = 0;
   el.data = page(1);
   document.body.appendChild(el);
   await el.updateComplete;
@@ -72,7 +72,7 @@ const click = async (el: Table, box: HTMLInputElement) => {
 };
 
 const goToPage = async (el: Table, n: number) => {
-  el.currentPage = n;
+  el.page = n - 1;
   el.data = page(n);
   await el.updateComplete;
 };

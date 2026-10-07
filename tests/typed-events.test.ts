@@ -13,12 +13,13 @@ describe('typed events', () => {
     const table = document.createElement('u-rich-table');
     const fields: string[] = [];
     table.addEventListener('sort-change', (e) => {
-      const field: string = e.detail.field;
-      const direction: 'asc' | 'desc' | null = e.detail.direction;
-      void direction;
-      fields.push(field);
+      for (const c of e.detail.criteria) {
+        const direction: 'asc' | 'desc' = c.direction;
+        void direction;
+        fields.push(c.key);
+      }
     });
-    table.dispatchEvent(new CustomEvent('sort-change', { detail: { field: 'name', direction: 'asc' } }));
+    table.dispatchEvent(new CustomEvent('sort-change', { detail: { criteria: [{ key: 'name', direction: 'asc' }] } }));
     expect(fields).toEqual(['name']);
   });
 

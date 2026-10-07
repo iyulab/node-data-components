@@ -17,7 +17,7 @@ type Table = HTMLElement & {
   columns: { key: string; label: string; width?: string }[];
   data: Record<string, unknown>[];
   totalCount: number;
-  currentPage: number;
+  page: number;
   pageSize: number;
   updateComplete: Promise<boolean>;
 };
@@ -34,7 +34,7 @@ async function mount(hostWidth: string): Promise<Table> {
   el.data = Array.from({ length: 5 }, (_, i) => ({ id: `R${i}`, name: `row ${i}` }));
   el.totalCount = 12;
   el.pageSize = 5;
-  el.currentPage = 1;
+  el.page = 0;
   host.appendChild(el);
   await el.updateComplete;
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));

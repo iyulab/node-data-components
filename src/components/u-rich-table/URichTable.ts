@@ -4,7 +4,7 @@ import { messages } from '../../utilities/messages.js';
 import { html, svg, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { richTableStyles } from './styles.js';
-import type { ColumnDef, CellPosition, SortState, FilterState, RowAction, RichTableEventMap, RowActionEventDetail } from './types.js';
+import type { ColumnDef, CellPosition, SortCriteria, FilterState, RowAction, RichTableEventMap, RowActionEventDetail } from './types.js';
 import { effectiveAlign } from './types.js';
 
 import { columnLayout, headerWidth, type ColumnLayout } from './utils/column-layout.js';
@@ -48,7 +48,11 @@ export class URichTable extends LitElement {
   @property({ type: Array }) data: Record<string, unknown>[] = [];
   @property({ type: Number }) totalCount = 0;
   @property({ type: Number }) pageSize = 25;
-  @property({ type: Number }) currentPage = 1;
+  /**
+   * 지금 페이지 — **0 기준**(`createODataSource`·`useODataSource` 의 `page` 와 같은 축). 페이저는 1부터 보인다.
+   * `data-mode="server"` 에서는 호스트가 `page-change` 를 받아 이 값을 돌려준다.
+   */
+  @property({ type: Number }) page = 0;
   /**
    * Who applies the filter row, sorting and paging.
    * - `'server'` (default): the table emits `filter-change` / `sort-change` / `page-change` and
@@ -103,7 +107,11 @@ export class URichTable extends LitElement {
   @state() private editingCell: CellPosition | null = null;
   @state() private editValue = '';
   @state() private expandedIds = new Set<string>();
-  @state() private sort: SortState | null = null;
+  /**
+   * 정렬 — `[{ key, direction }]`(길이 0 또는 1). 헤더 클릭이 바꾸고 `sort-change` 로 알린다. 서버 모드에서 복원한
+   * 정렬(소스의 `sortCriteria`)을 헤더에 보이려면 이것을 넘긴다.
+   */
+  @property({ attribute: false }) sortCriteria: SortCriteria[] = [];
   @state() private filters: FilterState = {};
 
   /** 화면에 보이는 행 — server 모드는 `data` 그대로, client 모드는 걸러·정렬·페이지한 결과. */
@@ -133,11 +141,12 @@ export class URichTable extends LitElement {
     }
     this._dataIndex = new Map(this.data.map((row, i) => [row, i]));
     const filtered = applyFilters(this.data, this.filters, this.columns);
-    const ordered = this.sort ? sortRows(filtered, this.sort, this.columns) : filtered;
+    const sort = this.sortCriteria[0];
+    const ordered = sort ? sortRows(filtered, sort, this.columns) : filtered;
     this._viewTotal = ordered.length;
     const pages = Math.max(1, Math.ceil(ordered.length / this.pageSize));
-    if (this.currentPage > pages) this.currentPage = pages;
-    const start = (this.currentPage - 1) * this.pageSize;
+    if (this.page > pages - 1) this.page = pages - 1;
+    const start = this.page * this.pageSize;
     this._view = ordered.slice(start, start + this.pageSize);
   }
 
@@ -372,7 +381,7 @@ export class URichTable extends LitElement {
               class=${col.sortable ? 'sortable' : ''}
               style=${this._headerStyle(col)}
               aria-sort=${col.sortable
-                ? (this.sort?.field === col.key ? (this.sort.direction === 'asc' ? 'ascending' : 'descending') : 'none')
+                ? (this.sortCriteria[0]?.key === col.key ? (this.sortCriteria[0].direction === 'asc' ? 'ascending' : 'descending') : 'none')
                 : nothing}>
               ${col.sortable
                 // 정렬은 머리 칸을 채우는 버튼이다 — 클릭만 받는 th 는 키보드로 닿지 않았다.
@@ -380,8 +389,8 @@ export class URichTable extends LitElement {
                     style=${this._headerAlign(col) === 'end' ? 'justify-content: flex-end' : this._headerAlign(col) === 'center' ? 'justify-content: center' : ''}
                     @click=${() => this._onSortClick(col.key)}>
                     ${col.label}
-                    ${this.sort?.field === col.key ? html`
-                      <span class="sort-indicator">${this.sort.direction === 'asc' ? '▲' : '▼'}</span>
+                    ${this.sortCriteria[0]?.key === col.key ? html`
+                      <span class="sort-indicator">${this.sortCriteria[0].direction === 'asc' ? '▲' : '▼'}</span>
                     ` : ''}
                   </button>`
                 : col.label}
@@ -611,22 +620,23 @@ export class URichTable extends LitElement {
     const total = this.dataMode === 'client' ? this._viewTotal : this.totalCount;
     if (total <= 0) return html``;
     const totalPages = Math.ceil(total / this.pageSize);
-    const start = (this.currentPage - 1) * this.pageSize + 1;
-    const end = Math.min(this.currentPage * this.pageSize, total);
+    const current = this.page + 1;
+    const start = this.page * this.pageSize + 1;
+    const end = Math.min(current * this.pageSize, total);
 
     return html`
       <div class="pagination" role="navigation" aria-label=${this.hostLabel ? messages.text('paginationOf', { name: this.hostLabel }) : messages.text('pagination')}>
         <span>${this.pageInfoFormatter(total, start, end)}</span>
         <div class="page-buttons">
-          <button ?disabled=${this.currentPage <= 1} aria-label=${messages.text('previousPage')}
-            @click=${() => this._onPageChange(this.currentPage - 1)}>◀</button>
+          <button ?disabled=${this.page <= 0} aria-label=${messages.text('previousPage')}
+            @click=${() => this._onPageChange(this.page - 1)}>◀</button>
           ${this._getPageNumbers(totalPages).map(p => html`
-            <button class=${p === this.currentPage ? 'active' : ''} aria-current=${p === this.currentPage ? 'page' : nothing}
+            <button class=${p === current ? 'active' : ''} aria-current=${p === current ? 'page' : nothing}
               aria-label=${messages.text('pageNumber', { page: p })}
-              @click=${() => this._onPageChange(p)}>${p}</button>
+              @click=${() => this._onPageChange(p - 1)}>${p}</button>
           `)}
-          <button ?disabled=${this.currentPage >= totalPages} aria-label=${messages.text('nextPage')}
-            @click=${() => this._onPageChange(this.currentPage + 1)}>▶</button>
+          <button ?disabled=${current >= totalPages} aria-label=${messages.text('nextPage')}
+            @click=${() => this._onPageChange(this.page + 1)}>▶</button>
           <select aria-label=${messages.text('pageSize')}
             @change=${(e: Event) => this._onPageSizeChange(Number((e.target as HTMLSelectElement).value))}>
             ${[25, 50, 100].map(s => html`<option value=${s} ?selected=${s === this.pageSize}>${messages.text('rowsPerPage', { size: s })}</option>`)}
@@ -690,16 +700,12 @@ export class URichTable extends LitElement {
   }
 
   private _onSortClick(field: string): void {
-    if (this.sort?.field === field) {
-      if (this.sort.direction === 'asc') {
-        this.sort = { field, direction: 'desc' };
-      } else {
-        this.sort = null;
-      }
-    } else {
-      this.sort = { field, direction: 'asc' };
-    }
-    this._emit('sort-change', this.sort ? { field: this.sort.field, direction: this.sort.direction } : { field, direction: null });
+    // 오름 → 내림 → 없음. detail 은 소스(`setSort`)가 그대로 받는 `criteria` 다.
+    const current = this.sortCriteria[0];
+    this.sortCriteria = current?.key !== field
+      ? [{ key: field, direction: 'asc' }]
+      : current.direction === 'asc' ? [{ key: field, direction: 'desc' }] : [];
+    this._emit('sort-change', { criteria: this.sortCriteria });
   }
 
   private _onFilterChange(field: string, value: string): void {
@@ -710,7 +716,7 @@ export class URichTable extends LitElement {
       this.filters = rest;
     }
     // 새 조건은 첫 페이지부터 — 결과가 줄었는데 4쪽에 남는 것이 이 자리의 흔한 버그다.
-    if (this.dataMode === 'client') this.currentPage = 1;
+    if (this.dataMode === 'client') this.page = 0;
     this._emit('filter-change', this.dataMode === 'client'
         ? { filters: this.filters, filteredCount: this.filteredRowCount }
         : { filters: this.filters });
@@ -1018,16 +1024,16 @@ export class URichTable extends LitElement {
   }
 
   private _onPageChange(page: number): void {
-    if (this.dataMode === 'client') this.currentPage = page;
+    if (this.dataMode === 'client') this.page = page;
     this._emit('page-change', { page, pageSize: this.pageSize });
   }
 
   private _onPageSizeChange(pageSize: number): void {
     if (this.dataMode === 'client') {
       this.pageSize = pageSize;
-      this.currentPage = 1;
+      this.page = 0;
     }
-    this._emit('page-change', { page: 1, pageSize });
+    this._emit('page-change', { page: 0, pageSize });
   }
 
   // --- Helpers ---
@@ -1050,7 +1056,7 @@ export class URichTable extends LitElement {
 
   private _getPageNumbers(totalPages: number): number[] {
     const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
+    const start = Math.max(1, this.page + 1 - 2);
     const end = Math.min(totalPages, start + 4);
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;

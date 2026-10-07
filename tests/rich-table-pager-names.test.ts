@@ -11,7 +11,7 @@ import '../src/components/u-rich-table/URichTable';
  */
 
 type Table = HTMLElement & {
-  columns: unknown[]; data: Record<string, unknown>[]; totalCount: number; currentPage: number; pageSize: number;
+  columns: unknown[]; data: Record<string, unknown>[]; totalCount: number; page: number; pageSize: number;
   updateComplete: Promise<unknown>;
 };
 
@@ -24,7 +24,7 @@ const mount = async () => {
   table.data = [{ _id: 1, name: 'a' }];
   table.totalCount = 60;
   table.pageSize = 25;
-  table.currentPage = 2;
+  table.page = 1;
   document.body.appendChild(table);
   await table.updateComplete;
   return table.shadowRoot!.querySelector('.pagination')!;

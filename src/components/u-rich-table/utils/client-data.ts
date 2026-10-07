@@ -1,4 +1,4 @@
-import type { ColumnDef, FilterState, SortState } from '../types.js';
+import type { ColumnDef, FilterState, SortCriteria } from '../types.js';
 
 type Row = Record<string, unknown>;
 
@@ -24,8 +24,8 @@ export function applyFilters(rows: Row[], filters: FilterState, columns: ColumnD
  * `dataMode="client"` 의 정렬 — 안정 정렬, 빈 값은 방향과 무관하게 뒤로.
  * `type: 'number'` 는 수로, `type: 'date'` 는 시각으로, 그 밖은 로케일 비교(숫자 구간은 수로).
  */
-export function sortRows(rows: Row[], sort: SortState, columns: ColumnDef[]): Row[] {
-  const type = columns.find(c => c.key === sort.field)?.type;
+export function sortRows(rows: Row[], sort: SortCriteria, columns: ColumnDef[]): Row[] {
+  const type = columns.find(c => c.key === sort.key)?.type;
   const sign = sort.direction === 'asc' ? 1 : -1;
   const key = (v: unknown): number | string => {
     if (type === 'number') return Number(v);
@@ -34,7 +34,7 @@ export function sortRows(rows: Row[], sort: SortState, columns: ColumnDef[]): Ro
   };
   const empty = (v: unknown) => v === undefined || v === null || v === '';
   return [...rows].sort((a, b) => {
-    const va = a[sort.field], vb = b[sort.field];
+    const va = a[sort.key], vb = b[sort.key];
     if (empty(va) || empty(vb)) return empty(va) === empty(vb) ? 0 : empty(va) ? 1 : -1;
     const ka = key(va), kb = key(vb);
     const cmp = typeof ka === 'number' && typeof kb === 'number'

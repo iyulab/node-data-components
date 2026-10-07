@@ -288,7 +288,7 @@ export type { DataColumn, ViewMode } from './components/data-view/UDataView';
 export type {
   ColumnDef,
   CellPosition,
-  SortState,
+  SortCriteria,
   FilterState,
   RichTableEventMap,
   RowAction,

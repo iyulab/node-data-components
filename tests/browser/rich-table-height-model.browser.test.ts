@@ -30,7 +30,7 @@ type Table = HTMLElement & {
   columns: { key: string; label: string }[];
   data: Record<string, unknown>[];
   totalCount: number;
-  currentPage: number;
+  page: number;
   pageSize: number;
   updateComplete: Promise<boolean>;
 };
@@ -51,7 +51,7 @@ async function mount(height: string | null, rowCount = 50): Promise<Table> {
   el.data = rows(rowCount);
   el.totalCount = 1000; // 페이지네이션이 실제로 그려지도록
   el.pageSize = rowCount;
-  el.currentPage = 1;
+  el.page = 0;
   if (height) el.style.height = height;
   host.appendChild(el);
   await el.updateComplete;

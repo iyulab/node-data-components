@@ -38,7 +38,7 @@ type Table = HTMLElement & {
   columns: unknown[];
   data: Record<string, unknown>[];
   totalCount: number;
-  currentPage: number;
+  page: number;
   pageSize: number;
   updateComplete: Promise<boolean>;
 };
@@ -80,7 +80,7 @@ async function mount(colCount: number, unit: Unit): Promise<Table> {
   el.data = ROWS(5, colCount);
   el.totalCount = 100;
   el.pageSize = 5;
-  el.currentPage = 1;
+  el.page = 0;
   host.appendChild(el);
   await el.updateComplete;
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -152,7 +152,7 @@ describe('u-rich-table — 열 폭', () => {
     el.data = [{ _id: 'r0', a: 'A-0001', item: 'Business cards, 500ct', qty: '12' }];
     el.totalCount = 1;
     el.pageSize = 5;
-    el.currentPage = 1;
+    el.page = 0;
     host.appendChild(el);
     await el.updateComplete;
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
