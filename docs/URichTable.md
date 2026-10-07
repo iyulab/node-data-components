@@ -258,7 +258,7 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `row-update` | `{ row, field, value, oldValue }` |
 | `row-delete` | `{ row }` — `deletable`일 때 액션 셀 휴지통 클릭 또는 `Delete` 키 |
 | `row-expand` | `{ row, expanded }` |
-| `row-activate` | `{ row, id, via }` — 행을 클릭했거나, 편집할 수 없는 셀에 포커스를 둔 채 `Enter` 를 눌렀다(`via` 는 `'click'` · `'keyboard'`). `selectable` 과 무관하다 — 선택은 «무엇에 작업할지», 활성은 «무엇을 볼지» |
+| `row-activate` | `{ row, id, via }` — 행을 클릭했거나, 편집할 수 없는 셀에 포커스를 둔 채 `Enter` 를 눌렀다(`via` 는 `'click'` · `'keyboard'`). 셀이 그린 컨트롤(링크 · 버튼)을 누른 것은 그 컨트롤의 클릭이라 활성이 아니다. `selectable` 과 무관하다 — 선택은 «무엇에 작업할지», 활성은 «무엇을 볼지» |
 | `sort-change` | `{ criteria: SortCriteria[] }` — 해제하면 `[]` |
 | `filter-change` | `{ filters, filteredCount? }` — `filteredCount` 는 `data-mode="client"` 에서만 |
 | `page-change` | `{ page, pageSize }` — `page` 는 0 기준 |

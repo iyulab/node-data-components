@@ -12,6 +12,7 @@ import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { copyFromKey, isTextEntry, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
+import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 // The date cell editor (registers `u-date-picker`).
 import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
 
@@ -616,7 +617,7 @@ export class URichTable extends LitElement {
         tabindex=${this._isTabStop(rowIdx, colIdx) ? '0' : '-1'}
         style=${effectiveAlign(col) !== 'start' ? `text-align: ${effectiveAlign(col)}` : ''}
         @focus=${() => this._onCellFocus(rowIdx, colIdx)}
-        @click=${() => this._onCellClick(rowIdx, colIdx)}
+        @click=${(e: MouseEvent) => this._onCellClick(e, rowIdx, colIdx)}
         @dblclick=${() => col.editable && this._onCellDblClick(rowIdx, colIdx, value)}>
         ${this._renderCellContent(col, value, row)}
       </td>
@@ -862,9 +863,11 @@ export class URichTable extends LitElement {
     this.shadowRoot?.querySelector<HTMLElement>(`[data-cell][data-row="${f.rowIndex}"][data-col="${f.colIndex}"]`)?.focus();
   }
 
-  private _onCellClick(rowIdx: number, colIdx: number): void {
+  private _onCellClick(e: MouseEvent, rowIdx: number, colIdx: number): void {
     this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
     this._lastSelectedIndex = rowIdx;
+    // A control the cell renders (a link, a Delete button, a field) owns its own click — not "open this row".
+    if (isFromControl(e, e.currentTarget as EventTarget)) return;
     this._fireRowActivate(rowIdx, 'click');
   }
 

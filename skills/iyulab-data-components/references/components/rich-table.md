@@ -289,7 +289,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `row-create` | `{ row }` | The add-row control produced a row |
 | `row-delete` | `{ row }` | The trash-can delete button was clicked, or `Delete` was pressed on selected rows (only when `deletable`) |
 | `row-expand` | `{ row, expanded }` | A detail row was opened or closed |
-| `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). Independent of `selectable` — selection is "what to act on", activation is "what to view" |
+| `row-activate` | `{ row, id, via }` | A row was clicked, or `Enter` was pressed on a focused non-editable cell (`via` is `'click'` or `'keyboard'`). A click on a control the cell renders (a link, a button) is that control's, not an activation. Independent of `selectable` — selection is "what to act on", activation is "what to view" |
 | `clipboard-paste` | `{ rows }` | `Ctrl`/`Cmd` + `V` outside an editor: the pasted TSV, parsed into rows for the app to insert. Named apart from the native `paste`, which also bubbles out of the cell editors |
 | `clipboard-error` | `{ action: 'copy' \| 'paste', error }` | Neither the browser's clipboard event nor the Clipboard API took (or gave) the text |
 

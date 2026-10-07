@@ -53,6 +53,21 @@ describe('URichTable — row-activate', () => {
     expect(detail.via).toBe('click');
   });
 
+  it('NEGATIVE: 셀이 그린 컨트롤(버튼·링크)을 누른 것은 그 컨트롤의 클릭이다 — 행을 열지 않는다', async () => {
+    const el = table = await mount([{ key: 'name', label: 'Name' }]);
+    const td = cell(el, 1);
+    td.insertAdjacentHTML('beforeend', '<button class="del">Delete</button><a href="#x" class="lnk">x</a>');
+    const handler = vi.fn();
+    el.addEventListener('row-activate', handler);
+
+    (td.querySelector('.del') as HTMLElement).click();
+    (td.querySelector('.lnk') as HTMLElement).click();
+    expect(handler).not.toHaveBeenCalled();
+
+    td.click();
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
   it('포커스된 비-editable 셀에서 Enter 가 row-activate(via: keyboard)를 낸다', async () => {
     const el = table = await mount([{ key: 'name', label: 'Name' }]);
     const handler = vi.fn();

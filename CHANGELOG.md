@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.43.2] - 2026-10-07
+
+### Fixed
+
+- **`u-rich-table` no longer opens a row when a control in its cell is pressed.** A click on a link, a button or a
+  field a column's `render` draws (a Delete button, a mail link) also fired `row-activate`, so pressing «Delete» in a
+  list that opens rows on click navigated away. Requires `@iyulab/components` 2.15.0.
+
 ## [0.43.1] - 2026-10-07
 
 ### Fixed
