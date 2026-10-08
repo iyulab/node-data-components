@@ -172,7 +172,7 @@ export class UDataView extends UElement {
   /** 아이템 간격 */
   @property({ type: String }) gap = '1rem';
   /** 커스텀 렌더 함수 (grid/list 카드용) */
-  @property({ attribute: false }) renderCard?: (item: DataItem, index: number) => TemplateResult;
+  @property({ attribute: false }) renderCard?: (item: DataItem, index: number) => TemplateResult | HTMLElement | string;
   /** 커스텀 셀 렌더 함수 (table용) */
   @property({ attribute: false }) renderCell?: (item: DataItem, column: DataColumn, index: number) => TemplateResult | string;
 

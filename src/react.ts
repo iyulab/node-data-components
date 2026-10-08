@@ -7,10 +7,10 @@
  * react / @lit/react 는 optional peerDependency — 이 서브패스를 import하는
  * React 소비자에게만 필요합니다.
  */
-import React, { forwardRef, useEffect, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { createComponent, type EventName } from '@lit/react';
-import type { TemplateResult } from 'lit';
+import type { ReactiveController, ReactiveControllerHost, TemplateResult } from 'lit';
 
 import './utilities/shadowDomProtection';
 
@@ -46,8 +46,8 @@ const _dataViewEventsAreExhaustive: UncoveredDataViewEvents extends never
   : UncoveredDataViewEvents = true;
 void _dataViewEventsAreExhaustive;
 
-/** UDataView React 래퍼 — `onRowActivate` 는 두 표의 것과 같다. */
-export const UDataViewReact = createComponent({
+/** UDataView 기본 래퍼 — `onRowActivate` 는 두 표의 것과 같다. 공개 래퍼(`UDataViewReact`)는 아래 — `renderCard` 에 React 노드 경로를 더한다. */
+const BaseUDataViewReact = createComponent({
   tagName: 'u-data-view',
   elementClass: UDataView,
   react: React,
@@ -126,18 +126,66 @@ export interface ColumnDefReact extends Omit<ColumnDef, 'render'> {
   render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode | HTMLElement;
 }
 
-interface ReactCellRoot { container: HTMLElement; root: Root; rowId: string }
-
 /**
- * `col.render`가 돌려준 값이 vanilla 계약(`string | HTMLElement`)을 벗어나면 —
- * React 엘리먼트로 보고 캐시된 React root에 마운트해 그 컨테이너를 대신 돌려준다.
- * root는 (컬럼 key + row `_id`) 단위로 재사용한다 — 매 Lit 재렌더마다 리마운트하면
- * React 쪽 로컬 상태(예: hover)가 매번 날아가고 비용도 크다.
+ * React roots for what the renderers return — one per drawn cell (or expanded row), alive while the table draws it.
+ *
+ * Every `u-rich-table` update calls the renderers of all the cells it draws, synchronously. The first call of an
+ * update schedules a microtask that releases the roots no call of that update asked for — a row that left the page, a
+ * column that was removed, a detail that was collapsed. ⚠The pool does not read the rows: they may come from React
+ * (`data`) or from a data source bound to the element (`bindSource`, `u-list-page`), which React never sees. The
+ * former pruning compared against the React `data` prop and so released every root of a bound table.
  */
-function wrapColumnsForReact(
-  columns: ColumnDefReact[] | undefined,
-  roots: Map<string, ReactCellRoot>,
-): ColumnDef[] | undefined {
+class ReactRootPool implements ReactiveController {
+  private readonly roots = new Map<string, { container: HTMLElement; root: Root }>();
+  private readonly drawn = new Set<string>();
+  private host: ReactiveControllerHost | null = null;
+
+  constructor(private readonly tag: 'span' | 'div') {}
+
+  /** Follows the table's updates — a Lit controller on the element (an update that draws no cell still releases). */
+  attach(host: (ReactiveControllerHost & HTMLElement) | null): void {
+    if (host === this.host) return;
+    this.host?.removeController(this);
+    this.host = host;
+    host?.addController(this);
+  }
+
+  hostUpdate(): void {
+    this.drawn.clear();
+  }
+
+  hostUpdated(): void {
+    for (const [key, entry] of this.roots) {
+      if (this.drawn.has(key)) continue;
+      this.roots.delete(key);
+      // Unmounting inside a render that is still committing warns — outside it, it does not (measured).
+      queueMicrotask(() => entry.root.unmount());
+    }
+  }
+
+  /** Renders `node` into the root for `key` (made on first use) and returns its container for the table to place. */
+  mount(key: string, node: React.ReactNode): HTMLElement {
+    this.drawn.add(key);
+    let entry = this.roots.get(key);
+    if (!entry) {
+      const container = document.createElement(this.tag);
+      entry = { container, root: createRoot(container) };
+      this.roots.set(key, entry);
+    }
+    entry.root.render(node);
+    return entry.container;
+  }
+
+  dispose(): void {
+    this.attach(null);
+    for (const entry of this.roots.values()) queueMicrotask(() => entry.root.unmount());
+    this.roots.clear();
+    this.drawn.clear();
+  }
+}
+
+/** A column `render` that returned a React node is mounted in the cell's root; strings and elements pass through. */
+function wrapColumnsForReact(columns: ColumnDefReact[] | undefined, pool: ReactRootPool): ColumnDef[] | undefined {
   if (!columns) return undefined;
   return columns.map((col): ColumnDef => {
     const originalRender = col.render;
@@ -146,48 +194,13 @@ function wrapColumnsForReact(
       ...col,
       render: (value, row) => {
         const result = originalRender(value, row);
-        if (typeof result === 'string') return result;
-        if (result instanceof HTMLElement) return result;
+        if (typeof result === 'string' || result instanceof HTMLElement) return result;
         if (result == null || typeof result === 'boolean') return '';
-
         const rowId = String((row as { _id?: unknown })._id ?? '');
-        const key = `${col.key}::${rowId}`;
-        let entry = roots.get(key);
-        if (!entry) {
-          const container = document.createElement('span');
-          entry = { container, root: createRoot(container), rowId };
-          roots.set(key, entry);
-        }
-        entry.root.render(result);
-        return entry.container;
+        return pool.mount(`${col.key}::${rowId}`, result);
       },
     };
   });
-}
-
-/**
- * 더 이상 렌더되지 않는(행이 사라졌거나 컬럼이 바뀐) 캐시 root를 정리한다.
- * `useEffect`(커밋 이후)에서만 부른다 — React root의 마운트/언마운트는 React 렌더
- * 단계 밖에서 하는 것이 안전하다(StrictMode 이중 호출과도 충돌하지 않는다).
- */
-function pruneStaleRoots(
-  roots: Map<string, ReactCellRoot>,
-  columns: ColumnDefReact[] | undefined,
-  data: Record<string, unknown>[] | undefined,
-): void {
-  const validColKeys = new Set((columns ?? []).map(c => c.key));
-  const validRowIds = new Set((data ?? []).map(row => String((row as { _id?: unknown })._id ?? '')));
-  for (const [key, entry] of roots) {
-    const colKey = key.slice(0, key.length - 2 - entry.rowId.length);
-    if (!validColKeys.has(colKey) || !validRowIds.has(entry.rowId)) {
-      roots.delete(key);
-      // react-dom은 다른 root가 렌더 중일 때 동기 unmount를 경고한다("Attempted to
-      // synchronously unmount a root while React was already rendering") — 이 effect
-      // 자체가 React 커밋 사이클 안에서 실행되므로, 실제 unmount는 그 사이클 밖(마이크로
-      // 태스크)으로 미룬다.
-      queueMicrotask(() => entry.root.unmount());
-    }
-  }
 }
 
 /**
@@ -199,38 +212,15 @@ export type DetailRendererReact = (row: Record<string, unknown>) => React.ReactN
 const isTemplateResult = (v: unknown): v is TemplateResult =>
   typeof v === 'object' && v !== null && '_$litType$' in v;
 
-/**
- * 상세 렌더러가 React 노드를 돌려주면 행(`_id`)마다 캐시된 React root 에 마운트해 그 컨테이너를
- * 넘긴다 — 셀 렌더러(`wrapColumnsForReact`)와 같은 수명 관리다. root 는 행이 **펼쳐져 있는
- * 동안** 산다: 접히거나(`row-expand` 의 `expanded: false`) 행이 데이터에서 사라지면 언마운트된다.
- */
-function wrapDetailForReact(
-  render: DetailRendererReact | undefined,
-  roots: Map<string, ReactCellRoot>,
-): URichTable['detailRenderer'] {
+/** The detail renderer's React node is mounted in the row's root — it lives while the row is expanded and drawn. */
+function wrapDetailForReact(render: DetailRendererReact | undefined, pool: ReactRootPool): URichTable['detailRenderer'] {
   if (!render) return undefined;
   return (row) => {
     const result = render(row);
     if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
     if (result == null || typeof result === 'boolean') return '';
-    const rowId = String((row as { _id?: unknown })._id ?? '');
-    let entry = roots.get(rowId);
-    if (!entry) {
-      const container = document.createElement('div');
-      entry = { container, root: createRoot(container), rowId };
-      roots.set(rowId, entry);
-    }
-    entry.root.render(result as React.ReactNode);
-    return entry.container;
+    return pool.mount(String((row as { _id?: unknown })._id ?? ''), result as React.ReactNode);
   };
-}
-
-/** 한 행의 상세 root 를 놓는다 — 커밋 사이클 밖(마이크로태스크)에서 언마운트한다(`pruneStaleRoots` 와 같은 이유). */
-function releaseDetailRoot(roots: Map<string, ReactCellRoot>, rowId: string): void {
-  const entry = roots.get(rowId);
-  if (!entry) return;
-  roots.delete(rowId);
-  queueMicrotask(() => entry.root.unmount());
 }
 
 export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTableReact>, 'columns' | 'detailRenderer'> & {
@@ -241,63 +231,94 @@ export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTab
 /**
  * `URichTable`(`data-view`가 아니라 `u-rich-table`) React 래퍼. 이벤트는
  * `BaseURichTableReact`(RichTableEventMap 전체를 onXxx로 노출)를 그대로 물려받고,
- * `columns[].render`에만 `ReactNode` 반환 경로를 추가한다.
+ * `columns[].render`·`detailRenderer` 에만 `ReactNode` 반환 경로를 추가한다.
+ *
+ * ⚠Props the caller did not give are not passed on — `@lit/react` assigns every prop it receives on every render, so
+ * an always-passed `data` set the rows of a table bound to a data source (`u-list-page`, `bindSource`) to `undefined`
+ * whenever the screen re-rendered.
  */
 export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((props, ref) => {
-  const rootsRef = useRef<Map<string, ReactCellRoot>>(new Map());
-  const detailRootsRef = useRef<Map<string, ReactCellRoot>>(new Map());
-  const { columns, data, detailRenderer, onRowExpand, ...rest } = props;
+  const poolRef = useRef<ReactRootPool>(null);
+  const detailPoolRef = useRef<ReactRootPool>(null);
+  poolRef.current ??= new ReactRootPool('span');
+  detailPoolRef.current ??= new ReactRootPool('div');
+  const { columns, detailRenderer, ...rest } = props;
 
-  const wrappedColumns = useMemo(
-    () => wrapColumnsForReact(columns, rootsRef.current),
-    [columns]
-  );
-  const wrappedDetail = useMemo(
-    () => wrapDetailForReact(detailRenderer, detailRootsRef.current),
-    [detailRenderer]
-  );
+  const wrappedColumns = useMemo(() => wrapColumnsForReact(columns, poolRef.current!), [columns]);
+  const wrappedDetail = useMemo(() => wrapDetailForReact(detailRenderer, detailPoolRef.current!), [detailRenderer]);
 
-  // 접힌 행의 상세 root 를 놓은 뒤 소비자의 핸들러로 넘긴다.
-  const handleRowExpand = useMemo(
-    () => (e: RichTableEventMap['row-expand']) => {
-      if (!e.detail.expanded) releaseDetailRoot(detailRootsRef.current, String((e.detail.row as { _id?: unknown })._id ?? ''));
-      onRowExpand?.(e);
-    },
-    [onRowExpand]
-  );
+  // The element, for the pools to follow its updates — and the caller's ref, forwarded.
+  const elementRef = useRef<URichTable | null>(null);
+  const setRef = useCallback((el: URichTable | null) => {
+    elementRef.current = el;
+    if (typeof ref === 'function') ref(el);
+    else if (ref) ref.current = el;
+  }, [ref]);
 
   useEffect(() => {
-    pruneStaleRoots(rootsRef.current, columns, data);
-    const ids = new Set((data ?? []).map(row => String((row as { _id?: unknown })._id ?? '')));
-    for (const rowId of [...detailRootsRef.current.keys()]) {
-      if (!ids.has(rowId)) releaseDetailRoot(detailRootsRef.current, rowId);
-    }
-  }, [columns, data]);
-
-  useEffect(() => {
-    const roots = rootsRef.current;
-    const detailRoots = detailRootsRef.current;
-    return () => {
-      for (const entry of detailRoots.values()) queueMicrotask(() => entry.root.unmount());
-      detailRoots.clear();
-      // 같은 이유로(위 pruneStaleRoots 주석 참조) 마이크로태스크로 미룬다 — 이 cleanup은
-      // 바깥 root 자신의 unmount 커밋 도중에 실행되므로, 안쪽 per-cell root들을 동기로
-      // unmount하면 그 경고가 그대로 재현된다(실측).
-      for (const entry of roots.values()) queueMicrotask(() => entry.root.unmount());
-      roots.clear();
-    };
+    const pools = [poolRef.current!, detailPoolRef.current!];
+    for (const pool of pools) pool.attach(elementRef.current);
+    // 이 cleanup 은 바깥 root 자신의 unmount 커밋 도중에 실행된다 — 풀은 언마운트를 마이크로태스크로 미룬다.
+    return () => { for (const pool of pools) pool.dispose(); };
   }, []);
 
   return React.createElement(BaseURichTableReact, {
     ...rest,
-    data,
-    columns: wrappedColumns,
-    detailRenderer: wrappedDetail,
-    onRowExpand: handleRowExpand,
-    ref,
+    ...('columns' in props ? { columns: wrappedColumns } : {}),
+    ...('detailRenderer' in props ? { detailRenderer: wrappedDetail } : {}),
+    ref: setRef,
   } as React.ComponentProps<typeof BaseURichTableReact>);
 });
 URichTableReact.displayName = 'URichTableReact';
+
+/** A card renderer for React — a React node, or what the element takes (a Lit template, an element, text). */
+export type DataViewCardRendererReact = (item: Record<string, unknown>, index: number) => React.ReactNode | TemplateResult | HTMLElement;
+
+export type UDataViewReactProps = Omit<React.ComponentProps<typeof BaseUDataViewReact>, 'renderCard'> & {
+  renderCard?: DataViewCardRendererReact;
+};
+
+/**
+ * `UDataView` React 래퍼 — `renderCard` 가 React 노드를 돌려줄 수 있다(카드마다 React root · 그려진 동안만 산다 — 표의 셀과 같은
+ * 풀). 종전에는 Lit 템플릿만 받아, 표의 `render` 는 JSX 인 화면이 카드만 Lit 으로 써야 했다. 넘기지 않은 prop 은 전하지 않는다
+ * (`URichTableReact` 와 같은 이유 — 소스에 묶인 카드 보기의 `data` 를 지우지 않게).
+ */
+export const UDataViewReact = forwardRef<UDataView, UDataViewReactProps>((props, ref) => {
+  const poolRef = useRef<ReactRootPool>(null);
+  poolRef.current ??= new ReactRootPool('div');
+  const { renderCard, ...rest } = props;
+
+  const wrappedCard = useMemo(() => {
+    if (!renderCard) return undefined;
+    const pool = poolRef.current!;
+    return (item: Record<string, unknown>, index: number) => {
+      const result = renderCard(item, index);
+      if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
+      if (result == null || typeof result === 'boolean') return '';
+      return pool.mount(String(item._id ?? `#${index}`), result as React.ReactNode);
+    };
+  }, [renderCard]);
+
+  const elementRef = useRef<UDataView | null>(null);
+  const setRef = useCallback((el: UDataView | null) => {
+    elementRef.current = el;
+    if (typeof ref === 'function') ref(el);
+    else if (ref) ref.current = el;
+  }, [ref]);
+
+  useEffect(() => {
+    const pool = poolRef.current!;
+    pool.attach(elementRef.current);
+    return () => pool.dispose();
+  }, []);
+
+  return React.createElement(BaseUDataViewReact, {
+    ...rest,
+    ...('renderCard' in props ? { renderCard: wrappedCard } : {}),
+    ref: setRef,
+  } as React.ComponentProps<typeof BaseUDataViewReact>);
+});
+UDataViewReact.displayName = 'UDataViewReact';
 
 export { USimpleSheet, UDataView, URichTable };
 export type { SheetColumn } from './components/simple-sheet/USimpleSheet';

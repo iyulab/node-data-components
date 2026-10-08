@@ -199,6 +199,16 @@ const columns: ColumnDefReact[] = [
 vanilla `URichTable`(`import { URichTable } from '@iyulab/data-components'`)은 이 계약에
 영향받지 않습니다 — `render`는 여전히 `string | HTMLElement`만 반환해야 합니다.
 
+`UDataViewReact`의 `renderCard`도 `ReactNode`를 받습니다 — 표의 셀이 JSX인 화면이 카드 보기도 JSX로 씁니다.
+셀·카드의 React root는 **그 셀(카드)이 그려지는 동안** 살고, 행이 데이터에서 빠지면(다른 페이지 · 접힌 상세) 놓입니다.
+
+데이터 소스가 요소에 행을 묶는 목록(`u-list-page` · `bindSource`)에서는 `data`를 넘기지 않습니다 — 두 래퍼는
+넘기지 않은 prop을 요소에 전하지 않으므로, 화면이 다시 그려져도 묶인 행이 지워지지 않습니다.
+
+```tsx
+<UDataViewReact slot="view" view-name="cards" hideToolbar renderCard={(order) => <OrderCard order={order} />} />
+```
+
 펼친 행의 상세(`detailRenderer`)도 같습니다 — `URichTableReact` 에서는 `ReactNode` 를 돌려줄 수
 있고, 행마다 React root 에 마운트됩니다. **그 root 는 행이 펼쳐져 있는 동안만 삽니다**: 접거나
 행이 `data` 에서 사라지면 언마운트되므로(effect 정리가 돈다), 상세의 로컬 상태는 다시 펼칠 때

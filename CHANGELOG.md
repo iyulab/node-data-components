@@ -9,8 +9,18 @@
   item count were a second switch and a second count. `hide-toolbar` leaves them out — the same convention as
   `u-rich-table`'s `hide-pagination`; `mode` still sets the layout.
 
+- **`UDataViewReact`'s `renderCard` takes a React node** — the card view of a React screen whose table cells are JSX.
+  The vanilla `renderCard` may return an element or text as well as a Lit template.
+
 ### Fixed
 
+- **`URichTableReact` and `UDataViewReact` keep rows bound to the element.** In a list whose data source binds the
+  table (`u-list-page`, `bindSource`), the screen passes no `data` — but the wrapper always passed it, as `undefined`,
+  and `@lit/react` assigns every prop it receives on each render: any re-render of the screen emptied the table. Props
+  the caller does not give are no longer passed on.
+- **React cells live while they are drawn.** The roots of JSX cells (and expanded details) were released by comparing
+  with the React `data` prop, so a bound table lost them; they are now released when the table's update no longer draws
+  them (a row on another page, a removed column, a collapsed detail).
 - **A hidden `u-rich-table` is hidden.** Its host's `display: flex` outranked the browser's `[hidden]` rule, so
   `hidden` did nothing — a list that switches between a table and a card view (which hides the view it is not
   showing) drew both.

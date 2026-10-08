@@ -139,6 +139,38 @@ describe('URichTableReact — React 셀 렌더러', () => {
   });
 });
 
+/**
+ * 🔴**rows bound to the element, not given by React** — a data source binds the table (`u-list-page`, `bindSource`):
+ * the screen passes columns but no `data`. Before, the wrapper always passed `data` (as `undefined`), and `@lit/react`
+ * assigns every received prop on every render — so any re-render of the screen (a selection count, a message) emptied
+ * the table. And its JSX cells were released, because the roots were pruned against the React `data` prop.
+ */
+describe('URichTableReact — rows from a bound source', () => {
+  it('a re-render keeps rows set on the element and their React cells; a row that leaves releases its root', async () => {
+    const unmounted = vi.fn();
+    const Probe = ({ name }: { name: string }) => {
+      useEffect(() => unmounted, []);
+      return React.createElement('b', { className: 'probe' }, name);
+    };
+    const columns = [{ key: 'name', label: 'Name', render: (v: unknown) => React.createElement(Probe, { name: String(v) }) }];
+    const el = await mount({ columns });
+    await act(async () => { el.data = [{ _id: 'a', name: 'first' }, { _id: 'b', name: 'second' }]; await el.updateComplete; });
+
+    // The screen re-renders (its own state changed) — same columns, still no `data`.
+    await act(async () => { root!.render(React.createElement(URichTableReact, { columns, selectable: true })); });
+    await el.updateComplete;
+    expect(el.data).toHaveLength(2);
+    const names = () => [...el.shadowRoot!.querySelectorAll('b.probe')].map((b) => b.textContent);
+    expect(names()).toEqual(['first', 'second']);
+    expect(unmounted).not.toHaveBeenCalled();
+
+    await act(async () => { el.data = [{ _id: 'b', name: 'second' }]; await el.updateComplete; });
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    expect(names()).toEqual(['second']);
+    expect(unmounted).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('URichTableReact — React 상세 렌더러(detailRenderer)', () => {
   const expandButton = (el: URichTable) => el.shadowRoot!.querySelector('.expand-button') as HTMLButtonElement;
 

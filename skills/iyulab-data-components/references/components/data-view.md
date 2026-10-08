@@ -91,7 +91,7 @@ component prints at its content height.
 | `columns` | `DataColumn[]` | — | | Columns for `mode="table"`; inferred from the first item when omitted |
 | `gridMinWidth` | `string` | `'200px'` | | Minimum card width in `mode="grid"` (CSS length) |
 | `gap` | `string` | `'1rem'` | | Gap between cards or rows (CSS length) |
-| `renderCard` | `(item, index) => TemplateResult` | — | | Replaces card content in `grid` / `list` |
+| `renderCard` | `(item, index) => TemplateResult \| HTMLElement \| string` | — | | Replaces card content in `grid` / `list`. `UDataViewReact` also takes a React node |
 | `renderCell` | `(item, column, index) => TemplateResult \| string` | — | | Replaces cell content in `table` |
 
 ## Events
