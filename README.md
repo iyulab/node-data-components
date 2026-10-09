@@ -258,7 +258,7 @@ const sheet = document.querySelector('u-simple-sheet'); // USimpleSheet | null �
 `@iyulab/components`의 디자인 토큰을 읽습니다. **토큰 시트가 문서에 있어야 테마가 동작합니다.**
 
 ```typescript
-import { Theme } from '@iyulab/components';
+import { Theme } from '@iyulab/components/dist/utilities/Theme.js'; // the barrel would register every component
 
 Theme.init({ default: 'system' });
 Theme.set('dark'); // 'light' | 'dark' | 'system'
