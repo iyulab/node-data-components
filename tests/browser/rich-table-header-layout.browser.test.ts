@@ -1,5 +1,6 @@
 import { describe, it, afterEach, expect } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import lightCss from '@iyulab/components/styles/light.css?raw';
 import '../../src/components/u-rich-table/URichTable';
 
 /**
@@ -100,11 +101,26 @@ describe('u-rich-table 머리글 배치', () => {
     expect(firstRowY()).toBe(before);
   });
 
-  it('🔴섀도 안 체크박스가 역할 색(--u-primary-color)을 그린다 — UA 기본 파랑이 아니다', async () => {
+  it('🔴섀도 안 체크박스가 «선택 표시» 역할 색(--u-selection-color)을 그린다 — UA 기본 파랑이 아니다', async () => {
     const el = await mount(['selectable']);
     el.style.setProperty('--u-primary-color', 'rgb(24, 25, 27)');
+    el.style.setProperty('--u-selection-color', 'rgb(47, 111, 235)');
     for (const box of $$(el, 'input[type=checkbox]')) {
-      expect(getComputedStyle(box).accentColor).toBe('rgb(24, 25, 27)');
+      expect(getComputedStyle(box).accentColor).toBe('rgb(47, 111, 235)');
+    }
+  });
+
+  it('⚪NEGATIVE — 테마가 선택 색을 가르지 않으면 primary 를 따른다(components 시트의 기본 짝)', async () => {
+    const sheet = document.createElement('style');
+    sheet.textContent = lightCss;
+    document.head.appendChild(sheet);
+    document.documentElement.style.setProperty('--u-primary-color', 'rgb(24, 25, 27)');
+    try {
+      const el = await mount(['selectable']);
+      expect(getComputedStyle($$(el, 'input[type=checkbox]')[0]).accentColor).toBe('rgb(24, 25, 27)');
+    } finally {
+      sheet.remove();
+      document.documentElement.style.removeProperty('--u-primary-color');
     }
   });
 

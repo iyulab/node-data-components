@@ -290,9 +290,9 @@ export const richTableStyles = css`
     text-align: center;
   }
 
-  /* 섀도 안 네이티브 체크박스는 UA 기본 파랑을 그린다 — u-checkbox(primary) · flex-table 과 같은 역할 색으로. */
+  /* 섀도 안 네이티브 체크박스는 UA 기본 파랑을 그린다 — u-checkbox · flex-table 과 같은 «선택 표시» 역할 색으로. */
   input[type='checkbox'] {
-    accent-color: var(--u-primary-color, #1976D2);
+    accent-color: var(--u-selection-color, #1976D2);
   }
 
   /* 🔴포인터 타깃은 13x13 네이티브 입력이 아니라 «이 라벨»이다(WCAG 2.2 SC 2.5.8).

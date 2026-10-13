@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `u-rich-table`: the selection checkboxes read the selection role (`--u-selection-color`, from `@iyulab/components`),
+  falling back to `--u-primary-color` as in 0.48.1.
+
 ## [0.48.1] - 2026-10-13
 
 ### Fixed
