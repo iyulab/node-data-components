@@ -22,6 +22,7 @@ import { messages } from '../../utilities/messages.js';
 import type { PickerItem } from './types.js';
 import { styles } from './styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
+import { CompositionTracker, replayInput } from '@iyulab/components/dist/utilities/composition.js';
 
 /**
  * Form control that picks one record from a remote-searched list. Typing filters an inline
@@ -122,6 +123,9 @@ export class URecordPicker extends UFormControlElement<string> {
             ?readonly=${this.readonly}
             placeholder=${ifDefined(this.placeholder)}
             .value=${live(this.query)}
+            @compositionstart=${this.inlineIme}
+            @compositionupdate=${this.inlineIme}
+            @compositionend=${this.inlineIme}
             @input=${this.handleInlineInput}
             @keydown=${this.handleInlineKeydown}
           />
@@ -166,6 +170,9 @@ export class URecordPicker extends UFormControlElement<string> {
         <div class="dialog-search">
           <input type="text" .value=${live(this.dialogQuery)}
             aria-label=${messages.text('pickerSearch')}
+            @compositionstart=${this.dialogIme}
+            @compositionupdate=${this.dialogIme}
+            @compositionend=${this.dialogIme}
             @input=${this.handleDialogSearchInput}
           />
         </div>
@@ -194,10 +201,18 @@ export class URecordPicker extends UFormControlElement<string> {
     `;
   }
 
+  /**
+   * 두 검색칸의 IME 조합. 조합 중인 음절(«서울» 의 가는 길 «ㅅ» · «성» · «서우»)은 «진행 중» 이라 서버에 묻지 않는다 —
+   * 그 질의는 찾는 레코드를 빼고 «결과 없음» 을 보인다. 글자는 담고, 검색은 조합이 끝날 때 확정 글자로 한다.
+   */
+  private readonly inlineIme = new CompositionTracker(replayInput);
+  private readonly dialogIme = new CompositionTracker(replayInput);
+
   private handleInlineInput = (e: InputEvent) => {
     this.query = (e.target as HTMLInputElement).value;
     this.activeIndex = -1;
     window.clearTimeout(this.inlineDebounceTimer);
+    if (this.inlineIme.composing) return;
 
     if (!this.query) {
       this.inlineSearchSeq++;
@@ -293,6 +308,7 @@ export class URecordPicker extends UFormControlElement<string> {
   private handleDialogSearchInput = (e: InputEvent) => {
     this.dialogQuery = (e.target as HTMLInputElement).value;
     window.clearTimeout(this.dialogDebounceTimer);
+    if (this.dialogIme.composing) return;
     this.dialogDebounceTimer = window.setTimeout(() => {
       this.runDialogSearch(this.dialogQuery);
     }, this.debounce);

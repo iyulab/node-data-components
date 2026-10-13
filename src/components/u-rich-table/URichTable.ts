@@ -11,6 +11,7 @@ import { columnLayout, headerWidth, type ColumnLayout } from './utils/column-lay
 import { parseTSV, toTSV } from './utils/clipboard.js';
 import { applyFilters, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
+import { CompositionTracker, replayInput } from '@iyulab/components/dist/utilities/composition.js';
 import { copyFromKey, isTextEntry, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
 import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 // The date cell editor (registers `u-date-picker`).
@@ -491,7 +492,13 @@ export class URichTable extends LitElement {
                     aria-label=${messages.text('filterColumn', { col: col.label })}
                     @keydown=${this._onFilterControlKeyDown}
                     placeholder=${this.filterPlaceholder || messages.text('filterPlaceholder')}
-                    @input=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLInputElement).value)} />`
+                    @compositionstart=${this._filterIme}
+                    @compositionupdate=${this._filterIme}
+                    @compositionend=${this._filterIme}
+                    @input=${(e: Event) => {
+                      if (this._filterIme.composing) return;
+                      this._onFilterChange(col.key, (e.target as HTMLInputElement).value);
+                    }} />`
             ) : ''}
           </td>
         `)}
@@ -777,6 +784,12 @@ export class URichTable extends LitElement {
       : current.direction === 'asc' ? [{ key: field, direction: 'desc' }] : [];
     this._emit('sort-change', { criteria: this.sortCriteria });
   }
+
+  /**
+   * 열 필터 칸의 IME 조합. 조합 중인 음절(«서울» 의 가는 길 «ㅅ» · «성»)로 거르면 찾는 행을 숨기고, 그 조건이
+   * `filter-change` 로 바깥(서버 모드의 질의)에 나간다 — 거르기는 조합이 끝날 때 확정 글자로 한다.
+   */
+  private readonly _filterIme = new CompositionTracker(replayInput);
 
   private _onFilterChange(field: string, value: string): void {
     if (value) {

@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.47.2] - 2026-10-13
+
+### Fixed
+
+- `u-record-picker` does not search with a syllable still being composed with an IME (Korean, Japanese, Chinese). A
+  pause longer than `debounce` in the middle of typing «서울» sent `search('ㅅ')`, `search('성')` and so on, and showed
+  records that did not match what was being typed. Both search boxes now search when the composition ends.
+- `u-rich-table` column filters apply when an IME composition ends, not on each composing syllable — the filter row
+  used to hide every row at «ㅅ» and report each partial syllable through `filter-change`, which a server-mode table
+  turns into a query.
+
+### Changed
+
+- Requires `@iyulab/components` 2.22.0 or later (peer), for its composition helper.
+
 ## [0.47.1] - 2026-10-09
 
 ### Changed
