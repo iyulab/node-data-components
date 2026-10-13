@@ -103,7 +103,7 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `error` | `{ message: string } \| null` | `null` | 마지막 적재 실패 — 있으면 행·빈 상태 대신 `error.message` 를 경고 줄로 그린다(로딩 중이면 로딩). 데이터 소스의 `error` 를 그대로 넘긴다 |
 | `emptyMessage` | `string` | `'데이터가 없습니다'` | 빈 상태 문구 |
 | `selectable` | `boolean` | `false` | 체크박스 선택 열 |
-| `editable` | `boolean` | `false` | 셀 인라인 편집 |
+| `editable` | `boolean` | `true` | 표 전체 편집 스위치 — `false` 면 모든 칸을 잠근다(속성으로 — 불리언 속성은 `false` 를 표현하지 못한다). 열은 여전히 자기 `editable` 로 편집을 연다 |
 | `addable` | `boolean` | `false` | 새 행 입력 줄 |
 | `filterable` | `boolean` | `false` | 헤더 아래 필터 입력 줄 |
 | `expandable` | `boolean` | `false` | 행 펼치기 (`detailRenderer` 필요) |
@@ -197,7 +197,7 @@ interface ColumnDef {
   type?:    'text' | 'number' | 'date' | 'select' | 'badge';
 
   sortable?:   boolean;                   // 헤더 클릭 시 sort-change 발생
-  editable?:   boolean;                   // 이 열만 편집 허용 (표의 editable과 함께 필요)
+  editable?:   boolean | ((row, col) => boolean); // 이 열만 편집 허용 (표의 editable 이 켜져 있을 때). 함수면 행마다 — 행 상태로 잠기는 칸
   filterable?: boolean;                   // 이 열만 필터 칸을 받는다 (표의 filterable과 함께 필요)
   filterType?: 'text' | 'select';
   required?:   boolean;

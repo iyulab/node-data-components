@@ -241,7 +241,7 @@ forever.
 
 The pager is `u-pagination` (`@iyulab/components`) — the same pager a list uses on its own. Its button names, the current page (`aria-current`) and the page-size choice are that component's; the table names the navigation after itself (`aria-label` → *"Orders pagination"*).
 | `selectable` | `boolean` | `false` | | Renders the selection column |
-| `editable` | `boolean` | `false` | | Enables inline cell editing on columns marked `editable` |
+| `editable` | `boolean` | `true` | | Table-wide edit switch: `false` locks every cell (a property — a boolean attribute cannot express `false`). Columns still opt in with their own `editable` |
 | `addable` | `boolean` | `false` | | Renders the add-row control |
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |
 | `expandable` | `boolean` | `false` | | Renders the expander column; pair with `detailRenderer` |
@@ -311,7 +311,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `align` | `'start'\|'center'\|'end'` | Cell alignment — logical, so right-to-left locales mirror. Default: `'end'` for `type: 'number'`, otherwise `'start'` |
 | `headerAlign` | `'start'\|'center'\|'end'` | Header alignment. Default: the cell alignment, so a header sits over its values |
 | `sortable` | `boolean` | Header emits `sort-change` |
-| `editable` | `boolean` | Cell is editable when the table is `editable` |
+| `editable` | `boolean \| ((row, col) => boolean)` | Opt-in, while the table is `editable`. A function decides per row — for cells that lock with the row's state (`(row) => row.status !== 'shipped'`). A non-editable cell opens no editor, is skipped by `Tab` while editing, and is `aria-readonly` |
 | `required` | `boolean` | Empty value fails validation |
 | `filterable` | `boolean` | Column appears in the filter row |
 | `filterType` | `'text'\|'select'` | Filter control |
@@ -391,7 +391,7 @@ cell.
 | Arrow keys | Move the focused cell |
 | `Enter` | Editable cell: start editing / commit and move down. Non-editable cell: emit `row-activate` |
 | `Escape` | Cancel editing (in a date editor with its calendar open: close the calendar) |
-| `Tab` / `Shift` + `Tab` | On a cell: leave the table. While editing: commit and edit the next / previous editable cell, wrapping across rows — on the last editable cell (`Shift` + `Tab`: the first) commit and leave the table |
+| `Tab` / `Shift` + `Tab` | On a cell: leave the table. While editing: commit and edit the next / previous editable cell (a cell its row locks is skipped), wrapping across rows — on the last editable cell (`Shift` + `Tab`: the first) commit and leave the table |
 | `Space` | Toggle selection of the focused row (when `selectable`) |
 | `Delete` | Emit `row-delete` for every selected row (when `deletable`) |
 | `Ctrl`/`Cmd` + `A` | Select every row **on this page** — same scope as the header checkbox |

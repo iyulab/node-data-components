@@ -111,7 +111,11 @@ export class URichTable extends LitElement {
     (total, start, end) =>
       messages.text('pageInfo', { total: total.toLocaleString(), start, end });
   @property({ type: Boolean }) selectable = false;
-  @property({ type: Boolean }) editable = false;
+  /**
+   * Table-wide edit switch — `false` locks every cell (a read-only view of an editable list). Columns
+   * still opt in with their own `editable`; this only ever takes editing away.
+   */
+  @property({ type: Boolean }) editable = true;
   @property({ type: Boolean }) addable = false;
   @property({ type: Boolean }) filterable = false;
   @property({ type: Boolean }) expandable = false;
@@ -594,7 +598,7 @@ export class URichTable extends LitElement {
     const isFocused = this.focusedCell?.rowIndex === rowIdx && this.focusedCell?.colIndex === colIdx;
     const value = row[col.key];
 
-    if (isEditing && col.editable) {
+    if (isEditing && this._isCellEditable(col, row)) {
       const stored = this.validationErrors.get(this._errorKey(row, rowIdx, colIdx));
       const validationError = typeof stored === 'function' ? stored() : stored;
       if (col.type === 'select' && col.options) {
@@ -645,7 +649,8 @@ export class URichTable extends LitElement {
         style=${effectiveAlign(col) !== 'start' ? `text-align: ${effectiveAlign(col)}` : ''}
         @focus=${() => this._onCellFocus(rowIdx, colIdx)}
         @click=${(e: MouseEvent) => this._onCellClick(e, rowIdx, colIdx)}
-        @dblclick=${() => col.editable && this._onCellDblClick(rowIdx, colIdx, value)}>
+        aria-readonly=${this._isCellEditable(col, row) ? nothing : 'true'}
+        @dblclick=${() => this._isCellEditable(col, row) && this._onCellDblClick(rowIdx, colIdx, value)}>
         ${this._renderCellContent(col, value, row)}
       </td>
     `;
@@ -1124,6 +1129,13 @@ export class URichTable extends LitElement {
   }
 
   // --- Helpers ---
+  /** 칸이 바뀔 수 있는가 — 표 전체 `editable` 이 먼저, 그다음 열이 정한다(함수면 행마다). */
+  private _isCellEditable(col: ColumnDef, row: Record<string, unknown> | undefined): boolean {
+    if (!this.editable) return false;
+    if (typeof col.editable === 'function') return row != null && col.editable(row, col);
+    return col.editable === true;
+  }
+
   /** 행 동작 칸은 소비자가 동작을 선언했을 때만 존재한다(삭제 또는 커스텀 액션). */
   private get _hasActionsColumn(): boolean {
     return this.deletable || (this.rowActions?.length ?? 0) > 0;
@@ -1143,15 +1155,14 @@ export class URichTable extends LitElement {
 
   /** Tab 이 편집을 옮길 다음(`reverse` 면 이전) 편집 가능 칸 — 행을 넘어 이어지고, 양 끝에서는 없다(`null`). */
   private _nextEditableCell(from: CellPosition, reverse: boolean): CellPosition | null {
-    const editableCols = this.columns.map((c, i) => c.editable ? i : -1).filter(i => i >= 0);
-    const currentIdx = editableCols.indexOf(from.colIndex);
-    if (reverse) {
-      if (currentIdx > 0) return { rowIndex: from.rowIndex, colIndex: editableCols[currentIdx - 1] };
-      if (from.rowIndex > 0) return { rowIndex: from.rowIndex - 1, colIndex: editableCols[editableCols.length - 1] };
-      return null;
+    // 읽는 순서로 칸을 하나씩 걷는다 — 행이 잠근 칸(`editable` 함수가 거짓)은 건너뛴다.
+    const width = this.columns.length;
+    const step = reverse ? -1 : 1;
+    for (let i = from.rowIndex * width + from.colIndex + step; i >= 0 && i < this._view.length * width; i += step) {
+      const rowIndex = Math.floor(i / width);
+      const colIndex = i % width;
+      if (this._isCellEditable(this.columns[colIndex], this._view[rowIndex])) return { rowIndex, colIndex };
     }
-    if (currentIdx < editableCols.length - 1) return { rowIndex: from.rowIndex, colIndex: editableCols[currentIdx + 1] };
-    if (from.rowIndex < this._view.length - 1) return { rowIndex: from.rowIndex + 1, colIndex: editableCols[0] };
     return null;
   }
 
@@ -1239,7 +1250,7 @@ export class URichTable extends LitElement {
       if (ARROW_KEYS.has(e.key)) { e.preventDefault(); this._moveByArrow(e.key); }
       if (e.key === 'Enter' && !isImeComposing(e)) {
         const col = this.columns[this.focusedCell.colIndex];
-        if (col?.editable) {
+        if (col && this._isCellEditable(col, this._view[this.focusedCell.rowIndex])) {
           const value = this._view[this.focusedCell.rowIndex]?.[col.key];
           this._onCellDblClick(this.focusedCell.rowIndex, this.focusedCell.colIndex, value);
         } else {

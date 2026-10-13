@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`u-rich-table`: a column's `editable` can decide per row** — `editable: (row, col) => boolean`, for cells that
+  lock with their row's state (a shipped order's quantity). A cell for which it returns `false` opens no editor
+  (double-click, Enter — Enter activates the row instead), is skipped by Tab while editing, and is `aria-readonly`.
+  Until now the only per-row answer was a `validator` that refused the value after the editor had opened. The same
+  form as `@iyulab/flex-table`'s column `editable`.
+
+### Fixed
+
+- **`u-rich-table`'s table-wide `editable` now does what it was documented to do**: `editable = false` locks every
+  cell, columns marked `editable` included. The property was declared but never read — a column with
+  `editable: true` edited whatever the table said. Its default is now `true` (it was `false` and did nothing), so a
+  table whose columns opt in keeps editing as before; set `editable = false` for a read-only view.
+
 ## [0.47.2] - 2026-10-13
 
 ### Fixed

@@ -22,7 +22,14 @@ export interface ColumnDef {
    */
   minWidth?: number | string;
   sortable?: boolean;
-  editable?: boolean;
+  /**
+   * Whether the column's cells can be edited — opt-in, and only while the table's `editable` is on.
+   * A function decides per row, for cells that lock with the row's state:
+   * `editable: (row) => row.status !== 'shipped'`. A cell that is not editable opens no editor
+   * (double-click, Enter), is skipped by Tab while editing, and is `aria-readonly`. This answers
+   * «may the cell change»; `validator` answers «is this value acceptable».
+   */
+  editable?: boolean | ((row: Record<string, unknown>, col: ColumnDef) => boolean);
   required?: boolean;
   type?: 'text' | 'number' | 'date' | 'select' | 'badge';
   options?: { value: string; label: string }[];
