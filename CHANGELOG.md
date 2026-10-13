@@ -13,7 +13,10 @@
 
 ### Changed
 
-- Requires `@iyulab/components` 2.22.0 or later (peer), for its composition helper.
+- `u-rich-table` client-mode column filters use the same search matching as `u-select` (`Locale.matchesSearch` in
+  `@iyulab/components`): diacritics fold as well as case, and a query of Hangul consonants only matches initials
+  (`ㅅㄴ` finds `성남`).
+- Requires `@iyulab/components` 2.22.0 or later (peer), for its composition helper and search matching.
 
 ## [0.47.1] - 2026-10-09
 

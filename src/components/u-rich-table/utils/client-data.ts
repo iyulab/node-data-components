@@ -1,10 +1,12 @@
+import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import type { ColumnDef, FilterState, SortCriteria } from '../types.js';
 
 type Row = Record<string, unknown>;
 
 /**
  * `dataMode="client"` 의 필터 — 필터 행이 내는 조건을 표가 직접 적용한다.
- * `filterType: 'select'` 은 값 일치, 그 밖은 대소문자를 가리지 않는 «포함».
+ * `filterType: 'select'` 은 값 일치, 그 밖은 components 의 검색 일치(`Locale.matchesSearch` — 대소문자 · 발음 구별 기호를
+ * 접고, 한글은 자모 · 초성으로 «포함»).
  * 조건은 원시 값(`row[key]`)에 적용한다 — `render` 가 그리는 모양이 아니다.
  */
 export function applyFilters(rows: Row[], filters: FilterState, columns: ColumnDef[]): Row[] {
@@ -16,7 +18,7 @@ export function applyFilters(rows: Row[], filters: FilterState, columns: ColumnD
     const text = cell === undefined || cell === null ? '' : String(cell);
     return byKey.get(key)?.filterType === 'select'
       ? text === value
-      : text.toLocaleLowerCase().includes(value.toLocaleLowerCase());
+      : Locale.matchesSearch(text, value);
   }));
 }
 

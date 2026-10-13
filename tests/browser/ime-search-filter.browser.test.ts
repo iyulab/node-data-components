@@ -73,3 +73,23 @@ describe('u-rich-table — 열 필터는 조합이 끝날 때 거른다', () => 
     expect(filters).toEqual([{ city: '서' }]);
   });
 });
+
+describe('u-rich-table — 클라이언트 필터의 검색 일치', () => {
+  it('열 필터는 자모 · 초성으로 찾는다 — «ㅅㄴ» 은 성남', async () => {
+    const t = document.createElement('u-rich-table') as Table & { dataMode: string; filteredRowCount: number };
+    t.columns = [{ key: 'city', label: 'City', filterable: true }];
+    t.data = [{ _id: 1, city: '서울' }, { _id: 2, city: '성남' }, { _id: 3, city: '부산' }];
+    t.filterable = true;
+    t.dataMode = 'client';
+    document.body.appendChild(t);
+    await t.updateComplete;
+    const input = t.shadowRoot!.querySelector('.filter-row input') as HTMLInputElement;
+    input.focus();
+    await compose(['ㅅ']);
+    await commit('ㅅ');
+    await compose(['ㄴ']);
+    await commit('ㄴ');
+    await t.updateComplete;
+    expect(t.filteredRowCount).toBe(1);
+  });
+});
