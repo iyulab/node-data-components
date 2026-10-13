@@ -353,7 +353,7 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 
 | Name | Description |
 |------|-------------|
-| `bulk-actions` | Toolbar area shown while rows are selected |
+| `bulk-actions` | Toolbar area shown while rows are selected. In a `selectable` table the toolbar row keeps its place while nothing is selected, so the first selection does not push the rows down |
 | `toolbar-end` | Trailing toolbar area, always shown |
 
 ## CSS Custom Properties

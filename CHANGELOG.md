@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.48.1] - 2026-10-13
+
+### Fixed
+
+- **`u-rich-table`: the first selection no longer pushes the table down.** A `selectable` table with nothing else in its
+  toolbar folded the toolbar row away until a row was selected; the first tick opened the «1 selected» row and moved the
+  header and every row about 33px down, out from under the pointer — a quick second click selected a different row.
+  The row now keeps its place while nothing is selected (no surface, the count and the `bulk-actions` slot hidden and
+  out of the tab order) and fills in on the first selection. A table that is not `selectable` and has nothing in its
+  toolbar still takes no row.
+- **`u-rich-table`: the selection checkboxes use the role colour** (`--u-primary-color`, like `u-checkbox` and
+  `@iyulab/flex-table`) instead of the browser's default blue.
+
 ## [0.48.0] - 2026-10-13
 
 ### Added

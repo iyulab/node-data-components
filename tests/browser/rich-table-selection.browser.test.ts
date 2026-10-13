@@ -62,8 +62,12 @@ const selectAllBox = (el: Table) =>
 const rowBoxes = (el: Table) =>
   [...el.shadowRoot!.querySelectorAll('tbody .checkbox-cell input[type=checkbox]')] as HTMLInputElement[];
 
-const label = (el: Table) =>
-  el.shadowRoot!.querySelector('.selection-info span')?.textContent?.trim() ?? '';
+/** 사람에게 보이는 건수 — 선택이 없는 동안 그 자리는 숨은 채 자리만 지킨다(첫 선택이 표를 밀지 않게). */
+const label = (el: Table) => {
+  const info = el.shadowRoot!.querySelector('.selection-info') as HTMLElement | null;
+  if (!info?.checkVisibility({ visibilityProperty: true })) return '';
+  return info.querySelector('span')?.textContent?.trim() ?? '';
+};
 
 /** 실제 사용자 조작과 같은 경로 — `.click()` 이 `checked` 를 뒤집고 `change` 를 발생시킨다. */
 const click = async (el: Table, box: HTMLInputElement) => {

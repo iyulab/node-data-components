@@ -1,4 +1,5 @@
 import { describe, it, afterEach, expect } from 'vitest';
+import { userEvent } from 'vitest/browser';
 import '../../src/components/u-rich-table/URichTable';
 
 /**
@@ -6,7 +7,7 @@ import '../../src/components/u-rich-table/URichTable';
  *
  * ⑴열의 `align` 이 머리글에도 적용된다 — 숫자 열은 머리글과 값이 같은 가장자리에 붙는다.
  * ⑵전체 선택 체크박스는 머리글 칸, 곧 **행 체크박스와 같은 열**에 있고 이름이 있다.
- * ⑶보여 줄 것이 없는 툴바는 줄을 차지하지 않는다(종전: 체크박스 하나만 든 빈 띠).
+ * ⑶보여 줄 것이 없는 툴바는 줄을 차지하지 않는다(종전: 체크박스 하나만 든 빈 띠) — 단 선택형 표는 줄을 지켜 첫 선택이 표를 밀지 않는다.
  */
 
 type Table = HTMLElement & {
@@ -69,13 +70,42 @@ describe('u-rich-table 머리글 배치', () => {
     expect(Math.abs(all.getBoundingClientRect().left - row.getBoundingClientRect().left)).toBeLessThan(1);
   });
 
-  it('🔴보여 줄 것이 없는 툴바는 줄을 차지하지 않는다 — 선택하면 건수와 함께 나타난다', async () => {
-    const el = await mount(['selectable']);
+  it('⚪NEGATIVE — 선택형이 아니고 보여 줄 것이 없는 툴바는 줄을 차지하지 않는다', async () => {
+    const el = await mount();
     expect($(el, '.toolbar').getBoundingClientRect().height).toBe(0);
-    el.setSelection(['a']);
+  });
+
+  it('🔴첫 선택이 표를 밀지 않는다 — 실제 클릭 전후로 첫 행의 y 가 같고, 건수는 그 자리에 나타난다', async () => {
+    const el = await mount(['selectable']);
+    el.innerHTML = '<button slot="bulk-actions">Delete</button>';
     await el.updateComplete;
-    expect($(el, '.toolbar').getBoundingClientRect().height).toBeGreaterThan(0);
+    const firstRowY = () => $(el, 'tbody tr').getBoundingClientRect().top;
+    const before = firstRowY();
+    const bulk = el.querySelector('button')!;
+    // 선택이 없는 동안 건수 · 일괄 동작은 자리만 지킨다 — 보이지 않고 포커스되지 않는다.
+    expect($(el, '.selection-info').checkVisibility({ visibilityProperty: true })).toBe(false);
+    expect(bulk.checkVisibility({ visibilityProperty: true })).toBe(false);
+    expect(getComputedStyle($(el, '.toolbar')).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+
+    await userEvent.click($(el, 'tbody .checkbox-hit'));
+    await el.updateComplete;
+    expect(firstRowY()).toBe(before);
     expect($(el, '.selection-info span').textContent).toMatch(/1/);
+    expect($(el, '.selection-info').checkVisibility({ visibilityProperty: true })).toBe(true);
+    expect(bulk.checkVisibility({ visibilityProperty: true })).toBe(true);
+    expect(getComputedStyle($(el, '.toolbar')).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+
+    await userEvent.click($(el, 'tbody .checkbox-hit'));
+    await el.updateComplete;
+    expect(firstRowY()).toBe(before);
+  });
+
+  it('🔴섀도 안 체크박스가 역할 색(--u-primary-color)을 그린다 — UA 기본 파랑이 아니다', async () => {
+    const el = await mount(['selectable']);
+    el.style.setProperty('--u-primary-color', 'rgb(24, 25, 27)');
+    for (const box of $$(el, 'input[type=checkbox]')) {
+      expect(getComputedStyle(box).accentColor).toBe('rgb(24, 25, 27)');
+    }
   });
 
   it('⚪NEGATIVE — toolbar-end 에 무언가 꽂으면 선택이 없어도 툴바가 보인다', async () => {

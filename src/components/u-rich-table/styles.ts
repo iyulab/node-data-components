@@ -81,6 +81,18 @@ export const richTableStyles = css`
     color: var(--dc-muted-color);
   }
 
+  /* 선택이 없는 동안 자리만 지킨다 — 첫 선택이 표를 밀지 않게(URichTable._toolbarIsEmpty 참조). */
+  .toolbar .idle {
+    visibility: hidden;
+  }
+  .toolbar.quiet {
+    background: transparent;
+    border-bottom-color: transparent;
+  }
+  .toolbar .bulk-actions {
+    display: contents;
+  }
+
   .toolbar .search-input {
     padding: 4px 10px;
     border: 1px solid var(--u-input-border-color, #E0E0E0);
@@ -276,6 +288,11 @@ export const richTableStyles = css`
   .checkbox-cell {
     width: ${SPECIAL_COLUMN_PX.checkbox}px;
     text-align: center;
+  }
+
+  /* 섀도 안 네이티브 체크박스는 UA 기본 파랑을 그린다 — u-checkbox(primary) · flex-table 과 같은 역할 색으로. */
+  input[type='checkbox'] {
+    accent-color: var(--u-primary-color, #1976D2);
   }
 
   /* 🔴포인터 타깃은 13x13 네이티브 입력이 아니라 «이 라벨»이다(WCAG 2.2 SC 2.5.8).
