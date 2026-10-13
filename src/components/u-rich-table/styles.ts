@@ -81,16 +81,27 @@ export const richTableStyles = css`
     color: var(--dc-muted-color);
   }
 
-  /* 선택이 없는 동안 자리만 지킨다 — 첫 선택이 표를 밀지 않게(URichTable._toolbarIsEmpty 참조). */
+  /* 위 툴바의 선택 자리 — 선택이 없는 동안 자리만 지킨다(일괄 동작의 높이로 줄이 튀지 않게). */
   .toolbar .idle {
     visibility: hidden;
   }
-  .toolbar.quiet {
-    background: transparent;
-    border-bottom-color: transparent;
-  }
-  .toolbar .bulk-actions {
+  .bulk-actions {
     display: contents;
+  }
+
+  /* 선택 막대 — 툴바에 다른 내용이 없는 표의 건수·일괄 동작. 행 아래에 나타나 행을 밀지 않는다(URichTable._selectionBelow). */
+  .selection-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--u-bg-color-raised, #FAFAFA);
+    border-top: 1px solid var(--u-border-color, #E0E0E0);
+  }
+  .selection-bar .selection-info {
+    font-size: 12px;
+    color: var(--dc-muted-color);
   }
 
   .toolbar .search-input {

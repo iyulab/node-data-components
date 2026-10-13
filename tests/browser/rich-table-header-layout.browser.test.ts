@@ -76,29 +76,43 @@ describe('u-rich-table 머리글 배치', () => {
     expect($(el, '.toolbar').getBoundingClientRect().height).toBe(0);
   });
 
-  it('🔴첫 선택이 표를 밀지 않는다 — 실제 클릭 전후로 첫 행의 y 가 같고, 건수는 그 자리에 나타난다', async () => {
+  it('🔴선택만 있는 표 — 0건이면 머리 위에 빈 줄이 없고, 첫 선택은 행을 밀지 않고 표 아래에 건수·일괄 동작을 낸다', async () => {
     const el = await mount(['selectable']);
     el.innerHTML = '<button slot="bulk-actions">Delete</button>';
     await el.updateComplete;
     const firstRowY = () => $(el, 'tbody tr').getBoundingClientRect().top;
     const before = firstRowY();
     const bulk = el.querySelector('button')!;
-    // 선택이 없는 동안 건수 · 일괄 동작은 자리만 지킨다 — 보이지 않고 포커스되지 않는다.
-    expect($(el, '.selection-info').checkVisibility({ visibilityProperty: true })).toBe(false);
-    expect(bulk.checkVisibility({ visibilityProperty: true })).toBe(false);
-    expect(getComputedStyle($(el, '.toolbar')).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+    expect($(el, '.toolbar').getBoundingClientRect().height).toBe(0);   // 빈 띠 없음
+    expect($(el, '.selection-bar')).toBeNull();
+    expect(bulk.checkVisibility()).toBe(false);
 
     await userEvent.click($(el, 'tbody .checkbox-hit'));
     await el.updateComplete;
     expect(firstRowY()).toBe(before);
-    expect($(el, '.selection-info span').textContent).toMatch(/1/);
-    expect($(el, '.selection-info').checkVisibility({ visibilityProperty: true })).toBe(true);
-    expect(bulk.checkVisibility({ visibilityProperty: true })).toBe(true);
-    expect(getComputedStyle($(el, '.toolbar')).backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    const bar = $(el, '.selection-bar');
+    expect(bar.querySelector('.selection-info span')!.textContent).toMatch(/1/);
+    expect(bar.getBoundingClientRect().top).toBeGreaterThanOrEqual($(el, '.table-wrap').getBoundingClientRect().bottom - 0.5);
+    expect(bulk.checkVisibility()).toBe(true);
 
     await userEvent.click($(el, 'tbody .checkbox-hit'));
     await el.updateComplete;
     expect(firstRowY()).toBe(before);
+    expect($(el, '.selection-bar')).toBeNull();
+  });
+
+  it('⚪NEGATIVE — 툴바에 다른 내용이 있는 표는 건수를 그 툴바(위)에 낸다 — 줄이 이미 있어 첫 선택이 행을 밀지 않는다', async () => {
+    const el = await mount(['selectable']);
+    el.innerHTML = '<button slot="toolbar-end">Export</button>';
+    await el.updateComplete;
+    await new Promise((r) => setTimeout(r, 30));
+    const firstRowY = () => $(el, 'tbody tr').getBoundingClientRect().top;
+    const before = firstRowY();
+    await userEvent.click($(el, 'tbody .checkbox-hit'));
+    await el.updateComplete;
+    expect(firstRowY()).toBe(before);
+    expect($(el, '.toolbar .selection-info span').textContent).toMatch(/1/);
+    expect($(el, '.selection-bar')).toBeNull();
   });
 
   it('🔴섀도 안 체크박스가 «선택 표시» 역할 색(--u-selection-color)을 그린다 — UA 기본 파랑이 아니다', async () => {

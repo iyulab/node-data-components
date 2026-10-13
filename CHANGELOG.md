@@ -4,6 +4,11 @@
 
 ### Changed
 
+- **`u-rich-table`: a table with nothing in its toolbar but the selection shows the count and `bulk-actions` below
+  the rows.** 0.48.1 kept an empty toolbar row above the header while nothing was selected (so the first selection
+  did not push the rows down); the empty band read as a broken header. The selection now appears in a bar between
+  the rows and the pager — it still never moves a row — and nothing is drawn while nothing is selected. A table with
+  toolbar content (`toolbar-end`, `addable`) shows the selection in that toolbar, as before.
 - `u-rich-table`: the selection checkboxes read the selection role (`--u-selection-color`, from `@iyulab/components`),
   falling back to `--u-primary-color` as in 0.48.1.
 

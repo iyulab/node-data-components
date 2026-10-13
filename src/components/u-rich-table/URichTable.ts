@@ -373,6 +373,7 @@ export class URichTable extends LitElement {
           </tbody>
         </table>
       </div>
+      ${this._renderSelectionBar()}
       ${this._renderPagination()}
     `;
   }
@@ -384,21 +385,26 @@ export class URichTable extends LitElement {
    * 넘어가면 페이지 2에서 아무것도 고르지 않았는데 체크박스가 켜져 보였고, 그것을 끄면
    * 페이지 1의 선택이 조용히 사라졌다.
    */
-  private _renderToolbar(): TemplateResult {
+  /** 건수 + 일괄 동작 — 위 툴바(다른 내용이 있을 때) 또는 표 아래 선택 막대에 선다. */
+  private _renderSelection(idle: boolean): TemplateResult {
     const total = this.selectedIds.size;
     const onPage = this._selectedOnPage;
     const crossesPages = total > onPage;
-    const idle = total === 0;
     return html`
-      <div class="toolbar ${this._toolbarIsEmpty ? 'empty' : ''} ${this._toolbarIsQuiet ? 'quiet' : ''}">
-        ${this.selectable ? html`
-          <div class="selection-info ${idle ? 'idle' : ''}">
-            <span>${crossesPages
-              ? messages.text('selectedAcrossPages', { count: total, onPage })
-              : messages.text('selected', { count: total })}</span>
-          </div>
-          <span class="bulk-actions ${idle ? 'idle' : ''}"><slot name="bulk-actions"></slot></span>
-        ` : ''}
+      <div class="selection-info ${idle ? 'idle' : ''}">
+        <span>${crossesPages
+          ? messages.text('selectedAcrossPages', { count: total, onPage })
+          : messages.text('selected', { count: total })}</span>
+      </div>
+      <span class="bulk-actions ${idle ? 'idle' : ''}"><slot name="bulk-actions"></slot></span>
+    `;
+  }
+
+  private _renderToolbar(): TemplateResult {
+    const idle = this.selectedIds.size === 0;
+    return html`
+      <div class="toolbar ${this._toolbarIsEmpty ? 'empty' : ''}">
+        ${this.selectable && !this._selectionBelow ? this._renderSelection(idle) : ''}
         <div style="flex:1"></div>
         <slot name="toolbar-end" @slotchange=${this._onToolbarEndSlotChange}></slot>
         ${this.addable ? html`
@@ -419,18 +425,24 @@ export class URichTable extends LitElement {
   /**
    * 보여 줄 것이 없는 툴바는 **빈 띠**가 된다 — 선택형 표에서는 종전에 전체 선택 체크박스 하나만 든 줄이 머리글 위에 떠
    * 행의 체크박스와 x 가 어긋났다. 그 체크박스는 이제 머리글 칸에 있다(아래).
-   *
-   * 🔴**선택형 표는 그 줄을 접지 않는다** — 접어 두면 첫 선택이 «N selected» 줄을 열어 머리와 모든 행이 아래로 밀린다.
-   * 누른 체크박스가 포인터 밑에서 빠져나가 연달아 누르면 다른 행을 고른다(해제로 0건이 되면 반대로 올라간다).
-   * 선택이 없는 동안 건수와 일괄 동작은 자리만 지키고(`visibility: hidden` — 트리·포커스에서도 빠진다) 줄은 면 없이 선다(`quiet`).
    */
   private get _toolbarIsEmpty(): boolean {
-    return !this.selectable && !this.addable && !this._hasToolbarEnd;
+    return !this.addable && !this._hasToolbarEnd;
   }
 
-  /** 선택형 표가 선택 말고는 보여 줄 것이 없고 선택도 없다 — 줄은 자리만 지킨다. */
-  private get _toolbarIsQuiet(): boolean {
-    return this.selectable && this.selectedIds.size === 0 && !this.addable && !this._hasToolbarEnd;
+  /**
+   * 🔴**선택 말고는 툴바에 둘 것이 없는 표는 건수·일괄 동작을 표 «아래»(페이저 위)에 낸다.** 위에 두면 첫 선택이 그 줄을 열어
+   * 머리와 모든 행이 33px 아래로 밀렸고(누른 체크박스가 포인터 밑에서 빠져나가 연달아 누르면 다른 행을 고른다), 줄을 미리
+   * 지켜 두면 0건 동안 머리 위에 빈 띠가 섰다. 아래에서는 나타나도 행이 움직이지 않는다. 툴바에 다른 내용이 있는 표는
+   * 그 줄이 이미 있으므로 위에 둔다(첫 선택이 줄을 열지 않는다).
+   */
+  private get _selectionBelow(): boolean {
+    return this.selectable && this._toolbarIsEmpty;
+  }
+
+  private _renderSelectionBar(): TemplateResult | typeof nothing {
+    if (!this._selectionBelow || this.selectedIds.size === 0) return nothing;
+    return html`<div class="selection-bar">${this._renderSelection(false)}</div>`;
   }
 
   /** 머리글 정렬 = `headerAlign`, 없으면 셀의 실효 정렬 — 숫자 열은 머리글과 값이 같은 가장자리에 붙어야 훑어 읽힌다. */
