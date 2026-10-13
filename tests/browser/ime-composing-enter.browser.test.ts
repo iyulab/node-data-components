@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import '../../src/components/simple-sheet/USimpleSheet';
 import '../../src/components/u-record-picker/URecordPicker';
+import { compose, commitWithEnter } from './ime.js';
 
 /**
  * IME 조합(한국어 등)을 확정하는 Enter 는 확정·이동·찾기가 아니다.
- * 조합 중 keydown 은 `isComposing: true`, Safari 의 확정 키는 `keyCode: 229` 로 온다 — 둘 다 잰다.
- * 대조군(보통 Enter)이 같은 합성 경로로 핸들러에 닿는 것을 함께 확인한다.
+ * 조합은 Chromium 의 실제 조합(`ime.ts`)으로 재고, Chromium 이 낼 수 없는 Safari 의 확정 키
+ * (`keyCode: 229` · `isComposing: false`)는 합성 대역으로 잰다. 대조군(보통 Enter)이 같은 합성 경로로 핸들러에
+ * 닿는 것을 함께 확인한다.
  */
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const key = (k: string, init: KeyboardEventInit & { keyCode?: number } = {}) => {
@@ -13,10 +15,7 @@ const key = (k: string, init: KeyboardEventInit & { keyCode?: number } = {}) => 
   if (init.keyCode !== undefined) Object.defineProperty(e, 'keyCode', { value: init.keyCode });
   return e;
 };
-const COMPOSING = [
-  ['isComposing', { isComposing: true }],
-  ['keyCode 229(Safari)', { keyCode: 229 }],
-] as const;
+const SAFARI = { keyCode: 229 };
 
 type Sheet = HTMLElement & { data: string[][]; updateComplete: Promise<unknown> };
 
@@ -34,9 +33,20 @@ async function editingSheet() {
 describe('USimpleSheet — 편집 중 조합을 확정하는 Enter 로 확정하지 않는다', () => {
   beforeEach(() => { document.body.innerHTML = ''; });
 
-  it.each(COMPOSING)('%s', async (_n, init) => {
+  it('실제 조합을 Enter 로 확정 — 여전히 편집 중이고 글자는 들어간다', async () => {
     const { sheet, input } = await editingSheet();
-    input()!.dispatchEvent(key('Enter', init));
+    input()!.focus();
+    input()!.select();
+    await compose(['ㄴ', '나']);
+    await commitWithEnter('나');
+    await sheet.updateComplete;
+    expect(input(), '여전히 편집 중').not.toBeNull();
+    expect(input()!.value).toBe('나');
+  });
+
+  it('keyCode 229(Safari — 합성 대역)', async () => {
+    const { sheet, input } = await editingSheet();
+    input()!.dispatchEvent(key('Enter', SAFARI));
     await sheet.updateComplete;
     expect(input(), '여전히 편집 중').not.toBeNull();
   });
@@ -70,9 +80,18 @@ async function picker() {
 describe('u-record-picker — 조합을 확정하는 Enter 로 조회 대화상자를 열지 않는다', () => {
   beforeEach(() => { document.body.innerHTML = ''; });
 
-  it.each(COMPOSING)('%s', async (_n, init) => {
+  it('실제 조합을 Enter 로 확정', async () => {
     const { input, dialogOpen } = await picker();
-    input.dispatchEvent(key('Enter', init));
+    input.focus();
+    await compose(['ㄱ', '가']);
+    await commitWithEnter('가');
+    await sleep(200);
+    expect(dialogOpen()).toBe(false);
+  });
+
+  it('keyCode 229(Safari — 합성 대역)', async () => {
+    const { input, dialogOpen } = await picker();
+    input.dispatchEvent(key('Enter', SAFARI));
     await sleep(200);
     expect(dialogOpen()).toBe(false);
   });
