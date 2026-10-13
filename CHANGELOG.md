@@ -11,6 +11,8 @@
   toolbar content (`toolbar-end`, `addable`) shows the selection in that toolbar, as before.
 - `u-rich-table`: the selection checkboxes read the selection role (`--u-selection-color`, from `@iyulab/components`),
   falling back to `--u-primary-color` as in 0.48.1.
+- Requires `@iyulab/components` 2.24.0 or later (peer range `>=2.24.0`), the first release that defines the
+  selection role.
 
 ## [0.48.1] - 2026-10-13
 
