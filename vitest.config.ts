@@ -23,6 +23,10 @@ export default defineConfig({
           include: ['tests/**/*.test.ts'],
           exclude: ['tests/browser/**'],
           environment: 'node',
+          // 파일의 첫 시험이 컴포넌트의 첫 렌더(템플릿 준비 · 섀도 스타일 처리)를 떠안는다 — 혼자면 0.5초 안팎인데, 같은
+          // `vitest run` 에서 브라우저 프로젝트가 뜨는 동안에는 2.4~2.9초까지 오르고 한 번은 5초 기본 제한을 넘었다
+          // (단정 실패 0 — 시간 초과만). 첫 렌더 비용을 담는 제한을 명시한다. 진짜 멈춤은 여전히 실패한다.
+          testTimeout: 15_000,
         },
       },
       {
