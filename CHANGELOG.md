@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.50.0] - 2026-10-14
+
+### Added
+
+- **`u-rich-table`: the toolbar and the selection can be styled from outside.** New parts `toolbar`, `selection-bar`
+  (the bar below the rows), `selection-info` (the count) and `bulk-actions`, and a custom state `:state(selected)`
+  while at least one row is selected — so a theme can draw the toolbar as a bulk-action bar
+  (`u-rich-table:state(selected)::part(toolbar) { … }`). Before, the toolbar had only shadow classes and nothing
+  outside could tell the selected toolbar from the idle one. The default look is unchanged.
+
 ## [0.49.0] - 2026-10-14
 
 ### Changed
