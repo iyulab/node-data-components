@@ -254,6 +254,23 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 | Part | Description |
 |------|-------------|
 | `sort-button` | A column header's sort toggle |
+| `toolbar` | The row above the table — the selection count and bulk actions (when it has other content), `toolbar-end`, the add-row button |
+| `selection-bar` | The bar below the rows that carries the count and bulk actions when the toolbar has nothing else |
+| `selection-info` | The selection count ("3 selected") |
+| `bulk-actions` | The box around the `bulk-actions` slot |
+
+### Custom state
+
+`:state(selected)` is set while at least one row is selected — style the toolbar as a bulk-action bar from outside:
+
+```css
+u-rich-table:state(selected)::part(toolbar),
+u-rich-table:state(selected)::part(selection-bar) {
+  background: var(--u-primary-bg-color);
+}
+```
+
+Engines without `:state()` ignore the rule; the table looks as it does by default.
 
 ## Methods
 

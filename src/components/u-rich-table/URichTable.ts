@@ -135,6 +135,14 @@ export class URichTable extends LitElement {
 
   // --- Internal State ---
   @state() private selectedIds = new Set<string>();
+
+  /**
+   * `:state(selected)` 을 싣는 자리 — 선택이 하나라도 있는 동안. 툴바·선택 막대를 «일괄 동작 막대» 로 칠하는 바깥 시트가
+   * `u-rich-table:state(selected)::part(toolbar)` 로 건다(`u-select:state(open)` 과 같은 관례 — 속성으로 반사하지 않는다).
+   * ⚠생성자에서 한 번만 붙인다 — 같은 인스턴스에 두 번 부르면 `NotSupportedError` 다.
+   */
+  private readonly _internals: ElementInternals | undefined =
+    typeof this.attachInternals === 'function' ? this.attachInternals() : undefined;
   @state() private focusedCell: CellPosition | null = null;
   @state() private editingCell: CellPosition | null = null;
   @state() private editValue = '';
@@ -207,6 +215,9 @@ export class URichTable extends LitElement {
 
   protected updated(changed: PropertyValues<this>): void {
     super.updated(changed);
+    if ((changed as PropertyValues).has('selectedIds')) {
+      this._internals?.states?.[this.selectedIds.size > 0 ? 'add' : 'delete']('selected');
+    }
     // 다른 편집이 열렸으면(Enter/Tab 이 다음 셀을 편집) 그 편집기가 포커스를 갖는다.
     if (this._focusCellAfterUpdate && !this.editingCell) this._focusFocusedCell();
     this._focusCellAfterUpdate = false;
@@ -391,19 +402,19 @@ export class URichTable extends LitElement {
     const onPage = this._selectedOnPage;
     const crossesPages = total > onPage;
     return html`
-      <div class="selection-info ${idle ? 'idle' : ''}">
+      <div class="selection-info ${idle ? 'idle' : ''}" part="selection-info">
         <span>${crossesPages
           ? messages.text('selectedAcrossPages', { count: total, onPage })
           : messages.text('selected', { count: total })}</span>
       </div>
-      <span class="bulk-actions ${idle ? 'idle' : ''}"><slot name="bulk-actions"></slot></span>
+      <span class="bulk-actions ${idle ? 'idle' : ''}" part="bulk-actions"><slot name="bulk-actions"></slot></span>
     `;
   }
 
   private _renderToolbar(): TemplateResult {
     const idle = this.selectedIds.size === 0;
     return html`
-      <div class="toolbar ${this._toolbarIsEmpty ? 'empty' : ''}">
+      <div class="toolbar ${this._toolbarIsEmpty ? 'empty' : ''}" part="toolbar">
         ${this.selectable && !this._selectionBelow ? this._renderSelection(idle) : ''}
         <div style="flex:1"></div>
         <slot name="toolbar-end" @slotchange=${this._onToolbarEndSlotChange}></slot>
@@ -442,7 +453,7 @@ export class URichTable extends LitElement {
 
   private _renderSelectionBar(): TemplateResult | typeof nothing {
     if (!this._selectionBelow || this.selectedIds.size === 0) return nothing;
-    return html`<div class="selection-bar">${this._renderSelection(false)}</div>`;
+    return html`<div class="selection-bar" part="selection-bar">${this._renderSelection(false)}</div>`;
   }
 
   /** 머리글 정렬 = `headerAlign`, 없으면 셀의 실효 정렬 — 숫자 열은 머리글과 값이 같은 가장자리에 붙어야 훑어 읽힌다. */
