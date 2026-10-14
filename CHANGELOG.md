@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.51.1] - 2026-10-14
+
+### Fixed
+
+- `u-rich-table` takes its font from `--u-font-base` (falling back to the previous `system-ui` stack). Its headers
+  and cells were the one part of a themed page that kept the system font; the size still follows the density
+  (`--dc-font-size`).
+
 ## [0.51.0] - 2026-10-14
 
 ### Added
