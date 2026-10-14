@@ -103,6 +103,13 @@ export class URichTable extends LitElement {
    */
   @property({ type: Boolean, attribute: 'hide-pagination' }) hidePagination = false;
   /**
+   * Hides the built-in toolbar and the selection bar below the rows — for a table inside a host that shows the selection
+   * and its actions itself (a `u-list-page` toolbar with a `u-action-bar`), so the screen does not say «3 selected»
+   * twice. Same convention as `u-data-view`'s `hide-toolbar`. `toolbar-end`, `bulk-actions` and the add-row button go
+   * with it; selection, `selection-change` and `:state(selected)` stay.
+   */
+  @property({ type: Boolean, attribute: 'hide-toolbar' }) hideToolbar = false;
+  /**
    * 페이지 정보 문구. (전체, 시작, 끝) 을 받아 문자열을 만든다.
    * 언어마다 어순이 달라 템플릿 문자열이 아니라 함수로 연다.
    */
@@ -411,7 +418,8 @@ export class URichTable extends LitElement {
     `;
   }
 
-  private _renderToolbar(): TemplateResult {
+  private _renderToolbar(): TemplateResult | typeof nothing {
+    if (this.hideToolbar) return nothing;
     const idle = this.selectedIds.size === 0;
     return html`
       <div class="toolbar ${this._toolbarIsEmpty ? 'empty' : ''}" part="toolbar">
@@ -452,7 +460,7 @@ export class URichTable extends LitElement {
   }
 
   private _renderSelectionBar(): TemplateResult | typeof nothing {
-    if (!this._selectionBelow || this.selectedIds.size === 0) return nothing;
+    if (this.hideToolbar || !this._selectionBelow || this.selectedIds.size === 0) return nothing;
     return html`<div class="selection-bar" part="selection-bar">${this._renderSelection(false)}</div>`;
   }
 

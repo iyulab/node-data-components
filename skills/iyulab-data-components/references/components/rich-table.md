@@ -226,6 +226,7 @@ forever.
 | `pageSize` | `number` | `25` | | Rows per page |
 | `pageSizes` | `number[]` | `[25, 50, 100]` | | The sizes the pager offers; empty hides that choice. Attribute: `page-sizes="20,50,100"` |
 | `hidePagination` | `boolean` | `false` | | Draws no pager — for a list that pages with its own `u-pagination` bound to the same source, so the screen does not show two |
+| `hideToolbar` | `boolean` | `false` | | Draws no toolbar and no selection bar — for a table in a host that shows the selection and its actions itself (a `u-list-page` toolbar with a `u-action-bar`), so the screen does not say "3 selected" twice. `toolbar-end`, `bulk-actions` and the add-row button go with it; selection, `selection-change` and `:state(selected)` stay (`0.51.0~`) |
 | `page` | `number` | `0` | | Zero-based page (the pager shows it from 1) |
 | `sortCriteria` | `SortCriteria[]` | `[]` | | Sort shown in the header, `[{ key, direction }]` (0 or 1 entries). Pass a restored sort in server mode |
 | `dataMode` | `'client' \| 'server'` | `'server'` | | Who applies the filter row, sorting and paging (attribute `data-mode`) — `'client'`: the table does, over `data` as the whole set (`0.27.0~`) |

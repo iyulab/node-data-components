@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`u-rich-table` `hide-toolbar`.** Draws neither the toolbar nor the selection bar below the rows — for a table inside
+  a host that shows the selection and its actions itself (a `u-list-page` toolbar with a `u-action-bar`), where the
+  table's own «1 selected» repeated the host's. Same convention as `u-data-view`'s `hide-toolbar`. Selection,
+  `selection-change` and `:state(selected)` stay.
+
 ## [0.50.0] - 2026-10-14
 
 ### Added

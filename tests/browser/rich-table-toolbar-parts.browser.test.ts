@@ -81,6 +81,22 @@ describe('u-rich-table — toolbar parts and the selected state', () => {
     expect(part(el, 'bulk-actions')).not.toBeNull();
   });
 
+  it('hide-toolbar: neither the toolbar nor the selection bar is drawn — the host shows the selection', async () => {
+    const el = await mount(true);
+    el.setAttribute('hide-toolbar', '');
+    el.setSelection(['a']);
+    await el.updateComplete;
+    expect(part(el, 'toolbar')).toBeNull();
+    expect(part(el, 'selection-bar')).toBeNull();
+    expect(el.matches(':state(selected)')).toBe(true);
+
+    const bare = await mount(false);
+    bare.setAttribute('hide-toolbar', '');
+    bare.setSelection(['b']);
+    await bare.updateComplete;
+    expect(part(bare, 'selection-bar')).toBeNull();
+  });
+
   it('a table with nothing else in the toolbar: the bar below the rows is part="selection-bar"', async () => {
     const el = await mount(false);
     expect(part(el, 'selection-bar')).toBeNull();
