@@ -42,7 +42,8 @@ export const richTableStyles = css`
        따르고 «overflow: auto» 는 넘치지 않으면 스크롤바를 만들지 않는다. */
     display: flex;
     flex-direction: column;
-    font-family: system-ui, -apple-system, sans-serif;
+    /* 글꼴은 글자 토큰을 따른다 — 하우스 화면에서 표만 system-ui 로 갈렸다. 크기는 밀도(--dc-font-size)를 따른다. */
+    font-family: var(--u-font-base, system-ui, -apple-system, sans-serif);
     font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
     border: 1px solid var(--u-border-color, #E0E0E0);
