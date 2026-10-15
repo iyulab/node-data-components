@@ -76,7 +76,7 @@ export function initShadowDomProtection(): void {
     );
 
     if (!originalDescriptor) {
-        console.warn('[data-components] adoptedStyleSheets descriptor not found');
+        console.warn('[@iyulab/data-components] adoptedStyleSheets descriptor not found');
         return;
     }
 
