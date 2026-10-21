@@ -255,6 +255,7 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 | Part | Description |
 |------|-------------|
 | `sort-button` | A column header's sort toggle |
+| `header-hint` | The info icon beside a column header label whose `description` is set |
 | `toolbar` | The row above the table — the selection count and bulk actions (when it has other content), `toolbar-end`, the add-row button |
 | `selection-bar` | The bar below the rows that carries the count and bulk actions when the toolbar has nothing else |
 | `selection-info` | The selection count ("3 selected") |
