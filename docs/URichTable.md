@@ -194,6 +194,7 @@ interface ColumnDef {
   minWidth?: number | string;             // 바닥 — width 없이 주면 «유연 열»: 남는 폭을 받고 바닥 아래로 눌리지 않는다
   align?:   'start' | 'center' | 'end';   // 셀 정렬 — 기본값: number 열은 end, 그 밖은 start
   headerAlign?: 'start' | 'center' | 'end'; // 머리글 정렬 — 기본값: 셀 정렬
+  description?: string;               // 열 값의 뜻 — 라벨 옆 정보 아이콘이 툴팁으로 연다(호버 · 아이콘 탭 · 키보드가 머리 칸에 닿을 때)
   type?:    'text' | 'number' | 'date' | 'select' | 'badge';
 
   sortable?:   boolean;                   // 헤더 클릭 시 sort-change 발생

@@ -328,6 +328,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `badgeColors` | `Record<string, string>` | Value → color for `type: 'badge'` |
 | `align` | `'start'\|'center'\|'end'` | Cell alignment — logical, so right-to-left locales mirror. Default: `'end'` for `type: 'number'`, otherwise `'start'` |
 | `headerAlign` | `'start'\|'center'\|'end'` | Header alignment. Default: the cell alignment, so a header sits over its values |
+| `description` | `string` | What the column's values mean — the basis a label cannot carry. An info icon beside the header label opens it as a tooltip on hover, on a tap of the icon, and when the keyboard reaches the header cell; it is also the header's `aria-description`. Plain text |
 | `sortable` | `boolean` | Header emits `sort-change` |
 | `editable` | `boolean \| ((row, col) => boolean)` | Opt-in, while the table is `editable`. A function decides per row — for cells that lock with the row's state (`(row) => row.status !== 'shipped'`). A non-editable cell opens no editor, is skipped by `Tab` while editing, and is `aria-readonly` |
 | `required` | `boolean` | Empty value fails validation |

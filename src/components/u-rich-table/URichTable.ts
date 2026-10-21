@@ -18,6 +18,7 @@ import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
 // The pager — the same `u-pagination` a list uses on its own, so a table's pager and a page's pager are one component.
 import '@iyulab/components/dist/components/pagination/UPagination.js';
+import '@iyulab/components/dist/components/tooltip/UTooltip.js';
 import type { PageChangeDetail } from '@iyulab/components/dist/components/pagination/UPagination.js';
 
 /** 펼침 열의 셀 이동 번호 — 앞쪽 제어 열은 음수다(`_firstCol` 참조). 선택 열은 펼침 열이 있으면 그 앞(-2). */
@@ -476,6 +477,74 @@ export class URichTable extends LitElement {
       .filter(Boolean).join('; ');
   }
 
+  /** The info icon beside a header label that carries `ColumnDef.description` — a glyph; the text is the `<th>`'s `aria-description`. */
+  private _renderHeaderHint(col: ColumnDef): TemplateResult | typeof nothing {
+    if (!col.description) return nothing;
+    return html`<span class="header-hint" part="header-hint" aria-hidden="true"
+      @pointerdown=${(e: PointerEvent) => { this._hintPointerType = e.pointerType; }}
+      @click=${this._onHeaderHintClick}>
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" focusable="false">
+        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.9 10.5H7.1V7h1.8v4.5ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+      </svg>
+      <u-tooltip placement="top-start" shift>${col.description}</u-tooltip>
+    </span>`;
+  }
+
+  private _hintPointerType = '';
+  /** The icon whose tooltip a tap pinned open — a hover's `pointerleave` would otherwise close it at once. */
+  private _pinnedHint: HTMLElement | null = null;
+
+  private static _tooltipOf(icon: Element | null): (HTMLElement & { show(t: Element): Promise<boolean>; hide(): Promise<boolean> }) | null {
+    return icon?.querySelector('u-tooltip') ?? null;
+  }
+
+  /**
+   * A tap has no hover: it opens the tooltip, a second tap or a tap elsewhere closes it. A mouse click
+   * arrives with the tooltip already open from the hover and must not close it. The click never reaches
+   * the header's sort.
+   */
+  private _onHeaderHintClick = (e: MouseEvent): void => {
+    e.stopPropagation();
+    if (this._hintPointerType !== 'touch' && this._hintPointerType !== 'pen') return;
+    const icon = e.currentTarget as HTMLElement;
+    if (this._pinnedHint === icon) {
+      this._unpinHint();
+      void URichTable._tooltipOf(icon)?.hide();
+      return;
+    }
+    this._unpinHint();
+    this._pinnedHint = icon;
+    document.addEventListener('pointerdown', this._onHintOutsidePointerDown, true);
+    void URichTable._tooltipOf(icon)?.show(icon);
+  };
+
+  private _onHintOutsidePointerDown = (e: PointerEvent): void => {
+    const icon = this._pinnedHint;
+    if (icon && e.composedPath().includes(icon)) return; // the icon's own tap is the click's to sort out
+    this._unpinHint();
+    void URichTable._tooltipOf(icon)?.hide();
+  };
+
+  private _unpinHint(): void {
+    this._pinnedHint = null;
+    document.removeEventListener('pointerdown', this._onHintOutsidePointerDown, true);
+  }
+
+  /** The keyboard reaching a header cell with a description opens it; a pointer press (it has hover) and a programmatic focus do not. */
+  private _onHeaderHintFocus(e: FocusEvent): void {
+    const th = e.currentTarget as HTMLElement;
+    if (e.target !== th || !th.matches(':focus-visible')) return;
+    const icon = th.querySelector('.header-hint');
+    if (icon) void URichTable._tooltipOf(icon)?.show(icon);
+  }
+
+  private _onHeaderHintBlur(e: FocusEvent): void {
+    const th = e.currentTarget as HTMLElement;
+    if (e.relatedTarget instanceof Node && th.contains(e.relatedTarget)) return;
+    const icon = th.querySelector('.header-hint');
+    if (icon && icon !== this._pinnedHint) void URichTable._tooltipOf(icon)?.hide();
+  }
+
   private _renderHeader(): TemplateResult {
     const onPage = this._selectedOnPage;
     return html`
@@ -493,9 +562,11 @@ export class URichTable extends LitElement {
           </th>` : ''}
           ${this.expandable ? html`<th class="expand-cell" data-cell data-row=${HEADER_ROW} data-col=${EXPAND_COL} tabindex=${this._isTabStop(HEADER_ROW, EXPAND_COL) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, EXPAND_COL)}></th>` : ''}
           ${this.columns.map((col, colIdx) => html`
-            <th data-cell data-row=${HEADER_ROW} data-col=${colIdx} tabindex=${this._isTabStop(HEADER_ROW, colIdx) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, colIdx)}
+            <th data-cell data-row=${HEADER_ROW} data-col=${colIdx} tabindex=${this._isTabStop(HEADER_ROW, colIdx) ? '0' : '-1'} @focusin=${(e: FocusEvent) => { this._onCellFocus(HEADER_ROW, colIdx); this._onHeaderHintFocus(e); }}
               class=${col.sortable ? 'sortable' : ''}
               style=${this._headerStyle(col)}
+              aria-description=${col.description ?? nothing}
+              @focusout=${(e: FocusEvent) => this._onHeaderHintBlur(e)}
               aria-sort=${col.sortable
                 ? (this.sortCriteria[0]?.key === col.key ? (this.sortCriteria[0].direction === 'asc' ? 'ascending' : 'descending') : 'none')
                 : nothing}>
@@ -504,12 +575,12 @@ export class URichTable extends LitElement {
                 ? html`<button type="button" class="sort-button" part="sort-button" tabindex="-1"
                     style=${this._headerAlign(col) === 'end' ? 'justify-content: flex-end' : this._headerAlign(col) === 'center' ? 'justify-content: center' : ''}
                     @click=${() => this._onSortClick(col.key)}>
-                    ${col.label}
+                    ${col.label}${this._renderHeaderHint(col)}
                     ${this.sortCriteria[0]?.key === col.key ? html`
                       <span class="sort-indicator">${this.sortCriteria[0].direction === 'asc' ? '▲' : '▼'}</span>
                     ` : ''}
                   </button>`
-                : col.label}
+                : html`${col.label}${this._renderHeaderHint(col)}`}
             </th>
           `)}
           ${this._hasActionsColumn ? html`<th class="actions-cell" data-cell data-row=${HEADER_ROW} data-col=${this._actionsCol} tabindex=${this._isTabStop(HEADER_ROW, this._actionsCol) ? '0' : '-1'} @focusin=${() => this._onCellFocus(HEADER_ROW, this._actionsCol)}></th>` : ''}
@@ -1239,6 +1310,7 @@ export class URichTable extends LitElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._unpinHint();
     this.removeEventListener('keydown', this._onGlobalKeyDown);
     this.unsubscribeLocale?.();
     this.unsubscribeLocale = undefined;

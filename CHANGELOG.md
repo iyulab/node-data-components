@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- **Column header descriptions in `u-rich-table`.** `ColumnDef.description` says what a column's values mean — the basis a label cannot carry. An info icon beside the header label opens it as a tooltip (pointer hover, a tap of the icon, or the keyboard reaching the header cell), and the header cell carries it as `aria-description`. The same field `flex-table` columns take.
+
 ### Changed
 
 - Console diagnostics begin with `[@iyulab/data-components]`, so a message in a console shared by several packages says which one wrote it (several also say what to do next).

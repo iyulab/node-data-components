@@ -39,6 +39,12 @@ export interface ColumnDef {
   align?: ColumnAlign;
   /** Header alignment. Default: the cell alignment — a header sits over its values. */
   headerAlign?: ColumnAlign;
+  /**
+   * What the column's values mean — the basis a header label cannot carry. An info icon beside the label
+   * opens it as a tooltip on pointer hover, on a tap of the icon, and when the keyboard reaches the header
+   * cell; it is also the header's `aria-description`. Plain text.
+   */
+  description?: string;
   /** Opt-in, like `sortable`: the column gets a filter cell only when this is `true` (and the table is `filterable`). */
   filterable?: boolean;
   filterType?: 'text' | 'select';

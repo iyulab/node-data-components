@@ -216,6 +216,16 @@ export const richTableStyles = css`
     background: var(--u-bg-color-active, #EEEEEE);
   }
 
+  /* 열 설명(description) 아이콘 — 라벨 옆. 모양은 폼의 힌트(u-field)와 같은 «원 안의 i». 포커스는 머리 칸(th)이 받으므로 아이콘은 탭 정지가 아니다. */
+  .header-hint {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-inline-start: 4px;
+    color: var(--dc-icon-color);
+    cursor: help;
+  }
+
   .sort-indicator {
     font-size: 10px;
     color: var(--dc-icon-color);
