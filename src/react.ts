@@ -124,7 +124,7 @@ const BaseURichTableReact = createComponent({
  * 동작하는데 타입에서 거부**된다.
  */
 export interface ColumnDefReact extends Omit<ColumnDef, 'render'> {
-  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode | HTMLElement;
+  render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode | HTMLElement | TemplateResult;
 }
 
 /**
@@ -212,7 +212,7 @@ function wrapColumnsForReact(columns: ColumnDefReact[] | undefined, pool: ReactR
       ...col,
       render: (value, row) => {
         const result = originalRender(value, row);
-        if (typeof result === 'string' || result instanceof HTMLElement) return result;
+        if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
         if (result == null || typeof result === 'boolean') return '';
         return pool.mount(`${col.key}::${poolRowId(row, rowKey())}`, result);
       },

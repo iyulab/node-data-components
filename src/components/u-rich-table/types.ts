@@ -1,3 +1,4 @@
+import type { TemplateResult } from 'lit';
 // src/components/u-rich-table/types.ts
 
 /** Logical horizontal alignment — `start`/`end` follow the writing direction. */
@@ -34,7 +35,11 @@ export interface ColumnDef {
   type?: 'text' | 'number' | 'date' | 'select' | 'badge';
   options?: { value: string; label: string }[];
   badgeColors?: Record<string, string>;
-  render?: (value: unknown, row: Record<string, unknown>) => string | HTMLElement;
+  /**
+   * Draws the cell's content: a string, an element, or a Lit template — the same three the expanded row's
+   * `detailRenderer` takes. `URichTableReact` also takes a React node.
+   */
+  render?: (value: unknown, row: Record<string, unknown>) => string | HTMLElement | TemplateResult;
   /** Cell alignment. Logical values, so right-to-left locales mirror. Default: `end` for `number`, else `start`. */
   align?: ColumnAlign;
   /** Header alignment. Default: the cell alignment — a header sits over its values. */

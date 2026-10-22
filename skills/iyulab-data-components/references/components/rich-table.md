@@ -345,7 +345,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `filterable` | `boolean` | Column appears in the filter row |
 | `filterType` | `'text'\|'select'` | Filter control |
 | `validator` | `(value, row) => string \| null` | Returns an error message, or `null` when valid |
-| `render` | `(value, row) => string \| HTMLElement` | Custom cell rendering |
+| `render` | `(value, row) => string \| HTMLElement \| TemplateResult` | Custom cell rendering — a string, an element or a Lit template, the same three `detailRenderer` takes (template `0.53.0~`). In `URichTableReact` it may also return a `ReactNode` |
 | `clipboardParse` | `(text) => unknown` | Parses a pasted cell |
 | `clipboardFormat` | `(value) => string` | Formats a copied cell |
 

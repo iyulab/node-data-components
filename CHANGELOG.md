@@ -8,6 +8,9 @@
   function of the row; default `'_id'`. Selection, expansion, row errors and the `id` of `row-activate` and
   `selection-change` follow it, so records keep their own key (`Id`, a document number) instead of a copied `_id`. The
   same property, with the same meaning, as `flex-table`'s `rowKey`. `RowKey` is exported.
+- `u-rich-table`: a column's `render` may return a Lit template — the same three results `detailRenderer` takes. A
+  template used to be drawn as the cell's raw value. `URichTableReact` passes a template through instead of mounting
+  it as a React node.
 
 ### Fixed
 

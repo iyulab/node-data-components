@@ -4,6 +4,7 @@ import { rowKeyOf, type RowKey } from '../../utilities/row-key.js';
 // src/components/u-rich-table/URichTable.component.ts
 import { html, svg, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
+import { isTemplateResult } from 'lit/directive-helpers.js';
 import { richTableStyles } from './styles.js';
 import type { ColumnDef, CellPosition, SortCriteria, FilterState, RowAction, RichTableEventMap, RowActionEventDetail } from './types.js';
 import { effectiveAlign } from './types.js';
@@ -786,6 +787,7 @@ export class URichTable extends LitElement {
         container.appendChild(result);
         return html`${container}`;
       }
+      if (isTemplateResult(result)) return result;
       return String(value ?? '');
     }
     if (col.type === 'badge' && col.badgeColors) {
