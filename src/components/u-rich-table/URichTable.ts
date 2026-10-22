@@ -1,5 +1,6 @@
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
 import { messages } from '../../utilities/messages.js';
+import { rowKeyOf, type RowKey } from '../../utilities/row-key.js';
 // src/components/u-rich-table/URichTable.component.ts
 import { html, svg, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
@@ -120,6 +121,13 @@ export class URichTable extends LitElement {
       messages.text('pageInfo', { total: total.toLocaleString(), start, end });
   @property({ type: Boolean }) selectable = false;
   /**
+   * What names a row: the field whose value identifies it (default `'_id'`), or a function of the row — the same
+   * contract as flex-table's `rowKey`. Selection, `row-activate` and `selection-change` ids, the open editor and expanded
+   * rows follow this id, so a record's own key (`Id`, a document number) works without copying it into `_id`.
+   * A row without a key (`undefined`, `null` or `''`) is tracked by position.
+   */
+  @property({ attribute: 'row-key' }) rowKey: RowKey = '_id';
+  /**
    * Table-wide edit switch — `false` locks every cell (a read-only view of an editable list). Columns
    * still opt in with their own `editable`; this only ever takes editing away.
    */
@@ -166,7 +174,7 @@ export class URichTable extends LitElement {
   private _view: Record<string, unknown>[] = [];
   /** client 모드에서 걸러진 전체 건수(페이지 나누기 전). */
   private _viewTotal = 0;
-  /** client 모드에서 `_id` 없는 행의 위치는 `data` 안의 위치다 — 거르거나 정렬해도 선택이 그 행을 따라간다. */
+  /** client 모드에서 키 없는 행의 위치는 `data` 안의 위치다 — 거르거나 정렬해도 선택이 그 행을 따라간다. */
   private _dataIndex = new Map<Record<string, unknown>, number>();
 
   /**
@@ -309,11 +317,11 @@ export class URichTable extends LitElement {
   /**
    * 행의 식별자. 선택·확장·행 오류 상태가 전부 이 값으로 추적된다.
    *
-   * ⚠`_id` 는 이 컴포넌트가 **부여하지 않는다.** 소비자가 넣어 주지 않으면 모든 행의
-   * `_id` 가 `undefined` 가 되고, Set 은 그 하나만 담으므로 **한 행을 고르면 전부
+   * ⚠키(`rowKey` — 기본 `_id`)는 이 컴포넌트가 **부여하지 않는다.** 소비자가 넣어 주지 않으면 모든 행의
+   * 키가 `undefined` 가 되고, Set 은 그 하나만 담으므로 **한 행을 고르면 전부
    * 골라진다.** 그래서 없을 때는 위치를 대신 쓴다 — 다만 위치 기반 식별은 데이터가
    * 재정렬·재페이징되면 **선택이 다른 행으로 옮겨간다.** 정렬/필터/페이지가 소비자
-   * 책임인 컴포넌트이므로, 실제 사용에서는 `_id` 를 주는 것이 옳다.
+   * 책임인 컴포넌트이므로, 실제 사용에서는 레코드의 키를 `row-key` 로 가리키는 것이 옳다.
    */
   /**
    * Dispatches one of {@link RichTableEventMap}'s events — bubbling and composed. Every named event goes
@@ -324,8 +332,8 @@ export class URichTable extends LitElement {
   }
 
   private _rowId(row: Record<string, unknown>, index: number): string {
-    const id = row._id;
-    if (id !== undefined && id !== null) return String(id);
+    const id = rowKeyOf(row, this.rowKey);
+    if (id !== undefined) return id;
     this._warnMissingRowId();
     return `#${this.dataMode === 'client' ? (this._dataIndex.get(row) ?? index) : index}`;
   }
@@ -335,9 +343,9 @@ export class URichTable extends LitElement {
     if (this._warnedMissingRowId) return;
     this._warnedMissingRowId = true;
     console.warn(
-      '[@iyulab/data-components] u-rich-table: rows have no `_id`, so selection is tracked ' +
+      '[@iyulab/data-components] u-rich-table: rows have no key (`_id`, or the field `row-key` names), so selection is tracked ' +
       'by **position**. Re-sorting or re-paging the data moves the selection to a different ' +
-      'row. Give every row a unique `_id`.',
+      'row. Give every row a unique key, or set `row-key` to the field that has one.',
     );
   }
 

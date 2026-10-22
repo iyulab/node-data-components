@@ -19,6 +19,7 @@ import type { SimpleSheetEventMap } from './components/simple-sheet/USimpleSheet
 import { UDataView, type DataViewEventMap } from './components/data-view/UDataView';
 import { URichTable } from './components/u-rich-table/URichTable';
 import type { ColumnDef, RichTableEventMap } from './components/u-rich-table/types';
+import { rowKeyOf, type RowKey } from './utilities/row-key';
 
 /** USimpleSheet React 래퍼 — `SimpleSheetEventMap` 의 이벤트를 전부 `onXxx` 로 노출 */
 export const USimpleSheetReact = createComponent({
@@ -184,8 +185,25 @@ class ReactRootPool implements ReactiveController {
   }
 }
 
+/**
+ * The render-pool id of a row: its key as the element reads it (`rowKey`, default `_id`), or — for a row without one — a
+ * session id that follows the row object. A shared fallback would hand every keyless row's React cell the same root.
+ */
+const unkeyedRowIds = new WeakMap<object, string>();
+let unkeyedRowSeq = 0;
+function poolRowId(row: Record<string, unknown>, key: RowKey | undefined): string {
+  const id = rowKeyOf(row, key);
+  if (id !== undefined) return id;
+  let session = unkeyedRowIds.get(row);
+  if (session === undefined) {
+    session = `#${++unkeyedRowSeq}`;
+    unkeyedRowIds.set(row, session);
+  }
+  return session;
+}
+
 /** A column `render` that returned a React node is mounted in the cell's root; strings and elements pass through. */
-function wrapColumnsForReact(columns: ColumnDefReact[] | undefined, pool: ReactRootPool): ColumnDef[] | undefined {
+function wrapColumnsForReact(columns: ColumnDefReact[] | undefined, pool: ReactRootPool, rowKey: () => RowKey | undefined): ColumnDef[] | undefined {
   if (!columns) return undefined;
   return columns.map((col): ColumnDef => {
     const originalRender = col.render;
@@ -196,8 +214,7 @@ function wrapColumnsForReact(columns: ColumnDefReact[] | undefined, pool: ReactR
         const result = originalRender(value, row);
         if (typeof result === 'string' || result instanceof HTMLElement) return result;
         if (result == null || typeof result === 'boolean') return '';
-        const rowId = String((row as { _id?: unknown })._id ?? '');
-        return pool.mount(`${col.key}::${rowId}`, result);
+        return pool.mount(`${col.key}::${poolRowId(row, rowKey())}`, result);
       },
     };
   });
@@ -213,13 +230,13 @@ const isTemplateResult = (v: unknown): v is TemplateResult =>
   typeof v === 'object' && v !== null && '_$litType$' in v;
 
 /** The detail renderer's React node is mounted in the row's root — it lives while the row is expanded and drawn. */
-function wrapDetailForReact(render: DetailRendererReact | undefined, pool: ReactRootPool): URichTable['detailRenderer'] {
+function wrapDetailForReact(render: DetailRendererReact | undefined, pool: ReactRootPool, rowKey: () => RowKey | undefined): URichTable['detailRenderer'] {
   if (!render) return undefined;
   return (row) => {
     const result = render(row);
     if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
     if (result == null || typeof result === 'boolean') return '';
-    return pool.mount(String((row as { _id?: unknown })._id ?? ''), result as React.ReactNode);
+    return pool.mount(poolRowId(row, rowKey()), result as React.ReactNode);
   };
 }
 
@@ -244,11 +261,13 @@ export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((pro
   detailPoolRef.current ??= new ReactRootPool('div');
   const { columns, detailRenderer, ...rest } = props;
 
-  const wrappedColumns = useMemo(() => wrapColumnsForReact(columns, poolRef.current!), [columns]);
-  const wrappedDetail = useMemo(() => wrapDetailForReact(detailRenderer, detailPoolRef.current!), [detailRenderer]);
-
   // The element, for the pools to follow its updates — and the caller's ref, forwarded.
   const elementRef = useRef<URichTable | null>(null);
+  // Read at render time, so a changed `rowKey` needs no new wrappers.
+  const rowKey = () => elementRef.current?.rowKey;
+  const wrappedColumns = useMemo(() => wrapColumnsForReact(columns, poolRef.current!, rowKey), [columns]);
+  const wrappedDetail = useMemo(() => wrapDetailForReact(detailRenderer, detailPoolRef.current!, rowKey), [detailRenderer]);
+
   const setRef = useCallback((el: URichTable | null) => {
     elementRef.current = el;
     if (typeof ref === 'function') ref(el);
@@ -295,7 +314,7 @@ export const UDataViewReact = forwardRef<UDataView, UDataViewReactProps>((props,
       const result = renderCard(item, index);
       if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
       if (result == null || typeof result === 'boolean') return '';
-      return pool.mount(String(item._id ?? `#${index}`), result as React.ReactNode);
+      return pool.mount(rowKeyOf(item, elementRef.current?.rowKey) ?? `#${index}`, result as React.ReactNode);
     };
   }, [renderCard]);
 

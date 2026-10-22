@@ -28,16 +28,24 @@ table.pageSize = 25;
 
 ---
 
-## Read this first: give every row an `_id`
+## Read this first: name each row's key
 
-The component does **not** assign row identity. Selection, expansion and row
-errors are all tracked by `row._id`.
+The component does **not** assign row identity. Selection, expansion, row
+errors and the `id` of `row-activate` / `selection-change` all follow the row's
+key — the field `row-key` names (default `_id`), or a function of the row. Point
+it at the key your records already carry instead of copying it (`0.53.0~`):
 
-```ts
-table.data = rows.map(r => ({ ...r, _id: r.documentNo }));
+```html
+<u-rich-table row-key="Id"></u-rich-table>
 ```
 
-If `_id` is missing, every row's identity is `undefined`, a `Set` holds exactly
+```ts
+table.rowKey = (row) => `${row.Region}/${row.DocumentNo}`; // a composite key
+```
+
+The same property, with the same meaning, is on `u-data-view` and `flex-table`.
+
+If the key is missing, every row's identity is `undefined`, a `Set` holds exactly
 one of those — so **selecting one row appears to select all of them**. The
 component falls back to the row's *position* and warns once on the console, but
 position-based identity moves the selection to a different row as soon as the
@@ -242,6 +250,7 @@ forever.
 
 The pager is `u-pagination` (`@iyulab/components`) — the same pager a list uses on its own. Its button names, the current page (`aria-current`) and the page-size choice are that component's; the table names the navigation after itself (`aria-label` → *"Orders pagination"*).
 | `selectable` | `boolean` | `false` | | Renders the selection column |
+| `rowKey` | `string \| (row) => unknown` | `'_id'` | | What names a row: the field holding its key, or a function of the row (attribute `row-key`). Selection, expansion, row errors and event ids follow it; a row without a key (`undefined`, `null`, `''`) is tracked by position (`0.53.0~`) |
 | `editable` | `boolean` | `true` | | Table-wide edit switch: `false` locks every cell (a property — a boolean attribute cannot express `false`). Columns still opt in with their own `editable` |
 | `addable` | `boolean` | `false` | | Renders the add-row control |
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |

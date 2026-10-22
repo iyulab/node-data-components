@@ -5,6 +5,7 @@ import '@iyulab/components/dist/components/button/UButton.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 import { messages } from '../../utilities/messages.js';
+import { rowKeyOf, type RowKey } from '../../utilities/row-key.js';
 import { styles } from './UDataView.styles';
 
 export type ViewMode = 'grid' | 'list' | 'table';
@@ -26,8 +27,8 @@ export type DataItem = Record<string, any>;
 export interface DataViewEventMap {
   /**
    * "Open this record": a click on a card, list item or table row (`via: 'click'`), or Enter on the focused one
-   * (`via: 'keyboard'`). Not a click on a control the item renders (a link, a button). `id` is the record's `_id`
-   * (`#<index>` when it has none) — the identity the tables use.
+   * (`via: 'keyboard'`). Not a click on a control the item renders (a link, a button). `id` is the record's key (`rowKey`,
+   * default `_id`; `#<index>` when it has none) — the identity the tables use.
    */
   'row-activate': CustomEvent<{ row: DataItem; id: string; via: 'click' | 'keyboard' }>;
 }
@@ -64,6 +65,11 @@ export class UDataView extends UElement {
 
   /** 표시할 레코드 — 두 표의 `data` 와 같은 이름·같은 뜻(서버 페이지 목록이면 지금 페이지). */
   @property({ type: Array }) data: DataItem[] = [];
+  /**
+   * 레코드를 무엇으로 식별하는가 — 두 표의 `rowKey` 와 같은 이름·같은 뜻(기본 `'_id'`, 필드 이름 또는 행의 함수).
+   * `row-activate` 의 `id` 가 이 값이다. 키가 없는 레코드는 `#<위치>`.
+   */
+  @property({ attribute: 'row-key' }) rowKey: RowKey = '_id';
   /**
    * 전체 건수 — 툴바의 «N items» 가 이것을 센다. 서버 페이지 목록은 `data` 가 한 페이지라 소스의 `totalCount` 를 준다.
    * 주지 않으면 `data.length`.
@@ -108,10 +114,9 @@ export class UDataView extends UElement {
     return index === this._clampedActive() ? '0' : '-1';
   }
 
-  /** 레코드의 정체성 — 두 표와 같은 `_id`(없으면 `#<위치>`). */
+  /** 레코드의 정체성 — 두 표와 같은 `rowKey`(없으면 `#<위치>`). */
   private _rowId(item: DataItem, index: number): string {
-    const id = item._id;
-    return id !== undefined && id !== null ? String(id) : `#${index}`;
+    return rowKeyOf(item, this.rowKey) ?? `#${index}`;
   }
 
   private _itemIndexOf(e: Event): number | null {

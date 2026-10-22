@@ -46,7 +46,7 @@ shows it:
 view.addEventListener('row-activate', (e) => openDetail(e.detail.id)); // { row, id, via: 'click' | 'keyboard' }
 ```
 
-`id` is the record's `_id` (`#<index>` when it has none). A click on a control an item renders (a link, a button) is
+`id` is the record's key — the field `row-key` names, default `_id` (`#<index>` when it has none). A click on a control an item renders (a link, a button) is
 that control's, not an activation. The records are one Tab stop: Tab reaches the first (or last focused) record,
 arrow keys move between records, Home / End jump to the ends. The layout switcher above them is one Tab stop too — a
 named toolbar whose buttons the arrow keys move between — so the whole component takes two Tabs to pass.
@@ -80,6 +80,7 @@ component prints at its content height.
 
 | Property | Type | Default | Reflect | Description |
 |----------|------|---------|---------|-------------|
+| `rowKey` | `string \| (item) => unknown` | `'_id'` | | What names a record: the field holding its key, or a function of the record (attribute `row-key`) — the `id` of `row-activate`. The same property as the tables' `rowKey` (`0.53.0~`) |
 | `data` | `DataItem[]` | `[]` | | Records to display — the same name as both tables' `data` (one page for a server-paged list). `DataItem` is `Record<string, any>` — the component deliberately does not constrain the app's domain type |
 | `totalCount` | `number` | — | | What the toolbar's item count counts; `data.length` when omitted. A server-paged list passes the source's `totalCount` |
 | `loading` | `boolean` | `false` | | Shows `loadingMessage` in place of the content |

@@ -11,6 +11,9 @@ export * from './components/simple-sheet/USimpleSheet';
 export * from './components/u-rich-table/URichTable';
 export * from './components/u-record-picker/URecordPicker';
 
+/** 행을 무엇으로 식별하는가 — `u-rich-table` · `u-data-view` 의 `rowKey` 가 받는 모양(flex-table 의 `rowKey` 와 같다). */
+export type { RowKey } from './utilities/row-key';
+
 /**
  * `URichTable` 의 공개 API 가 요구하는 타입.
  *

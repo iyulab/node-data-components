@@ -182,7 +182,8 @@ export class URecordPicker extends UFormControlElement<string> {
         <div class="dialog-table-wrap">
           <u-rich-table
             .columns=${this.columns}
-            .data=${this.dialogItems.map(item => ({ ...item, _id: item.id }))}
+            row-key="id"
+            .data=${this.dialogItems}
             .loading=${this.dialogLoading}
             @row-activate=${this.handleRowActivate}
             @dblclick=${this.handleRowDblClick}

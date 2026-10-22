@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`rowKey` on `u-rich-table` and `u-data-view`** (attribute `row-key`) — the field that holds a row's key, or a
+  function of the row; default `'_id'`. Selection, expansion, row errors and the `id` of `row-activate` and
+  `selection-change` follow it, so records keep their own key (`Id`, a document number) instead of a copied `_id`. The
+  same property, with the same meaning, as `flex-table`'s `rowKey`. `RowKey` is exported.
+
+### Fixed
+
+- `URichTableReact` and `UDataViewReact`: rows without a key no longer share one React root per column. The wrappers
+  keyed a cell's root by `_id`, so every keyless row's React cell mounted into the same root and only the last row
+  showed it. They now read the element's `rowKey` and tell keyless rows apart by the row object.
+
 ## [0.52.0] - 2026-10-21
 
 ### Added
