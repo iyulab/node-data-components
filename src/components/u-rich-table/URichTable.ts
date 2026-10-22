@@ -120,7 +120,12 @@ export class URichTable extends LitElement {
   pageInfoFormatter: (total: number, start: number, end: number) => string =
     (total, start, end) =>
       messages.text('pageInfo', { total: total.toLocaleString(), start, end });
-  @property({ type: Boolean }) selectable = false;
+  /**
+   * Draws the selection column. A function of the row decides it per row — the same shape a column's `editable` takes:
+   * `selectable = (row) => row.status !== 'shipped'`. A row it rejects draws a disabled checkbox and is left out of
+   * select-all, Shift-range and the Space key. `setSelection()` stays the app's to call with any ids.
+   */
+  @property({ type: Boolean }) selectable: boolean | ((row: Record<string, unknown>) => boolean) = false;
   /**
    * What names a row: the field whose value identifies it (default `'_id'`), or a function of the row — the same
    * contract as flex-table's `rowKey`. Selection, `row-activate` and `selection-change` ids, the open editor and expanded
@@ -359,12 +364,18 @@ export class URichTable extends LitElement {
     return this._view.filter((row, i) => this.selectedIds.has(this._rowId(row, i)));
   }
 
-  /** 이 페이지 행들의 식별자. 전체선택/해제가 «이 페이지» 범위임을 정의하는 값이다. */
-  private _pageRowIds(): string[] {
-    return this._view.map((row, i) => this._rowId(row, i));
+  /** 이 행을 사용자가 고를 수 있는가 — `selectable` 이 행의 함수면 그 판정. */
+  private _canSelect(row: Record<string, unknown> | undefined): boolean {
+    if (!row) return false;
+    return typeof this.selectable === 'function' ? !!this.selectable(row) : true;
   }
 
-  /** 현재 페이지에서 선택된 행 수 — 전체선택 체크박스의 «분자». */
+  /** 이 페이지에서 고를 수 있는 행들의 식별자. 전체선택/해제가 «이 페이지» 범위임을 정의하는 값이다. */
+  private _pageRowIds(): string[] {
+    return this._view.flatMap((row, i) => (this._canSelect(row) ? [this._rowId(row, i)] : []));
+  }
+
+  /** 현재 페이지에서 선택된(고를 수 있는) 행 수 — 전체선택 체크박스의 «분자». */
   private get _selectedOnPage(): number {
     return this._pageRowIds().reduce((n, id) => n + (this.selectedIds.has(id) ? 1 : 0), 0);
   }
@@ -382,7 +393,7 @@ export class URichTable extends LitElement {
    */
   private get _layout(): ColumnLayout {
     return columnLayout(this.columns, {
-      checkbox: this.selectable,
+      checkbox: !!this.selectable,
       expand: this.expandable,
       actions: this._hasActionsColumn,
     });
@@ -556,6 +567,7 @@ export class URichTable extends LitElement {
 
   private _renderHeader(): TemplateResult {
     const onPage = this._selectedOnPage;
+    const selectablePage = this._pageRowIds().length;
     return html`
       <thead>
         <tr>
@@ -564,8 +576,9 @@ export class URichTable extends LitElement {
             <label class="checkbox-hit">
               <input type="checkbox" tabindex="-1"
                 aria-label=${messages.text('selectAllOnPage')}
-                .checked=${this._view.length > 0 && onPage === this._view.length}
-                .indeterminate=${onPage > 0 && onPage < this._view.length}
+                .checked=${selectablePage > 0 && onPage === selectablePage}
+                .indeterminate=${onPage > 0 && onPage < selectablePage}
+                ?disabled=${selectablePage === 0}
                 @change=${this._onSelectAll} />
             </label>
           </th>` : ''}
@@ -665,9 +678,10 @@ export class URichTable extends LitElement {
                    ⚠체크박스는 Tab 정지점이 아니다(tabindex=-1) — 그리드는 하나의 Tab 정지점이고 이 셀은 화살표로 닿는다. -->
               <label class="checkbox-hit">
                 <input type="checkbox" tabindex="-1" .checked=${isSelected}
+                  ?disabled=${!this._canSelect(row)}
                   aria-label=${messages.text('selectRow')}
-                  @change=${() => this._onRowSelect(rowId)}
-                  @click=${(e: MouseEvent) => e.shiftKey && this._onShiftSelect(rowIdx)} />
+                  @change=${() => this._onRowSelect(row, rowId, rowIdx)}
+                  @click=${(e: MouseEvent) => this._onRowBoxClick(e, rowIdx)} />
               </label>
             </td>
           ` : ''}
@@ -882,7 +896,9 @@ export class URichTable extends LitElement {
     this._emit('select-all', { checked, pageRowIds: pageIds });
   }
 
-  private _onRowSelect(rowId: string): void {
+  private _onRowSelect(row: Record<string, unknown> | undefined, rowId: string, rowIdx?: number): void {
+    if (!this._canSelect(row)) return;
+    if (rowIdx !== undefined) this._lastSelectedIndex = rowIdx;
     const next = new Set(this.selectedIds);
     if (next.has(rowId)) next.delete(rowId);
     else next.add(rowId);
@@ -891,13 +907,24 @@ export class URichTable extends LitElement {
   }
 
   private _lastSelectedIndex = -1;
+
+  /**
+   * 행 체크박스의 Shift 클릭은 «여기까지 범위» 다 — 범위를 담고 체크박스의 기본 토글을 막는다. 막지 않으면 클릭 뒤에 오는
+   * `change` 가 방금 범위에 담긴 그 행을 다시 해제해, 범위의 끝 행이 늘 빠졌다. 기준점이 없으면 평소의 토글이다.
+   */
+  private _onRowBoxClick(e: MouseEvent, rowIdx: number): void {
+    if (!e.shiftKey || this._lastSelectedIndex < 0) return;
+    e.preventDefault();
+    this._onShiftSelect(rowIdx);
+  }
+
   private _onShiftSelect(rowIdx: number): void {
     if (this._lastSelectedIndex < 0) return;
     const start = Math.min(this._lastSelectedIndex, rowIdx);
     const end = Math.max(this._lastSelectedIndex, rowIdx);
     const next = new Set(this.selectedIds);
     for (let i = start; i <= end; i++) {
-      next.add(this._rowId(this._view[i], i));
+      if (this._canSelect(this._view[i])) next.add(this._rowId(this._view[i], i));
     }
     this.selectedIds = next;
     this._fireSelectionChange();
@@ -1384,7 +1411,7 @@ export class URichTable extends LitElement {
         e.preventDefault();
         const r = this._view[this.focusedCell.rowIndex];
         const rowId = r ? this._rowId(r, this.focusedCell.rowIndex) : undefined;
-        if (rowId) this._onRowSelect(rowId);
+        if (rowId) this._onRowSelect(r, rowId);
       }
       if (e.key === 'Delete' && this.deletable && this.selectedIds.size > 0) {
         // 선택된 행 삭제 (개별 이벤트)

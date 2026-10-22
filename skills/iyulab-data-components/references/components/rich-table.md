@@ -249,7 +249,7 @@ forever.
 | `pageInfoFormatter` | `(total, start, end) => string` | locale string | | Builds the pager caption. A function rather than a template, because word order differs per language |
 
 The pager is `u-pagination` (`@iyulab/components`) — the same pager a list uses on its own. Its button names, the current page (`aria-current`) and the page-size choice are that component's; the table names the navigation after itself (`aria-label` → *"Orders pagination"*).
-| `selectable` | `boolean` | `false` | | Renders the selection column |
+| `selectable` | `boolean \| (row) => boolean` | `false` | | Renders the selection column. A function of the row decides per row — the shape a column's `editable` takes: a row it rejects draws a disabled checkbox and is left out of select-all, Shift-range and Space (`0.53.0~`). `setSelection()` is not filtered |
 | `rowKey` | `string \| (row) => unknown` | `'_id'` | | What names a row: the field holding its key, or a function of the row (attribute `row-key`). Selection, expansion, row errors and event ids follow it; a row without a key (`undefined`, `null`, `''`) is tracked by position (`0.53.0~`) |
 | `editable` | `boolean` | `true` | | Table-wide edit switch: `false` locks every cell (a property — a boolean attribute cannot express `false`). Columns still opt in with their own `editable` |
 | `addable` | `boolean` | `false` | | Renders the add-row control |

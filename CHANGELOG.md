@@ -8,12 +8,18 @@
   function of the row; default `'_id'`. Selection, expansion, row errors and the `id` of `row-activate` and
   `selection-change` follow it, so records keep their own key (`Id`, a document number) instead of a copied `_id`. The
   same property, with the same meaning, as `flex-table`'s `rowKey`. `RowKey` is exported.
+- `u-rich-table`: `selectable` also takes a function of the row — the shape a column's `editable` takes. A row it
+  rejects (already shipped, locked) draws a disabled checkbox and is left out of select-all, Shift-range and the Space
+  key; select-all's checked state counts only the rows that can be selected.
 - `u-rich-table`: a column's `render` may return a Lit template — the same three results `detailRenderer` takes. A
   template used to be drawn as the cell's raw value. `URichTableReact` passes a template through instead of mounting
   it as a React node.
 
 ### Fixed
 
+- `u-rich-table`: Shift-clicking a row checkbox selects the whole range, its last row included. The range was added and
+  then the checkbox's own toggle removed the clicked row again. A row picked with its checkbox now also anchors the next
+  Shift-range (only a cell click did).
 - `URichTableReact` and `UDataViewReact`: rows without a key no longer share one React root per column. The wrappers
   keyed a cell's root by `_id`, so every keyless row's React cell mounted into the same root and only the last row
   showed it. They now read the element's `rowKey` and tell keyless rows apart by the row object.
