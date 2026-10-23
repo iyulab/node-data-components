@@ -407,6 +407,20 @@ export const richTableStyles = css`
     color: var(--dc-muted-color);
   }
 
+  /* 상태 문구(불러오는 중 · 오류 · 빈 상태) — 행 영역의 «보이는» 폭만큼 서서 가로 스크롤에도 왼쪽에 붙어 있다. 열 전체 폭(td)의
+     가운데는 열이 넘치는 표에서 보이는 영역 밖이었다. 폭은 렌더가 잰 값(--_visible-inline-size), 없으면 종전처럼 td 폭. */
+  tbody td.state-cell {
+    padding: 0;
+  }
+  .loading-overlay,
+  .empty-message,
+  .error-message {
+    position: sticky;
+    inset-inline-start: 0;
+    box-sizing: border-box;
+    inline-size: var(--_visible-inline-size, auto);
+  }
+
   .loading-overlay {
     display: flex;
     align-items: center;

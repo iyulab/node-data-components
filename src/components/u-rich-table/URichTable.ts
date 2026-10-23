@@ -647,16 +647,16 @@ export class URichTable extends LitElement {
 
   private _renderBody(): TemplateResult | TemplateResult[] {
     if (this.loading) {
-      return html`<tr><td colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div></td></tr>`;
+      return html`<tr><td class="state-cell" colspan=${this._colSpan()}><div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div></td></tr>`;
     }
     if (this.error) {
-      return html`<tr><td colspan=${this._colSpan()}><div class="error-message" role="alert">${this.error.message}</div></td></tr>`;
+      return html`<tr><td class="state-cell" colspan=${this._colSpan()}><div class="error-message" role="alert">${this.error.message}</div></td></tr>`;
     }
     if (this._view.length === 0) {
       // client 모드에서 데이터는 있는데 거른 결과가 비었으면 «일치 없음» — «데이터 없음» 과 다른 다음 행동(조건 완화)을 가리킨다.
       const noMatch = this.dataMode === 'client' && this.data.length > 0;
       const text = noMatch ? (this.noMatchingMessage || messages.text('noMatch')) : (this.emptyMessage || messages.text('empty'));
-      return html`<tr><td colspan=${this._colSpan()}><div class="empty-message">${text}</div></td></tr>`;
+      return html`<tr><td class="state-cell" colspan=${this._colSpan()}><div class="empty-message">${text}</div></td></tr>`;
     }
     return this._view.map((row, rowIdx) => {
       const rowId = this._rowId(row, rowIdx);
@@ -1339,14 +1339,38 @@ export class URichTable extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    if (this.hasUpdated) this._observeWrap();
     this.addEventListener('keydown', this._onGlobalKeyDown);
     this.unsubscribeLocale = Locale.subscribe(() => this.requestUpdate());
     if (this.detachedLocaleRevision !== undefined && this.detachedLocaleRevision !== Locale.revision) this.requestUpdate();
     this.detachedLocaleRevision = undefined;
   }
 
+  /**
+   * 행 영역의 보이는 폭 — 상태 문구(불러오는 중 · 오류 · 빈 상태)는 열 전체 폭(`td colspan`)이 아니라 이 폭의 가운데에 선다.
+   * 열 합계가 표보다 넓으면 전체 폭의 가운데는 보이는 영역의 오른쪽 끝이나 그 밖이었다. 크기 containment(`cqi`)는 쓰지 않는다
+   * — 행 영역의 고유 폭이 0 이 되어 폭을 주지 않은 표가 접힌다.
+   */
+  private _wrapObserver?: ResizeObserver;
+
+  protected firstUpdated(changed: PropertyValues): void {
+    super.firstUpdated(changed);
+    this._observeWrap();
+  }
+
+  private _observeWrap() {
+    const wrap = this.renderRoot.querySelector<HTMLElement>('.table-wrap');
+    if (!wrap || this._wrapObserver) return;
+    this._wrapObserver = new ResizeObserver(() => {
+      wrap.style.setProperty('--_visible-inline-size', `${wrap.clientWidth}px`);
+    });
+    this._wrapObserver.observe(wrap);
+  }
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
+    this._wrapObserver?.disconnect();
+    this._wrapObserver = undefined;
     this._unpinHint();
     this.removeEventListener('keydown', this._onGlobalKeyDown);
     this.unsubscribeLocale?.();

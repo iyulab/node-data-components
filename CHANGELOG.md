@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **`u-rich-table`'s empty, error and loading messages sit in the visible part of a wide table.** When the columns add
+  up to more than the table's width, the message was centred across all the columns — near the right edge of what
+  shows, or past it with more columns, so an empty result looked like no response. The message now spans the visible
+  width of the rows area and stays there while the table scrolls sideways. A table that fits looks as before.
+
 ## [0.53.0] - 2026-10-23
 
 ### Added
