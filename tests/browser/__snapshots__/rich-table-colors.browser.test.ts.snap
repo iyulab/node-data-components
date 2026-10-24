@@ -2,6 +2,13 @@
 
 exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스냅샷과 일치한다 1`] = `
 {
+  "dark .base": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "border-bottom-color": "rgb(61, 61, 61)",
+    "border-color": "rgb(61, 61, 61)",
+    "box-shadow": "none",
+    "color": "rgb(212, 212, 212)",
+  },
   "dark .filter-row input": {
     "background-color": "rgb(59, 59, 59)",
     "border-bottom-color": "rgb(61, 61, 61)",
@@ -60,8 +67,8 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
   },
   "dark :host": {
     "background-color": "rgba(0, 0, 0, 0)",
-    "border-bottom-color": "rgb(61, 61, 61)",
-    "border-color": "rgb(61, 61, 61)",
+    "border-bottom-color": "rgb(212, 212, 212)",
+    "border-color": "rgb(212, 212, 212)",
     "box-shadow": "none",
     "color": "rgb(212, 212, 212)",
   },
@@ -92,6 +99,13 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
     "border-color": "rgb(212, 212, 212)",
     "box-shadow": "rgb(61, 61, 61) 0px -2px 0px 0px inset",
     "color": "rgb(212, 212, 212)",
+  },
+  "light .base": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "border-bottom-color": "rgb(224, 224, 224)",
+    "border-color": "rgb(224, 224, 224)",
+    "box-shadow": "none",
+    "color": "rgb(33, 33, 33)",
   },
   "light .filter-row input": {
     "background-color": "rgb(255, 255, 255)",
@@ -151,8 +165,8 @@ exports[`URichTable 계산색 회귀망 > 두 테마의 계산색이 고정 스�
   },
   "light :host": {
     "background-color": "rgba(0, 0, 0, 0)",
-    "border-bottom-color": "rgb(224, 224, 224)",
-    "border-color": "rgb(224, 224, 224)",
+    "border-bottom-color": "rgb(33, 33, 33)",
+    "border-color": "rgb(33, 33, 33)",
     "box-shadow": "none",
     "color": "rgb(33, 33, 33)",
   },

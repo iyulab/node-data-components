@@ -46,6 +46,14 @@ export const richTableStyles = css`
     font-family: var(--u-font-base, system-ui, -apple-system, sans-serif);
     font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
+  }
+  /* 상자(테두리 · 둥근 모서리 · 면)는 섀도 안 .base 가 그린다 — 호스트에 두면 문서의 전역 리셋(Tailwind preflight 류)이 이긴다.
+     세로 flex 사슬(호스트 높이 제약 → 표 영역)은 .base 가 잇는다. */
+  .base {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     border: 1px solid var(--u-border-color, #E0E0E0);
     border-radius: 8px;
     overflow: hidden;

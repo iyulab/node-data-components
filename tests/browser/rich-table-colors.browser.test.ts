@@ -19,7 +19,7 @@ beforeAll(() => {
 });
 
 const SELECTORS = [
-  ':host', '.toolbar', '.toolbar .selection-info', '.toolbar .search-input',
+  ':host', '.base', '.toolbar', '.toolbar .selection-info', '.toolbar .search-input',
   '.toolbar .btn-primary', '.toolbar .btn-success', 'thead th', '.sort-indicator',
   // 페이저 버튼은 0.46.0 부터 `u-pagination` 의 섀도 안이다 — 그 색은 components 가 잰다. 여기서는 띠(`.pagination`)만.
   'tbody tr', 'tbody td', '.pagination', '.empty-message',

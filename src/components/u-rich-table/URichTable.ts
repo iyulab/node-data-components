@@ -400,7 +400,7 @@ export class URichTable extends LitElement {
   }
 
   render(): TemplateResult {
-    return html`
+    return html`<div class="base" part="base">
       ${this._renderToolbar()}
       <div class="table-wrap">
         <table role="grid" aria-label=${this.hostLabel || nothing} class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
@@ -414,7 +414,7 @@ export class URichTable extends LitElement {
       </div>
       ${this._renderSelectionBar()}
       ${this._renderPagination()}
-    `;
+    </div>`;
   }
 
   /**

@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **`u-rich-table` keeps its outline under a document-wide CSS reset.** In an app with Tailwind's preflight (or any
+  `* { border: 0 }` reset) the table lost its border and rounded corners — a document rule beats the shadow root's
+  `:host` rule. The box is now a new `base` part inside the shadow root (it carries the toolbar, table and pagination
+  and passes a height given to the host on to the table area, as before). A border or padding you set on the host now
+  adds outside it; style the box with `::part(base)`.
+
 ## [0.53.1] - 2026-10-23
 
 ### Fixed

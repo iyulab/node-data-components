@@ -263,6 +263,7 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 
 | Part | Description |
 |------|-------------|
+| `base` | The table box (border, rounded corners) around toolbar, table and pagination — style the box here, not on the host |
 | `sort-button` | A column header's sort toggle |
 | `header-hint` | The info icon beside a column header label whose `description` is set |
 | `toolbar` | The row above the table — the selection count and bulk actions (when it has other content), `toolbar-end`, the add-row button |
