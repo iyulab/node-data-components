@@ -4,6 +4,11 @@
 
 ### Fixed
 
+- **`u-record-picker`'s inline search field is announced as a combobox.** It had no role and no link to its
+  suggestion list, so a screen reader heard a plain text field and nothing while ↑/↓ moved through the suggestions.
+  It is now a combobox (WAI-ARIA APG editable combobox with list autocomplete) that controls the list, says whether
+  the list is open and which suggestion is current (`aria-activedescendant`).
+
 - **`u-rich-table` keeps its outline under a document-wide CSS reset.** In an app with Tailwind's preflight (or any
   `* { border: 0 }` reset) the table lost its border and rounded corners — a document rule beats the shadow root's
   `:host` rule. The box is now a new `base` part inside the shadow root (it carries the toolbar, table and pagination

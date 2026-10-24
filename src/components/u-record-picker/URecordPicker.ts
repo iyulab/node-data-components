@@ -24,6 +24,8 @@ import { styles } from './styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { CompositionTracker, replayInput } from '@iyulab/components/dist/utilities/composition.js';
 
+let pickerId = 0;
+
 /**
  * Form control that picks one record from a remote-searched list. Typing filters an inline
  * dropdown; Enter (with nothing highlighted) or the trailing find button opens a modal lookup
@@ -64,6 +66,9 @@ export class URecordPicker extends UFormControlElement<string> {
   @state() private items: PickerItem[] = [];
   @state() private loading = false;
   @state() private activeIndex = -1;
+  /** 인라인 결과 목록이 열려 있는가 — 콤보박스의 `aria-expanded`. */
+  @state() private listOpen = false;
+  private readonly listId = `u-record-picker-list-${++pickerId}`;
   @state() private error = false;
 
   private inlineDebounceTimer?: number;
@@ -117,7 +122,15 @@ export class URecordPicker extends UFormControlElement<string> {
         .validationMessage=${this.validationMessage}
       >
         <div class="container" part="container">
+          <!-- 인라인 검색 칸은 콤보박스다(APG editable combobox with list autocomplete) — 결과 목록을 가리키고, ↑↓ 로
+               옮긴 후보를 aria-activedescendant 로 알린다(목록은 같은 섀도 안이라 IDREF 가 닿는다). -->
           <input class="main-input" type="text"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-haspopup="listbox"
+            aria-expanded=${this.listOpen ? 'true' : 'false'}
+            aria-controls=${this.listId}
+            aria-activedescendant=${ifDefined(this.listOpen && this.activeIndex >= 0 ? `${this.listId}-${this.activeIndex}` : undefined)}
             aria-label=${ifDefined(this.label)}
             ?disabled=${this.effectivelyDisabled}
             ?readonly=${this.readonly}
@@ -148,8 +161,10 @@ export class URecordPicker extends UFormControlElement<string> {
         </div>
       </u-field>
 
-      <u-popover part="popover" role="listbox" for=".container" trigger="manual"
+      <u-popover part="popover" role="listbox" id=${this.listId} for=".container" trigger="manual"
         strategy="fixed" placement="bottom-start" offset="1"
+        @show=${() => { this.listOpen = true; }}
+        @hide=${() => { this.listOpen = false; }}
       >
         ${this.loading
           ? html`<div class="popover-loading"><u-spinner></u-spinner></div>`
@@ -158,7 +173,7 @@ export class URecordPicker extends UFormControlElement<string> {
             : this.items.length === 0
               ? html`<div class="no-results">${messages.text('noMatch')}</div>`
               : this.items.map((item, i) => html`
-                <u-option .value=${item.id} ?selected=${i === this.activeIndex}
+                <u-option id=${`${this.listId}-${i}`} .value=${item.id} ?selected=${i === this.activeIndex}
                   @click=${() => this.commitInline(item)}
                 >${item.label}</u-option>
               `)}
