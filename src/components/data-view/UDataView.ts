@@ -1,4 +1,4 @@
-﻿import { html, nothing, svg, type SVGTemplateResult, type TemplateResult } from 'lit';
+﻿import { html, nothing, svg, type PropertyValues, type SVGTemplateResult, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 
 import '@iyulab/components/dist/components/button/UButton.js';
@@ -99,7 +99,18 @@ export class UDataView extends UElement {
   @state() private _activeIndex = 0;
   private _focusAfterUpdate = false;
 
-  updated(): void {
+  protected firstUpdated(changed: PropertyValues): void {
+    super.firstUpdated(changed);
+    // 생성 시트를 지원하지 않는 환경(Lit 의 <style> 폴백)은 이 배열이 없다 — 가정하지 않고 확인한다.
+    if (this.shadowRoot && Array.isArray(this.shadowRoot.adoptedStyleSheets)) {
+      this._baseStyleSheets = [...this.shadowRoot.adoptedStyleSheets];
+    }
+  }
+
+  updated(changed: PropertyValues): void {
+    if (changed.has('stylesheets') && this.shadowRoot && Array.isArray(this.shadowRoot.adoptedStyleSheets)) {
+      this.shadowRoot.adoptedStyleSheets = [...this._baseStyleSheets, ...this.stylesheets];
+    }
     if (!this._focusAfterUpdate) return;
     this._focusAfterUpdate = false;
     this.shadowRoot?.querySelector<HTMLElement>(`[data-index="${this._clampedActive()}"]`)?.focus();
@@ -180,6 +191,15 @@ export class UDataView extends UElement {
   @property({ attribute: false }) renderCard?: (item: DataItem, index: number) => TemplateResult | HTMLElement | string;
   /** 커스텀 셀 렌더 함수 (table용) */
   @property({ attribute: false }) renderCell?: (item: DataItem, column: DataColumn, index: number) => TemplateResult | string;
+  /**
+   * Constructable stylesheets adopted into the shadow root, in addition to the view's own styles. `renderCard` and
+   * `renderCell` output is drawn inside the shadow root, so page CSS (utility classes, a house theme's markers) does not
+   * reach it — pass the sheets it needs here. Reassigning replaces the previous set. A property, not an attribute. Same
+   * name and meaning as `u-rich-table`'s and `flex-table`'s `stylesheets`.
+   */
+  @property({ attribute: false }) stylesheets: CSSStyleSheet[] = [];
+  /** 뷰 자신의 시트 — 첫 그림 때 한 번 잡아 `stylesheets` 를 더해도 잃지 않게. */
+  private _baseStyleSheets: CSSStyleSheet[] = [];
 
 
   render() {

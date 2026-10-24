@@ -46,6 +46,11 @@ export class URecordPicker extends UFormControlElement<string> {
   @property({ attribute: false }) search!: (query: string) => Promise<PickerItem[]>;
   /** Column definitions for the lookup dialog's `u-rich-table` (same shape as `u-rich-table`). */
   @property({ type: Array }) columns: ColumnDef[] = [];
+  /**
+   * Stylesheets for the lookup dialog's table — handed to its `u-rich-table` as `stylesheets`, so markup a column's
+   * `render` returns can be styled there (page CSS does not reach inside the table). A property, not an attribute.
+   */
+  @property({ attribute: false }) stylesheets: CSSStyleSheet[] = [];
   /** Lookup dialog header title. Defaults to a localized "Select a record". */
   @property({ type: String, attribute: 'dialog-title' }) dialogTitle?: string;
   /** Placeholder text for the main input. */
@@ -197,6 +202,7 @@ export class URecordPicker extends UFormControlElement<string> {
         <div class="dialog-table-wrap">
           <u-rich-table
             .columns=${this.columns}
+            .stylesheets=${this.stylesheets}
             row-key="id"
             .data=${this.dialogItems}
             .loading=${this.dialogLoading}

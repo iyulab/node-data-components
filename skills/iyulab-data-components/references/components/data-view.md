@@ -94,6 +94,7 @@ component prints at its content height.
 | `gap` | `string` | `'1rem'` | | Gap between cards or rows (CSS length) |
 | `renderCard` | `(item, index) => TemplateResult \| HTMLElement \| string` | — | | Replaces card content in `grid` / `list`. `UDataViewReact` also takes a React node |
 | `renderCell` | `(item, column, index) => TemplateResult \| string` | — | | Replaces cell content in `table` |
+| `stylesheets` | `CSSStyleSheet[]` | `[]` | | Constructable sheets adopted into the shadow root — `renderCard` and `renderCell` markup is drawn there, so page CSS (utility classes, house markers such as `.hs-due`) does not reach it; pass the sheets it needs. Reassigning replaces the set. Same as `u-rich-table`'s `stylesheets` |
 
 ## Events
 

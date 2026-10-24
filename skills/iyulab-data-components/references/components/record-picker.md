@@ -48,6 +48,7 @@ is resolved.
 |----------|------|---------|---------|-------------|
 | `search` | `(query: string) => Promise<PickerItem[]>` | — | — | Async lookup, shared by the inline dropdown and the dialog's search bar. Required |
 | `columns` | `ColumnDef[]` | `[]` | — | Column definitions for the lookup dialog's `u-rich-table` (same shape as `u-rich-table`) |
+| `stylesheets` | `CSSStyleSheet[]` | `[]` | — | Handed to the lookup dialog's `u-rich-table` as its `stylesheets` — styles the markup a column's `render` returns |
 | `dialogTitle` | `string` | — | — | Lookup dialog header title (attribute: `dialog-title`). Defaults to a localized "Select a record" |
 | `placeholder` | `string` | — | — | Placeholder text for the main input |
 | `clearable` | `boolean` | `false` | ✓ | Show a clear ("x") button when a value is selected |

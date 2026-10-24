@@ -8,6 +8,9 @@
   drawn inside the table's shadow root, so page CSS — utility classes, a house theme's markers — came out unstyled
   there (a progress mark drew at size 0). Constructable stylesheets set on `stylesheets` are adopted into the shadow
   root next to the table's own styles; reassigning replaces the set. Same name and meaning as `flex-table`'s.
+- **`u-data-view` and `u-record-picker` take `stylesheets` too.** `u-data-view` adopts them next to its own styles, so
+  `renderCard` and `renderCell` markup can be styled; `u-record-picker` hands them to its lookup table, where a column's
+  `render` output is drawn. The three elements that draw consumer markup in a shadow root now take sheets the same way.
 
 ## [0.54.0] - 2026-10-24
 
