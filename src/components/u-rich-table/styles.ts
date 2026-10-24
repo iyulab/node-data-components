@@ -54,8 +54,9 @@ export const richTableStyles = css`
     min-height: 0;
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--u-border-color, #E0E0E0);
-    border-radius: 8px;
+    /* 외곽선 · 모서리 — 감싸는 면이 자기 테두리 안에 표를 넣을 때 --dc-table-outline: none · --dc-table-radius: 0 으로 걷는다. */
+    border: var(--dc-table-outline, 1px solid var(--u-border-color, #E0E0E0));
+    border-radius: var(--dc-table-radius, 8px);
     overflow: hidden;
   }
 

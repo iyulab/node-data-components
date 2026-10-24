@@ -392,6 +392,8 @@ Each action fires only its own `event` — none of them fall back to `row-delete
 |----------|-------------|
 | `--dc-font-size` | Body cell / edit input font size, shared with the edit control so the size doesn't jump on entering edit mode (default `--u-density`, `13px`) |
 | `--dc-muted-color` | Secondary text — pager caption, disabled affordances (default `--u-txt-color-weak`) |
+| `--dc-table-outline` | The `base` box's border — `none` when a surface that draws its own border holds the table (default `1px solid` `--u-border-color`) |
+| `--dc-table-radius` | The `base` box's corner radius (default `8px`) |
 | `--dc-icon-color` | Sort indicator, expander, row-menu icon color (default `--u-txt-color-weak`) |
 | `--dc-empty-color` | Empty-state message color (default `--u-txt-color-weak`) |
 

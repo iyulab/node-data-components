@@ -14,6 +14,8 @@
   `:host` rule. The box is now a new `base` part inside the shadow root (it carries the toolbar, table and pagination
   and passes a height given to the host on to the table area, as before). A border or padding you set on the host now
   adds outside it; style the box with `::part(base)`.
+  A surface that draws its own border around the table (a card) drops the table's with `--dc-table-outline: none`
+  and `--dc-table-radius: 0` — they inherit through the host, which `border` on the host no longer reaches.
 
 ## [0.53.1] - 2026-10-23
 
