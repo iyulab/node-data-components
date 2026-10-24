@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`u-rich-table` `stylesheets` — style the markup a cell renders.** Cell `render` and `detailRenderer` output is
+  drawn inside the table's shadow root, so page CSS — utility classes, a house theme's markers — came out unstyled
+  there (a progress mark drew at size 0). Constructable stylesheets set on `stylesheets` are adopted into the shadow
+  root next to the table's own styles; reassigning replaces the set. Same name and meaning as `flex-table`'s.
+
 ## [0.54.0] - 2026-10-24
 
 ### Fixed

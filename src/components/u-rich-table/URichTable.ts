@@ -141,6 +141,16 @@ export class URichTable extends LitElement {
   @property({ type: Boolean }) addable = false;
   @property({ type: Boolean }) filterable = false;
   @property({ type: Boolean }) expandable = false;
+  /**
+   * Constructable stylesheets adopted into the shadow root, in addition to the table's own styles. Cell `render` output
+   * and `detailRenderer` content are drawn inside the shadow root, so page CSS (utility classes, a house theme's markers)
+   * does not reach them — pass the sheets they need here. Reassigning replaces the previous set. A property, not an
+   * attribute. Same name and meaning as `flex-table`'s `stylesheets`.
+   */
+  @property({ attribute: false }) stylesheets: CSSStyleSheet[] = [];
+  /** 표 자신의 시트 — 첫 그림 때 한 번 잡아 `stylesheets` 를 더해도 잃지 않게. */
+  private _baseStyleSheets: CSSStyleSheet[] = [];
+
   /** 펼친 행의 상세 — Lit 템플릿, 요소 또는 문자열(Lit 이 그대로 그리는 셋). */
   @property({ attribute: false }) detailRenderer?: (row: Record<string, unknown>) => TemplateResult | HTMLElement | string;
   /**
@@ -237,6 +247,7 @@ export class URichTable extends LitElement {
 
   protected updated(changed: PropertyValues<this>): void {
     super.updated(changed);
+    if ((changed as PropertyValues).has('stylesheets')) this._syncStylesheets();
     if ((changed as PropertyValues).has('selectedIds')) {
       this._internals?.states?.[this.selectedIds.size > 0 ? 'add' : 'delete']('selected');
     }
@@ -1355,7 +1366,16 @@ export class URichTable extends LitElement {
 
   protected firstUpdated(changed: PropertyValues): void {
     super.firstUpdated(changed);
+    // 생성 시트를 지원하지 않는 환경(Lit 의 <style> 폴백)은 이 배열이 없다 — 가정하지 않고 확인한다.
+    if (this.shadowRoot && Array.isArray(this.shadowRoot.adoptedStyleSheets)) {
+      this._baseStyleSheets = [...this.shadowRoot.adoptedStyleSheets];
+    }
     this._observeWrap();
+  }
+
+  private _syncStylesheets(): void {
+    if (!this.shadowRoot || !Array.isArray(this.shadowRoot.adoptedStyleSheets)) return;
+    this.shadowRoot.adoptedStyleSheets = [...this._baseStyleSheets, ...this.stylesheets];
   }
 
   private _observeWrap() {

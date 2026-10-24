@@ -256,6 +256,7 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 | `filterable` | `boolean` | `false` | | Renders the filter row for columns marked `filterable` |
 | `expandable` | `boolean` | `false` | | Renders the expander column; pair with `detailRenderer` |
 | `detailRenderer` | `(row) => TemplateResult \| HTMLElement \| string` | — | | Renders the expanded detail row. In `URichTableReact` it may also return a `ReactNode`, mounted per row while the row is expanded and unmounted when it collapses or leaves `data` |
+| `stylesheets` | `CSSStyleSheet[]` | `[]` | | Constructable sheets adopted into the shadow root — cell `render` and `detailRenderer` markup is drawn there, so page CSS (utility classes, house markers such as `.hs-due`) does not reach it; pass the sheets it needs. Reassigning replaces the set. Same as `flex-table`'s `stylesheets` |
 | `deletable` | `boolean` | `false` | | Declares a table that handles row deletion: renders a trash-can delete button (accessible name "Delete row"; a "⋯" before `0.33.0`) and enables the `Delete` key (`0.25.0~`) |
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 
