@@ -41,6 +41,7 @@ let pickerId = 0;
 @customElement('u-record-picker')
 export class URecordPicker extends UFormControlElement<string> {
   static styles = [super.styles, styles];
+  protected static override fieldBox = true;
 
   /** Async lookup — shared by the inline dropdown and the dialog's search bar. */
   @property({ attribute: false }) search!: (query: string) => Promise<PickerItem[]>;

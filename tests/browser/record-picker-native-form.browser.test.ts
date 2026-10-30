@@ -29,6 +29,11 @@ async function mount(markup: string): Promise<{ form: HTMLFormElement; el: Picke
 describe('u-record-picker — 네이티브 폼 계약', () => {
   beforeEach(() => { document.body.innerHTML = ''; });
 
+  it('입력 상자를 그리는 칸이라 :state(field) 를 싣는다 — 줄 배치가 태그 이름 없이 찾는다', async () => {
+    const { el } = await mount('<u-record-picker id="c"></u-record-picker>');
+    expect(el.matches(':state(field)')).toBe(true);
+  });
+
   it('fieldset 비활성 = 자기 disabled', async () => {
     const own = deepInputs((await mount('<u-record-picker id="c" name="x" disabled></u-record-picker>')).el);
     const via = deepInputs((await mount('<fieldset disabled><u-record-picker id="c" name="x"></u-record-picker></fieldset>')).el);

@@ -8,6 +8,9 @@
   as `Intl.NumberFormatOptions` — the same number-format vocabulary as `@iyulab/flex-table` (components
   `applyNumberFormat`). A section color paints as the theme status tone; a code the engine does not support shows the
   value as is and warns once. Needs `@iyulab/components` 2.36.0 or later (the peer range now says so).
+- **`u-record-picker` carries `:state(field)`** like the components controls that draw an input box, so a layout that
+  stands fields on their bottom edge (`u-list-page` filters) finds it without naming the tag. The state needs
+  `@iyulab/components` 2.37.0 or later; under an older one the picker simply does not carry it.
 
 ### Fixed
 
