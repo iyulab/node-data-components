@@ -201,7 +201,9 @@ export class URecordPicker extends UFormControlElement<string> {
           ? html`<div class="dialog-error">${messages.text('pickerSearchError')}</div>`
           : ''}
         <div class="dialog-table-wrap">
+          <!-- 조회 표의 좁은 화면은 이 컴포넌트가 정한다 — 앱은 안쪽 표에 닿지 못한다: 휴대폰에서는 카드(행 열기 = 고르기). -->
           <u-rich-table
+            layout="auto"
             .columns=${this.columns}
             .stylesheets=${this.stylesheets}
             row-key="id"

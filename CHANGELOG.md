@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- **`u-record-picker` decides its lookup table's narrow screen itself** (`layout="auto"` — cards on a phone, a row tap
+  picks it). The app cannot reach that inner table, so the table's «choose for narrow screens» console note was one
+  the app could not answer.
+
 ## [0.56.1] - 2026-10-31
 
 0.56.0 was tagged but not published — its build failed against the published `@iyulab/components` (an `override` of a
