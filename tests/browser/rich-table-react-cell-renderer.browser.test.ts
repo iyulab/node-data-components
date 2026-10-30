@@ -227,3 +227,24 @@ describe('URichTableReact — React 상세 렌더러(detailRenderer)', () => {
     expect(el.shadowRoot!.querySelector('.detail-row, tr.detail')?.textContent ?? el.shadowRoot!.textContent).toContain('plain:first');
   });
 });
+
+describe('URichTableReact — renderCard(카드 폴백)', () => {
+  it('React 노드를 돌려주면 카드 자리에 마운트되고 클릭이 동작한다 — 카드 클릭(행 열기)은 아니다', async () => {
+    const handler = vi.fn();
+    const activate = vi.fn();
+    const el = await mount({
+      layout: 'cards',
+      columns: [{ key: 'name', label: 'Name' }],
+      data: [{ _id: 'a', name: 'Alpha' }, { _id: 'b', name: 'Bravo' }],
+      renderCard: (row: Record<string, unknown>) =>
+        React.createElement('button', { className: 'react-card-btn', onClick: () => handler(row._id) }, `card:${row.name}`),
+      onRowActivate: activate,
+    });
+    await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
+    const buttons = [...el.shadowRoot!.querySelectorAll<HTMLButtonElement>('li.card .react-card-btn')];
+    expect(buttons.map((b) => b.textContent)).toEqual(['card:Alpha', 'card:Bravo']);
+    await act(async () => { buttons[1].click(); });
+    expect(handler).toHaveBeenCalledWith('b');
+    expect(activate).not.toHaveBeenCalled();
+  });
+});

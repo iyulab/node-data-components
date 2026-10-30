@@ -291,7 +291,7 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
 | `layout` | `'auto'\|'table'\|'cards'` | `'auto'` | | How rows are drawn — `auto` draws cards where a table does not suit (see *Narrow screens*); `table` · `cards` say the app has decided |
 | `cardBreakpoint` | `number` | `600` | | Under `auto`, the screen width — and the width of a table whose columns do not fit — below which rows become cards (attribute `card-breakpoint`) |
-| `renderCard` | `(row, index) => TemplateResult \| HTMLElement \| string` | — | | Draws one row's card in place of the default (the shape `u-data-view` takes) |
+| `renderCard` | `(row, index) => TemplateResult \| HTMLElement \| string` | — | | Draws one row's card in place of the default (the shape `u-data-view` takes). In `URichTableReact` it may also return a `ReactNode`, mounted per row while the row is drawn as a card |
 
 ## CSS Parts
 

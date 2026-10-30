@@ -240,15 +240,30 @@ function wrapDetailForReact(render: DetailRendererReact | undefined, pool: React
   };
 }
 
-export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTableReact>, 'columns' | 'detailRenderer'> & {
+/** A narrow-screen card renderer for React (`layout` cards) — a React node, or what the element takes. */
+export type RichTableCardRendererReact = (row: Record<string, unknown>, index: number) => React.ReactNode | TemplateResult | HTMLElement;
+
+/** The card's React node is mounted in the row's root — it lives while the row is drawn as a card. */
+function wrapCardForReact(render: RichTableCardRendererReact | undefined, pool: ReactRootPool, rowKey: () => RowKey | undefined): URichTable['renderCard'] {
+  if (!render) return undefined;
+  return (row, index) => {
+    const result = render(row, index);
+    if (typeof result === 'string' || result instanceof HTMLElement || isTemplateResult(result)) return result;
+    if (result == null || typeof result === 'boolean') return '';
+    return pool.mount(poolRowId(row, rowKey()), result as React.ReactNode);
+  };
+}
+
+export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTableReact>, 'columns' | 'detailRenderer' | 'renderCard'> & {
   columns?: ColumnDefReact[];
   detailRenderer?: DetailRendererReact;
+  renderCard?: RichTableCardRendererReact;
 };
 
 /**
  * `URichTable`(`data-view`가 아니라 `u-rich-table`) React 래퍼. 이벤트는
  * `BaseURichTableReact`(RichTableEventMap 전체를 onXxx로 노출)를 그대로 물려받고,
- * `columns[].render`·`detailRenderer` 에만 `ReactNode` 반환 경로를 추가한다.
+ * `columns[].render`·`detailRenderer`·`renderCard` 에만 `ReactNode` 반환 경로를 추가한다.
  *
  * ⚠Props the caller did not give are not passed on — `@lit/react` assigns every prop it receives on every render, so
  * an always-passed `data` set the rows of a table bound to a data source (`u-list-page`, `bindSource`) to `undefined`
@@ -257,9 +272,11 @@ export type URichTableReactProps = Omit<React.ComponentProps<typeof BaseURichTab
 export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((props, ref) => {
   const poolRef = useRef<ReactRootPool>(null);
   const detailPoolRef = useRef<ReactRootPool>(null);
+  const cardPoolRef = useRef<ReactRootPool>(null);
   poolRef.current ??= new ReactRootPool('span');
   detailPoolRef.current ??= new ReactRootPool('div');
-  const { columns, detailRenderer, ...rest } = props;
+  cardPoolRef.current ??= new ReactRootPool('div');
+  const { columns, detailRenderer, renderCard, ...rest } = props;
 
   // The element, for the pools to follow its updates — and the caller's ref, forwarded.
   const elementRef = useRef<URichTable | null>(null);
@@ -267,6 +284,7 @@ export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((pro
   const rowKey = () => elementRef.current?.rowKey;
   const wrappedColumns = useMemo(() => wrapColumnsForReact(columns, poolRef.current!, rowKey), [columns]);
   const wrappedDetail = useMemo(() => wrapDetailForReact(detailRenderer, detailPoolRef.current!, rowKey), [detailRenderer]);
+  const wrappedCard = useMemo(() => wrapCardForReact(renderCard, cardPoolRef.current!, rowKey), [renderCard]);
 
   const setRef = useCallback((el: URichTable | null) => {
     elementRef.current = el;
@@ -275,7 +293,7 @@ export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((pro
   }, [ref]);
 
   useEffect(() => {
-    const pools = [poolRef.current!, detailPoolRef.current!];
+    const pools = [poolRef.current!, detailPoolRef.current!, cardPoolRef.current!];
     for (const pool of pools) pool.attach(elementRef.current);
     // 이 cleanup 은 바깥 root 자신의 unmount 커밋 도중에 실행된다 — 풀은 언마운트를 마이크로태스크로 미룬다.
     return () => { for (const pool of pools) pool.dispose(); };
@@ -285,6 +303,7 @@ export const URichTableReact = forwardRef<URichTable, URichTableReactProps>((pro
     ...rest,
     ...('columns' in props ? { columns: wrappedColumns } : {}),
     ...('detailRenderer' in props ? { detailRenderer: wrappedDetail } : {}),
+    ...('renderCard' in props ? { renderCard: wrappedCard } : {}),
     ref: setRef,
   } as React.ComponentProps<typeof BaseURichTableReact>);
 });

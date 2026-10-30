@@ -19,7 +19,8 @@
   not fit shows each row as a card: the first column (or `card: 'title'`) as its title, the other columns as label and
   value (`card: 'hidden'` leaves one out). Selection, `row-activate` (click or `Enter` on a card), row actions and the
   expanded detail work on cards. A table with editable columns stays a table. `renderCard` draws your own card. When
-  `auto` falls back and the app has not set `layout`, the table notes it once in the console so the app can decide.
+  `auto` falls back and the app has not set `layout`, the table notes it once in the console so the app can decide. In `URichTableReact`
+  `renderCard` may return a React node (mounted per row, like `detailRenderer`).
 
 ### Changed
 
