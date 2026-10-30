@@ -341,6 +341,11 @@ const baseStyles = css`
   }
 
   /* Numeric cell (right-aligned like Excel) */
+  .format-tone[data-tone='danger'] { color: var(--u-danger-color, #D32F2F); }
+  .format-tone[data-tone='success'] { color: var(--u-success-color, #2E7D32); }
+  .format-tone[data-tone='info'] { color: var(--u-info-color, #1976D2); }
+  .format-tone[data-tone='warning'] { color: var(--u-warning-color-strong, #8A4A00); }
+
   .cell.cell-numeric {
     text-align: right;
   }

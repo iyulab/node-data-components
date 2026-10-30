@@ -112,7 +112,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `options` | `string[] \| ((row, col) => string[])` | Dropdown choices, static or per cell |
 | `strict` | `boolean` | Only listed options may be entered (default: free text) |
 | `compute` | `(rowIndex, data) => string \| undefined` | Derived value; makes that cell read-only. Return `undefined` for a row to leave it as plain user input (e.g. input rows mixed with computed rows in one column). Evaluated left→right, top→bottom |
-| `format` | `Intl.NumberFormatOptions \| ((value, rowIndex) => string)` | Display formatting only — the stored value is untouched |
+| `format` | `NumberFormat \| ((value, rowIndex) => string)` | Display formatting only — the stored value is untouched. `NumberFormat` is a spreadsheet format code (`'#,##0;[Red](#,##0)'`) or `Intl.NumberFormatOptions` — the same vocabulary as components `applyNumberFormat`; a section color paints as the theme status tone |
 | `required` | `boolean` | Empty value gets a visual marker (inset border) on the cell |
 | `validator` | `(value, rowIndex, data) => string \| null` | Same shape as `compute` (row index + whole grid, not a row object like `URichTable.ColumnDef.validator`) — return a message to mark the cell invalid, `null` to pass |
 

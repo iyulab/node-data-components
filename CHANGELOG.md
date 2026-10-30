@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **`u-simple-sheet` column `format` takes a spreadsheet format code** (`'#,##0원'`, `'0.0%'`, `'#,##0;[Red](#,##0)'`) as well
+  as `Intl.NumberFormatOptions` — the same number-format vocabulary as `@iyulab/flex-table` (components
+  `applyNumberFormat`). A section color paints as the theme status tone; a code the engine does not support shows the
+  value as is and warns once. Needs `@iyulab/components` 2.36.0 or later (the peer range now says so).
+
+### Fixed
+
+- **A `u-simple-sheet` number format no longer writes «-0».** A negative that rounds to zero under the column's
+  options now reads `0`.
+
 ## [0.55.0] - 2026-10-25
 
 ### Added

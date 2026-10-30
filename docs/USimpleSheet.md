@@ -111,7 +111,7 @@ interface SheetColumn {
   options?:  string[] | ((row: number, col: number) => string[]);  // 드롭다운 옵션 목록
   strict?:   boolean;  // 목록 값만 입력 허용 (기본: false)
   compute?:  (rowIndex: number, data: string[][]) => string | undefined;  // 자동 계산 함수. undefined 반환 시 그 행은 계산 대상 아님(사용자 입력 유지)
-  format?:   Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);  // 표시 포맷
+  format?:   NumberFormat | ((value: string, rowIndex: number) => string);  // 표시 포맷 — 서식 코드 또는 Intl 옵션
   required?: boolean;  // 필수 입력. 비어 있으면 셀에 시각 표시(테두리)
   validator?: (value: string, rowIndex: number, data: string[][]) => string | null;  // 셀 검증. 문제 있으면 메시지, 통과하면 null
 }
@@ -446,6 +446,22 @@ const columns: SheetColumn[] = [
 열에 `format`을 설정하면 셀 값이 포맷되어 표시됩니다.
 내부 데이터(`getData()`, `change` 이벤트)는 원본 값을 유지합니다.
 
+숫자 서식(`NumberFormat`)은 `@iyulab/flex-table` · `@iyulab/components` 의 `applyNumberFormat` 과 같은 어휘입니다 —
+스프레드시트 서식 코드 문자열 또는 `Intl.NumberFormatOptions` 객체. 셀 글자는 앱 로케일로 읽고, 구분자도 앱 로케일을 따릅니다.
+반올림해 0 이 된 음수는 `-0` 이 아니라 `0` 으로 적습니다.
+
+### 서식 코드 (스프레드시트)
+
+```typescript
+{ key: 'amount', label: '금액', format: '#,##0원' }            // 1234 → 1,234원
+{ key: 'diff',   label: '증감', format: '#,##0;[Red](#,##0)' } // -1234 → (1,234), 위험 색
+{ key: 'rate',   label: '비율', format: '0.0%' }                // 0.256 → 25.6%
+{ key: 'note',   label: '비고', format: '#,##0;-#,##0;0;"["@"]"' } // 글자 n/a → [n/a]
+```
+
+섹션 색(`[Red]` `[Green]` `[Blue]` `[Yellow]`)은 글자색 그 자체가 아니라 테마의 상태 색(위험 · 성공 · 정보 · 주의)으로 칠합니다.
+조건(`[>100]`) · `[Color N]` · 지수 · 분수는 지원하지 않습니다 — 그 열은 값을 그대로 보이고 콘솔에 한 번 알립니다.
+
 ### Intl.NumberFormatOptions (선언적)
 
 JavaScript 내장 `Intl.NumberFormat`을 직접 활용합니다.
@@ -485,5 +501,5 @@ JavaScript 내장 `Intl.NumberFormat`을 직접 활용합니다.
 
 - **표시만 변경**: 편집 진입 시 원본 값 표시, 편집 종료 시 포맷 적용
 - **원본 유지**: `getData()`, `change` 이벤트, 복사(Ctrl+C) 모두 원본 값
-- **자동 우측 정렬**: `Intl.NumberFormatOptions` 사용 시 숫자로 간주되어 우측 정렬
+- **자동 우측 정렬**: 숫자 서식(서식 코드 · `Intl.NumberFormatOptions`) 사용 시 숫자로 간주되어 우측 정렬
 - **에러 안전**: 포맷 중 예외 발생 시 원본 값 그대로 표시

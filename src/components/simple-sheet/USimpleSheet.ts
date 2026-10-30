@@ -5,9 +5,18 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { ref } from 'lit/directives/ref.js';
 
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
-import { formatNumber, parseNumber } from '@iyulab/components/dist/utilities/format.js';
+import { parseNumber } from '@iyulab/components/dist/utilities/format.js';
+import { applyNumberFormat, type FormattedNumber, type NumberFormat } from '@iyulab/components/dist/utilities/numberFormat.js';
 import { UElement } from '@iyulab/components/dist/components/UElement.js';
 import { styles } from './USimpleSheet.styles.js';
+
+const warnedFormats = new Set<string>();
+/** 열의 서식 코드가 지원 밖이면(조건 · 지수 · 분수) 한 번만 알린다 — 칸은 값을 그대로 보인다. */
+function warnUnsupported(code: string): void {
+  if (warnedFormats.has(code)) return;
+  warnedFormats.add(code);
+  console.warn(`[@iyulab/data-components] number format "${code}" uses syntax the sheet does not support (conditions, [Color N], scientific or fractions) — showing values unformatted.`);
+}
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { encodeTsv, decodeTsv } from '@iyulab/components/dist/utilities/tsv.js';
 import { copyFromKey, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
@@ -32,8 +41,11 @@ export interface SheetColumn {
    * 열 순서(좌→우), 행 순서(위→아래)로 계산.
    */
   compute?: (rowIndex: number, data: string[][]) => string | undefined;
-  /** 표시 포맷. Intl.NumberFormatOptions(숫자) 또는 커스텀 콜백. 원본 데이터는 유지. */
-  format?: Intl.NumberFormatOptions | ((value: string, rowIndex: number) => string);
+  /**
+   * 표시 포맷 — 숫자 서식(`NumberFormat`: 서식 코드 `'#,##0;[Red](#,##0)'` 또는 `Intl.NumberFormatOptions` —
+   * 표 · 위젯과 같은 어휘, components `applyNumberFormat`) 또는 커스텀 콜백. 원본 데이터는 유지.
+   */
+  format?: NumberFormat | ((value: string, rowIndex: number) => string);
   /** 필수 입력 열. 값이 비어 있으면 셀에 시각적 표시(테두리)가 붙는다. */
   required?: boolean;
   /**
@@ -397,8 +409,8 @@ export class USimpleSheet extends UElement {
 
     const isColReadonly = this._isColReadonly(r, c);
     const isComputed = this._isColComputed(r, c);
-    const hasIntlFormat = this.columns?.[c]?.format && typeof this.columns[c].format !== 'function';
-    const isNumeric = hasIntlFormat || this._isNumeric(value);
+    const hasNumberFormat = this.columns?.[c]?.format && typeof this.columns[c].format !== 'function';
+    const isNumeric = hasNumberFormat || this._isNumeric(value);
     const validationError = this._cellValidationError(r, c);
     const classes = [
       'cell',
@@ -461,7 +473,7 @@ export class USimpleSheet extends UElement {
               <div class="dropdown-empty">${this.noMatchingMessage || messages.text('noMatch')}</div>
             </div>
           ` : ''}
-        ` : this._formatValue(value, c, r)}
+        ` : this._renderFormatted(this._formatValue(value, c, r))}
       </td>
     `;
   }
@@ -1419,21 +1431,28 @@ export class USimpleSheet extends UElement {
     return parseNumber(value) !== null;
   }
 
+  /** 서식 코드의 섹션 색은 테마 상태 색으로 칠한다(표와 같은 톤 — 글자색 그 자체가 아니다). */
+  private _renderFormatted(f: FormattedNumber): TemplateResult | string {
+    return f.tone ? html`<span class="format-tone" data-tone=${f.tone}>${f.text}</span>` : f.text;
+  }
+
   /** 열의 format 설정에 따라 표시값을 반환. format 미설정 시 원본 반환. */
-  private _formatValue(value: string, col: number, row: number): string {
+  private _formatValue(value: string, col: number, row: number): FormattedNumber {
     const fmt = this.columns?.[col]?.format;
-    if (!fmt || !value) return value;
+    if (!fmt || !value) return { text: value };
     try {
       if (typeof fmt === 'function') {
-        return fmt(value, row);
+        return { text: fmt(value, row) };
       }
-      // Intl.NumberFormatOptions — 셀 글자는 앱 로케일로 읽는다(`1,5` 는 1.5, `1.234,5` 는 1234.5).
+      // 셀 글자는 앱 로케일로 읽는다(`1,5` 는 1.5, `1.234,5` 는 1234.5) — 숫자가 아니면 서식 코드의 텍스트 섹션으로.
       const num = parseNumber(value);
-      if (num === null) return value;
       // 구분자·소수점은 앱 로케일을 따른다(같은 파일의 문구가 `Locale` 을 따르듯).
-      return formatNumber(num, fmt);
+      const out = applyNumberFormat(num ?? value, fmt);
+      if (out) return out;
+      warnUnsupported(fmt as string);
+      return { text: value };
     } catch {
-      return value;
+      return { text: value };
     }
   }
 
