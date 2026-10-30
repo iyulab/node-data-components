@@ -23,6 +23,7 @@ afterEach(() => el?.remove());
 
 async function mount() {
   el = document.createElement('u-rich-table') as URichTable;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   el.columns = [{ key: 'name', label: 'Name' }];
   el.selectable = (row) => row.status !== 'shipped';
   el.data = ROWS;
@@ -63,6 +64,7 @@ describe('u-rich-table — selectable per row', () => {
 
   it('Shift 범위의 끝 행도 담긴다 — 체크박스 기준점에서 시작해도', async () => {
     el = document.createElement('u-rich-table') as URichTable;
+    el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
     el.columns = [{ key: 'name', label: 'Name' }];
     el.selectable = true;
     el.data = ROWS;

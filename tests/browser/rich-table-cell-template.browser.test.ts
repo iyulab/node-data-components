@@ -21,6 +21,7 @@ afterEach(async () => { await cleanup?.(); cleanup = null; });
 describe('u-rich-table — 셀 render 의 Lit 템플릿', () => {
   it('템플릿이 셀에 그려진다 — 값 문자열로 떨어지지 않는다', async () => {
     const el = document.createElement('u-rich-table') as URichTable;
+    el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
     el.columns = [{ key: 'status', label: 'Status', render: (v) => html`<mark data-probe>${String(v)}</mark>` }];
     el.data = ROWS;
     document.body.appendChild(el);
@@ -35,7 +36,7 @@ describe('u-rich-table — 셀 render 의 Lit 템플릿', () => {
     document.body.appendChild(container);
     const root: Root = createRoot(container);
     await act(async () => {
-      root.render(React.createElement(URichTableReact, {
+      root.render(React.createElement(URichTableReact, { layout: 'table',
         columns: [{ key: 'status', label: 'Status', render: (v: unknown) => html`<mark data-probe>${String(v)}</mark>` }],
         data: ROWS,
       }));

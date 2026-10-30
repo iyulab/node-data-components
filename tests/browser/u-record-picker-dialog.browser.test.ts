@@ -29,6 +29,8 @@ const mount = async () => {
   picker.columns = [{ key: 'label', label: 'Name' }];
   document.body.appendChild(picker);
   await picker.updateComplete;
+  // 조회 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 안쪽 표가 layout="auto" 면 카드다.
+  picker.shadowRoot!.querySelector('u-rich-table')?.setAttribute('layout', 'table');
   return picker;
 };
 
@@ -128,6 +130,7 @@ describe('URecordPicker — lookup dialog', () => {
     el.columns = [{ key: 'label', label: 'Name' }];
     document.body.appendChild(el);
     await el.updateComplete;
+    el.shadowRoot!.querySelector('u-rich-table')?.setAttribute('layout', 'table');
 
     findButton(el).click();
     await el.updateComplete;

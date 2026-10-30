@@ -165,8 +165,82 @@ export class URichTable extends LitElement {
    */
   @property({ type: Array }) rowActions?: RowAction[];
 
+  /**
+   * How rows are drawn. `auto` (the default) draws a table, and a list of cards where a table does not suit: on a
+   * screen narrower than `cardBreakpoint` (a phone), or in a place narrower than that where the columns do not fit and
+   * the table would scroll sideways (a narrow panel on a wide screen). A table that fits a narrow place — a picker
+   * dialog sized to its content — stays a table on a wide screen. `table` and `cards` choose one and say the app has
+   * decided; under `auto` the table warns once in the console when it falls back, so the app can pick. A table with
+   * editable columns stays a table under `auto` — editing is a grid task.
+   */
+  @property({ reflect: true })
+  get layout(): 'auto' | 'table' | 'cards' {
+    return this._layoutMode;
+  }
+  set layout(value: 'auto' | 'table' | 'cards') {
+    const old = this._layoutMode;
+    this._layoutMode = value === 'table' || value === 'cards' ? value : 'auto';
+    this._layoutChosen = true;
+    this.requestUpdate('layout', old);
+  }
+  private _layoutMode: 'auto' | 'table' | 'cards' = 'auto';
+  /** 앱이 `layout` 을 한 번이라도 정했는가 — 정했으면 `auto` 의 폴백 경고를 내지 않는다. */
+  private _layoutChosen = false;
+  /** Under `layout="auto"`, the screen width — and the width of a table whose columns do not fit — below which rows become cards (px). Default 600. */
+  @property({ type: Number, attribute: 'card-breakpoint' }) cardBreakpoint = 600;
+  /**
+   * Draws one row's card in place of the default (title + label/value list) — the same shape as `u-data-view`'s
+   * `renderCard`. Selection, activation and row actions stay the table's.
+   */
+  @property({ attribute: false }) renderCard?: (row: Record<string, unknown>, index: number) => TemplateResult | HTMLElement | string;
+
   // --- Internal State ---
   @state() private selectedIds = new Set<string>();
+  /** 표 자신의 폭(px) — 호스트 크기 관찰. 재기 전에는 `undefined`(표로 그린다). */
+  @state() private _hostWidth?: number;
+  /** 창의 폭(px) — 휴대폰 판정. */
+  @state() private _viewportWidth?: number;
+  /**
+   * 표가 마지막으로 그려졌을 때 가로로 넘쳤다면 그때 필요했던 폭 — 카드로 물러난 동안 «표로 돌아가도 들어가는가» 의 기준
+   * (카드에서는 표의 넘침을 잴 수 없다). 넘치지 않았으면 `undefined`.
+   */
+  @state() private _tableNeed?: number;
+  private _hostObserver?: ResizeObserver;
+  /** 폴백 안내는 표마다 한 번. */
+  private _warnedCards = false;
+
+  /** 행을 카드로 그리는가. */
+  private get _cardsActive(): boolean {
+    if (this.layout === 'cards') return true;
+    if (this.layout === 'table') return false;
+    if (this.editable && this.columns.some(c => c.editable === true || typeof c.editable === 'function')) return false;
+    const breakpoint = this.cardBreakpoint;
+    if (this._viewportWidth !== undefined && this._viewportWidth < breakpoint) return true;
+    if (this._hostWidth === undefined || this._hostWidth >= breakpoint) return false;
+    return this._tableNeed !== undefined && this._tableNeed > this._hostWidth + 1;
+  }
+
+  /** 표로 그렸을 때 가로로 넘치는가를 재 둔다 — 넘치면 `auto` 가 카드로 물러날 근거. 카드에서는 재지 않는다(마지막 값을 지킨다). */
+  private _measureTableNeed(): void {
+    if (this.layout !== 'auto' || this._cardsActive) return;
+    const wrap = this.renderRoot.querySelector<HTMLElement>('.table-wrap');
+    if (!wrap) return;
+    const need = wrap.scrollWidth > wrap.clientWidth + 1 ? wrap.scrollWidth : undefined;
+    if (need !== this._tableNeed) this._tableNeed = need;
+  }
+
+  /** `auto` 가 카드로 물러났고 앱이 `layout` 을 정하지 않았으면 표마다 한 번 알린다. */
+  private _noteCardFallback(): void {
+    if (this._layoutChosen || this._warnedCards || !this._cardsActive) return;
+    this._warnedCards = true;
+    const phone = this._viewportWidth !== undefined && this._viewportWidth < this.cardBreakpoint;
+    console.warn(
+      `[@iyulab/data-components] u-rich-table drew its rows as cards: ${phone
+        ? `the screen is ${Math.round(this._viewportWidth!)}px wide`
+        : `it is ${Math.round(this._hostWidth ?? 0)}px wide and its columns need ${Math.round(this._tableNeed ?? 0)}px`}, below card-breakpoint ${this.cardBreakpoint}px. ` +
+      'Choose for narrow screens — layout="cards" (with column `card` roles or renderCard) or layout="table" — and this note goes away.',
+    );
+  }
 
   /**
    * `:state(selected)` 을 싣는 자리 — 선택이 하나라도 있는 동안. 툴바·선택 막대를 «일괄 동작 막대» 로 칠하는 바깥 시트가
@@ -269,6 +343,8 @@ export class URichTable extends LitElement {
   protected updated(changed: PropertyValues<this>): void {
     super.updated(changed);
     if ((changed as PropertyValues).has('stylesheets')) this._syncStylesheets();
+    this._measureTableNeed();
+    this._noteCardFallback();
     if ((changed as PropertyValues).has('selectedIds')) {
       this._internals?.states?.[this.selectedIds.size > 0 ? 'add' : 'delete']('selected');
     }
@@ -432,17 +508,18 @@ export class URichTable extends LitElement {
   }
 
   render(): TemplateResult {
+    // 행 영역(.table-wrap)은 두 모양이 함께 쓴다 — 그 요소를 관찰하는 폭 측정이 모양을 바꿔도 끊기지 않게.
     return html`<div class="base" part="base">
       ${this._renderToolbar()}
       <div class="table-wrap">
-        <table role="grid" aria-label=${this.hostLabel || nothing} class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
+        ${this._cardsActive ? this._renderCards() : html`<table role="grid" aria-label=${this.hostLabel || nothing} class=${this._layout.fixed ? 'fixed-cols' : ''} style=${this._layout.minTableWidth ? `min-width: ${this._layout.minTableWidth}` : nothing}>
           ${this._renderHeader()}
           <tbody>
             ${this.filterable && this.columns.some(c => c.filterable) ? this._renderFilterRow() : ''}
             ${this._renderBody()}
             ${this.addable ? this._renderNewRow() : ''}
           </tbody>
-        </table>
+        </table>`}
       </div>
       ${this._renderSelectionBar()}
       ${this._renderPagination()}
@@ -676,6 +753,80 @@ export class URichTable extends LitElement {
         ${this._hasActionsColumn ? html`<td data-cell data-row=${FILTER_ROW} data-col=${this._actionsCol} tabindex=${this._isTabStop(FILTER_ROW, this._actionsCol) ? '0' : '-1'} @focusin=${() => this._onCellFocus(FILTER_ROW, this._actionsCol)}></td>` : ''}
       </tr>
     `;
+  }
+
+  /**
+   * 카드 목록 — 좁은 폭의 행. 제목 열(`card: 'title'`, 없으면 첫 열) + 나머지 열의 라벨:값(`card: 'hidden'` 은 뺀다).
+   * 표의 계약은 그대로: 선택 체크박스 · 행 열기(카드 클릭 · 카드에서 Enter → `row-activate`) · 행 동작 · 펼침 상세.
+   * 정렬 머리 · 필터 줄은 없다 — 질의는 소스(정렬 기준 · 필터 속성)로 그대로 선다.
+   */
+  private _renderCards(): TemplateResult {
+    if (this.loading) return html`<div class="loading-overlay">${this.loadingMessage || messages.text('loading')}</div>`;
+    if (this.error) return html`<div class="error-message" role="alert">${this.error.message}</div>`;
+    if (this._view.length === 0) {
+      const noMatch = this.dataMode === 'client' && this.data.length > 0;
+      return html`<div class="empty-message">${noMatch ? (this.noMatchingMessage || messages.text('noMatch')) : (this.emptyMessage || messages.text('empty'))}</div>`;
+    }
+    const visible = this.columns.filter(c => c.card !== 'hidden');
+    const title = visible.find(c => c.card === 'title') ?? visible[0];
+    const rest = visible.filter(c => c !== title);
+    return html`<ul class="cards" part="cards" aria-label=${this.hostLabel || nothing}>
+      ${this._view.map((row, rowIdx) => {
+        const rowId = this._rowId(row, rowIdx);
+        const isSelected = this.selectedIds.has(rowId);
+        const isExpanded = this.expandedIds.has(rowId);
+        const custom = this.renderCard?.(row, rowIdx);
+        return html`<li class="card ${isSelected ? 'selected' : ''}" part="card" tabindex="0"
+            @click=${(e: MouseEvent) => this._onCardClick(e, rowIdx)}
+            @keydown=${(e: KeyboardEvent) => this._onCardKeyDown(e, rowIdx)}>
+          ${this.selectable ? html`<label class="checkbox-hit card-check">
+            <input type="checkbox" .checked=${isSelected} ?disabled=${!this._canSelect(row)}
+              aria-label=${messages.text('selectRow')}
+              @change=${() => this._onRowSelect(row, rowId, rowIdx)} />
+          </label>` : nothing}
+          <div class="card-body">
+            ${custom !== undefined ? custom : html`
+              ${title ? html`<div class="card-title" part="card-title">${this._renderCellContent(title, row[title.key], row)}</div>` : nothing}
+              ${rest.length ? html`<dl class="card-fields" part="card-fields">
+                ${rest.map(col => html`<div class="card-field"><dt>${col.label}</dt><dd>${this._renderCellContent(col, row[col.key], row)}</dd></div>`)}
+              </dl>` : nothing}`}
+            ${isExpanded && this.detailRenderer ? html`<div class="card-detail">${this.detailRenderer(row)}</div>` : nothing}
+            ${this.rowErrors.has(rowId) ? html`<div class="row-error-cell">${this.rowErrors.get(rowId)}</div>` : nothing}
+          </div>
+          ${this.expandable || this._hasActionsColumn ? html`<div class="card-actions">
+            ${this.expandable ? html`<button type="button" class="expand-button" aria-expanded=${isExpanded ? 'true' : 'false'}
+              aria-label=${messages.text(isExpanded ? 'collapseRow' : 'expandRow')}
+              @click=${() => this._onExpandToggle(row, rowId)}>${isExpanded ? '▼' : '▶'}</button>` : nothing}
+            ${(this.rowActions ?? []).map(action => html`<button type="button" class="row-action" title=${action.label} aria-label=${action.label}
+              @click=${() => this._onRowAction(action, row)}>${action.icon ?? action.label.charAt(0)}</button>`)}
+            ${this.deletable ? html`<button type="button" class="row-delete" aria-label=${messages.text('deleteRow')}
+              title=${messages.text('deleteRow')} @click=${() => this._onRowDelete(row)}>${DELETE_ICON}</button>` : nothing}
+          </div>` : nothing}
+        </li>`;
+      })}
+    </ul>`;
+  }
+
+  /** 카드 클릭 = 행 열기 — 카드 안의 컨트롤(체크박스 · 단추 · 링크)을 누른 것은 그 컨트롤의 일이다. */
+  private _onCardClick(e: MouseEvent, rowIdx: number): void {
+    const card = e.currentTarget as HTMLElement;
+    for (const el of e.composedPath()) {
+      if (el === card) break;
+      if (el instanceof HTMLElement && el.matches('a, button, input, select, textarea, label, [role="button"]')) return;
+    }
+    this._fireRowActivate(rowIdx, 'click');
+  }
+
+  private _onCardKeyDown(e: KeyboardEvent, rowIdx: number): void {
+    if (e.target !== e.currentTarget || e.isComposing) return;
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      this._fireRowActivate(rowIdx, 'keyboard');
+    } else if (e.key === ' ' && this.selectable) {
+      e.preventDefault();
+      const row = this._view[rowIdx];
+      if (row && this._canSelect(row)) this._onRowSelect(row, this._rowId(row, rowIdx), rowIdx);
+    }
   }
 
   private _renderBody(): TemplateResult | TemplateResult[] {
@@ -1374,7 +1525,10 @@ export class URichTable extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    if (this.hasUpdated) this._observeWrap();
+    if (this.hasUpdated) {
+      this._observeWrap();
+      this._observeHost();
+    }
     this.addEventListener('keydown', this._onGlobalKeyDown);
     this.unsubscribeLocale = Locale.subscribe(() => this.requestUpdate());
     if (this.detachedLocaleRevision !== undefined && this.detachedLocaleRevision !== Locale.revision) this.requestUpdate();
@@ -1395,12 +1549,30 @@ export class URichTable extends LitElement {
       this._baseStyleSheets = [...this.shadowRoot.adoptedStyleSheets];
     }
     this._observeWrap();
+    this._observeHost();
   }
 
   private _syncStylesheets(): void {
     if (!this.shadowRoot || !Array.isArray(this.shadowRoot.adoptedStyleSheets)) return;
     this.shadowRoot.adoptedStyleSheets = [...this._baseStyleSheets, ...this.stylesheets];
   }
+
+  /** 호스트 폭 관찰 — `layout="auto"` 의 문턱. 폴백이 처음 일어나면(앱이 `layout` 을 정하지 않았으면) 한 번 알린다. */
+  private _observeHost() {
+    if (this._hostObserver || typeof ResizeObserver === 'undefined') return;
+    this._hostObserver = new ResizeObserver(entries => {
+      const width = entries[entries.length - 1]?.contentRect.width;
+      if (width === undefined || width === 0) return;
+      this._hostWidth = width;
+      this._viewportWidth = window.innerWidth;
+    });
+    this._hostObserver.observe(this);
+    window.addEventListener('resize', this._onWindowResize);
+  }
+
+  private readonly _onWindowResize = (): void => {
+    this._viewportWidth = window.innerWidth;
+  };
 
   private _observeWrap() {
     const wrap = this.renderRoot.querySelector<HTMLElement>('.table-wrap');
@@ -1415,6 +1587,9 @@ export class URichTable extends LitElement {
     super.disconnectedCallback();
     this._wrapObserver?.disconnect();
     this._wrapObserver = undefined;
+    this._hostObserver?.disconnect();
+    this._hostObserver = undefined;
+    window.removeEventListener('resize', this._onWindowResize);
     this._unpinHint();
     this.removeEventListener('keydown', this._onGlobalKeyDown);
     this.unsubscribeLocale?.();

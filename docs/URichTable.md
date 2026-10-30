@@ -110,6 +110,9 @@ table.data = rows.map(r => ({ ...r, _id: r.userId }));
 | `detailRenderer` | `(row) => TemplateResult` | `undefined` | 펼친 행의 내용 |
 | `deletable` | `boolean` | `false` | 행 삭제를 다루는 표 — 행 끝 휴지통 삭제 버튼 + `Delete` 키 (`0.25.0~` · 휴지통은 `0.33.0~`, 그 전에는 "⋯") |
 | `rowActions` | `RowAction[]` | `undefined` | 액션 셀의 버튼 구성 (`0.20.0~`, 아래 참조) |
+| `layout` | `'auto' \| 'table' \| 'cards'` | `'auto'` | 행을 표로 그릴지 카드로 그릴지 — 아래 «좁은 화면» |
+| `cardBreakpoint` | `number` | `600` | `auto` 의 문턱(px) — 속성명 `card-breakpoint` |
+| `renderCard` | `(row, index) => TemplateResult \| HTMLElement \| string` | `undefined` | 카드 하나를 직접 그린다(`u-data-view` 와 같은 모양) |
 
 ### UI 문구
 
@@ -184,6 +187,16 @@ table.addEventListener('select-all', (e) => {
 **조회 조건**이라 컴포넌트가 표현할 수 있는 것이 아닙니다. 컴포넌트는 의도만 알리고,
 그것을 *"전체 N건"*으로 해석할지는 앱이 정합니다.
 
+### 좁은 화면 — 카드 목록
+
+표는 휴대폰에 맞지 않는다 — 열이 눌리거나 옆으로 스크롤한다. 그래서 `layout="auto"`(기본)는 그런 자리에서 행을 **카드**로 그린다:
+첫 열(또는 `card: 'title'` 인 열)이 제목, 나머지 열은 «라벨: 값» 줄(`card: 'hidden'` 은 뺀다).
+
+- **언제**: 창이 `card-breakpoint`(기본 600px)보다 좁을 때(휴대폰), 또는 넓은 창의 그보다 좁은 자리에서 열이 들어가지 않아 옆으로 스크롤할 때. 넓은 창에서 내용에 맞춰 좁은 자리(조회 대화상자)에 들어간 표는 표로 남는다.
+- **편집 열이 있는 표는 표로 남는다** — 편집은 그리드의 일이다.
+- **카드에서도 같은 계약**: 선택 체크박스 · 카드를 누르거나 카드에서 `Enter` → `row-activate`(`via`) · 카드에서 `Space` → 선택 · 행 동작 · 펼침 상세. 정렬 머리와 필터 줄은 없다 — 질의는 `sortCriteria` · `filters` 로 그대로 선다.
+- **앱이 정한다**: `layout="table"` · `layout="cards"` 를 주면 그대로 그리고, `renderCard` 로 카드를 직접 그린다. 앱이 정하지 않은 채 `auto` 가 카드로 물러나면 콘솔에 한 번 알린다(`[@iyulab/data-components] … drew its rows as cards`) — 좁은 화면을 앱이 정하라는 신호다.
+
 ## ColumnDef
 
 ```typescript
@@ -201,6 +214,7 @@ interface ColumnDef {
   editable?:   boolean | ((row, col) => boolean); // 이 열만 편집 허용 (표의 editable 이 켜져 있을 때). 함수면 행마다 — 행 상태로 잠기는 칸
   filterable?: boolean;                   // 이 열만 필터 칸을 받는다 (표의 filterable과 함께 필요)
   filterType?: 'text' | 'select';
+  card?:       'title' | 'hidden';       // 카드로 그릴 때(좁은 화면) — title 이 카드 제목(없으면 첫 열), hidden 은 뺀다
   required?:   boolean;
 
   options?:     { value: string; label: string }[];   // type: 'select'

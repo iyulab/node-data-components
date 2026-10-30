@@ -14,6 +14,12 @@
 - **`u-rich-table` `filters` is public** — read the active filters, or set them to fill the filter row (a saved view,
   the filters a source holds) without firing `filter-change`. A model the filter row does not make (`number`
   conditions, a `starts` text search) is warned about and left out.
+- **`u-rich-table` draws its rows as cards where a table does not suit** — `layout` (`auto` default · `table` · `cards`).
+  Under `auto` a phone-width screen (below `card-breakpoint`, 600px by default) or a narrower place where the columns do
+  not fit shows each row as a card: the first column (or `card: 'title'`) as its title, the other columns as label and
+  value (`card: 'hidden'` leaves one out). Selection, `row-activate` (click or `Enter` on a card), row actions and the
+  expanded detail work on cards. A table with editable columns stays a table. `renderCard` draws your own card. When
+  `auto` falls back and the app has not set `layout`, the table notes it once in the console so the app can decide.
 
 ### Changed
 

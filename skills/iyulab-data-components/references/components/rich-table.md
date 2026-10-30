@@ -229,6 +229,30 @@ forever.
 
 ---
 
+## Narrow screens: cards
+
+A table does not suit a phone — columns are squeezed or scroll sideways. Under `layout="auto"` (the default) the table
+draws its rows as **cards** there: the first column (or the one with `card: 'title'`) heads each card, the other columns
+follow as label and value (`card: 'hidden'` leaves one out).
+
+- **When**: the screen is narrower than `card-breakpoint` (600px by default), or the table sits in a narrower place on a
+  wide screen and its columns do not fit. A table that fits a narrow place — a lookup dialog sized to its content —
+  stays a table on a wide screen. A table with editable columns stays a table: editing is a grid task.
+- **Same contract on cards**: the selection checkbox, a click on the card or `Enter` on it → `row-activate` (`via`),
+  `Space` → selection, row actions, the expanded detail. There is no sort header or filter row — the query stands on
+  `sortCriteria` and `filters`.
+- **Decide for narrow screens**: `layout="table"` or `layout="cards"` draws that, and `renderCard` draws your own card.
+  When `auto` falls back and the app has not chosen, the table says so once in the console
+  (`[@iyulab/data-components] u-rich-table drew its rows as cards …`).
+
+```html
+<u-rich-table layout="cards" .columns=${[
+  { key: 'customer', label: 'Customer', card: 'title' },
+  { key: 'status', label: 'Status' },
+  { key: 'internalId', label: 'ID', card: 'hidden' },
+]}></u-rich-table>
+```
+
 ## Properties
 
 | Property | Type | Default | Reflect | Description |
@@ -265,6 +289,9 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 | `stylesheets` | `CSSStyleSheet[]` | `[]` | | Constructable sheets adopted into the shadow root — cell `render` and `detailRenderer` markup is drawn there, so page CSS (utility classes, house markers such as `.hs-due`) does not reach it; pass the sheets it needs. Reassigning replaces the set. Same as `flex-table`'s `stylesheets` |
 | `deletable` | `boolean` | `false` | | Declares a table that handles row deletion: renders a trash-can delete button (accessible name "Delete row"; a "⋯" before `0.33.0`) and enables the `Delete` key (`0.25.0~`) |
 | `rowActions` | `RowAction[]` | — | | Configures the action-cell buttons (`0.20.0~`) — see *RowAction* below |
+| `layout` | `'auto'\|'table'\|'cards'` | `'auto'` | | How rows are drawn — `auto` draws cards where a table does not suit (see *Narrow screens*); `table` · `cards` say the app has decided |
+| `cardBreakpoint` | `number` | `600` | | Under `auto`, the screen width — and the width of a table whose columns do not fit — below which rows become cards (attribute `card-breakpoint`) |
+| `renderCard` | `(row, index) => TemplateResult \| HTMLElement \| string` | — | | Draws one row's card in place of the default (the shape `u-data-view` takes) |
 
 ## CSS Parts
 
@@ -353,6 +380,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `required` | `boolean` | Empty value fails validation |
 | `filterable` | `boolean` | Column appears in the filter row |
 | `filterType` | `'text'\|'select'` | Filter control — `text` makes a `contains` model, `select` an `equals` model |
+| `card` | `'title'\|'hidden'` | The column's place in a card: `title` heads it (the first column does otherwise), `hidden` leaves it out |
 | `validator` | `(value, row) => string \| null` | Returns an error message, or `null` when valid |
 | `render` | `(value, row) => string \| HTMLElement \| TemplateResult` | Custom cell rendering — a string, an element or a Lit template, the same three `detailRenderer` takes (template `0.53.0~`). In `URichTableReact` it may also return a `ReactNode` |
 | `clipboardParse` | `(text) => unknown` | Parses a pasted cell |

@@ -45,6 +45,7 @@ async function measure(forced: boolean): Promise<number> {
   document.body.replaceChildren();
   window.scrollTo(0, 0);
   const el = document.createElement('u-rich-table') as Table;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   el.selectable = true;
   el.columns = [{ key: 'name', label: '이름' }];
   el.data = [{ _id: 1, name: '홍길동' }, { _id: 2, name: '김철수' }];

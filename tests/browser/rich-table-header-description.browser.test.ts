@@ -17,6 +17,7 @@ async function mount(): Promise<Table> {
   host.setAttribute('style', 'position:fixed;top:80px;left:20px;width:480px');
   document.body.appendChild(host);
   const el = document.createElement('u-rich-table') as Table;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   host.appendChild(el);
   el.columns = [
     { key: 'a', label: 'A', sortable: true, description: 'Billed amount — by the billing party\'s unit price' },

@@ -47,6 +47,7 @@ let host: HTMLDivElement;
 
 async function mount(height: string | null, rowCount = 50): Promise<Table> {
   const el = document.createElement('u-rich-table') as Table;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   el.columns = COLUMNS;
   el.data = rows(rowCount);
   el.totalCount = 1000; // 페이지네이션이 실제로 그려지도록

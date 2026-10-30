@@ -22,6 +22,7 @@ afterEach(() => { document.body.replaceChildren(); });
 
 const mount = async (attrs: string[] = []) => {
   const el = document.createElement('u-rich-table') as unknown as Table;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   for (const a of attrs) el.setAttribute(a, '');
   el.columns = [
     { key: 'name', label: 'Name', width: '200px' },
@@ -140,6 +141,7 @@ describe('u-rich-table 머리글 배치', () => {
 
   it('⚪NEGATIVE — toolbar-end 에 무언가 꽂으면 선택이 없어도 툴바가 보인다', async () => {
     const el = document.createElement('u-rich-table') as unknown as Table;
+    el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
     el.innerHTML = '<button slot="toolbar-end">Export</button>';
     el.columns = [{ key: 'name', label: 'Name' }];
     el.data = [{ _id: 'a', name: 'A' }];

@@ -272,6 +272,73 @@ export const richTableStyles = css`
     background: var(--u-primary-bg-color, #E3F2FD);
   }
 
+  /* 카드 목록 — 좁은 폭의 행(layout cards 또는 좁은 auto). 카드 사이는 선 하나: 표와 같은 면 안의 목록이다. */
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid var(--u-border-color, #E0E0E0);
+    cursor: pointer;
+  }
+  .card:last-child {
+    border-bottom: none;
+  }
+  .card:hover {
+    background: var(--u-bg-color-hover, #F5F5F5);
+  }
+  .card.selected {
+    background: var(--u-primary-bg-color, #E3F2FD);
+  }
+  .card:focus {
+    outline: none;
+  }
+  .card:focus-visible {
+    outline: 2px solid var(--u-primary-color, #1976D2);
+    outline-offset: -2px;
+  }
+  .card-body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .card-title {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  .card-fields {
+    margin: 4px 0 0;
+    display: grid;
+    gap: 2px;
+  }
+  .card-field {
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+  }
+  .card-field dt {
+    flex: 0 0 auto;
+    max-width: 45%;
+    color: var(--dc-muted-color);
+  }
+  .card-field dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .card-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+  .card-detail {
+    margin-top: 8px;
+  }
+
   /* 포커스된 셀 — 그리드가 키보드 포커스를 가질 때만(로빙 tabindex 의 그 셀). */
   thead th[data-cell]:focus,
   tbody td[data-cell]:focus {

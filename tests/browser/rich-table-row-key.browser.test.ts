@@ -26,6 +26,7 @@ afterEach(async () => { await cleanup?.(); cleanup = null; });
 
 async function mountTable(set: (el: URichTable) => void) {
   const el = document.createElement('u-rich-table') as URichTable;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   el.setAttribute('selectable', '');
   el.columns = [{ key: 'name', label: 'Name' }];
   set(el);
@@ -106,13 +107,13 @@ describe('URichTableReact — 셀 렌더 풀의 행 구분', () => {
   const columns = [{ key: 'name', label: 'Name', render: (v: unknown) => React.createElement('b', null, String(v)) }];
 
   it('키 없는 행도 각자 자기 React 셀을 갖는다 — 한 루트를 나눠 쓰지 않는다', async () => {
-    const el = await mountReact({ columns, data: [{ name: 'Alpha' }, { name: 'Bravo' }, { name: 'Charlie' }] });
+    const el = await mountReact({ columns, layout: 'table', data: [{ name: 'Alpha' }, { name: 'Bravo' }, { name: 'Charlie' }] });
     const cells = [...el.shadowRoot!.querySelectorAll('tbody td b')].map((b) => b.textContent);
     expect(cells).toEqual(['Alpha', 'Bravo', 'Charlie']);
   });
 
   it('row-key 를 준 행도 각자 자기 React 셀을 갖는다', async () => {
-    const el = await mountReact({ columns, rowKey: 'Id', data: ROWS });
+    const el = await mountReact({ columns, rowKey: 'Id', layout: 'table', data: ROWS });
     const cells = [...el.shadowRoot!.querySelectorAll('tbody td b')].map((b) => b.textContent);
     expect(cells).toEqual(['Alpha', 'Bravo', 'Charlie']);
   });

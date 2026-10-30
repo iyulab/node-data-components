@@ -76,6 +76,7 @@ const ROWS = (n: number, cols: number) =>
 
 async function mount(colCount: number, unit: Unit): Promise<Table> {
   const el = document.createElement('u-rich-table') as Table;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   el.columns = COLS(colCount, unit) as unknown[];
   el.data = ROWS(5, colCount);
   el.totalCount = 100;
@@ -147,6 +148,7 @@ describe('u-rich-table — 열 폭', () => {
   async function mountCols(cols: Record<string, unknown>[], width: number, extra: Record<string, unknown> = {}) {
     host.style.width = `${width}px`;
     const el = document.createElement('u-rich-table') as Table;
+    el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
     Object.assign(el, extra);
     el.columns = cols as unknown[];
     el.data = [{ _id: 'r0', a: 'A-0001', item: 'Business cards, 500ct', qty: '12' }];

@@ -29,6 +29,7 @@ async function mount() {
   const after = document.createElement('button');
   after.textContent = 'after';
   table = document.createElement('u-rich-table') as Table;
+  table.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   table.columns = [
     { key: 'name', label: 'Name', editable: true },
     { key: 'qty', label: 'Qty', editable: unlocked },

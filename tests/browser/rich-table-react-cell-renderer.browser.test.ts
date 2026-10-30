@@ -58,7 +58,7 @@ const mount = async (props: Record<string, unknown>) => {
   document.body.appendChild(container);
   root = createRoot(container);
   await act(async () => {
-    root!.render(React.createElement(URichTableReact, props));
+    root!.render(React.createElement(URichTableReact, { layout: 'table', ...props }));
   });
   const el = container.querySelector('u-rich-table') as URichTable;
   await el.updateComplete;
@@ -111,7 +111,7 @@ describe('URichTableReact — React 셀 렌더러', () => {
 
     // 새 data 배열 참조로 재렌더(내용은 동일 행) — 리마운트라면 카운터가 0으로 되돌아간다
     await act(async () => {
-      root!.render(React.createElement(URichTableReact, { columns, data: [...data] }));
+      root!.render(React.createElement(URichTableReact, { layout: 'table', columns, data: [...data] }));
     });
     await el.updateComplete;
 
@@ -131,7 +131,7 @@ describe('URichTableReact — React 셀 렌더러', () => {
     expect(unmounted).not.toHaveBeenCalled();
 
     await act(async () => {
-      root!.render(React.createElement(URichTableReact, { columns, data: [] }));
+      root!.render(React.createElement(URichTableReact, { layout: 'table', columns, data: [] }));
     });
     await el.updateComplete;
 
@@ -157,7 +157,7 @@ describe('URichTableReact — rows from a bound source', () => {
     await act(async () => { el.data = [{ _id: 'a', name: 'first' }, { _id: 'b', name: 'second' }]; await el.updateComplete; });
 
     // The screen re-renders (its own state changed) — same columns, still no `data`.
-    await act(async () => { root!.render(React.createElement(URichTableReact, { columns, selectable: true })); });
+    await act(async () => { root!.render(React.createElement(URichTableReact, { layout: 'table', columns, selectable: true })); });
     await el.updateComplete;
     expect(el.data).toHaveLength(2);
     const names = () => [...el.shadowRoot!.querySelectorAll('b.probe')].map((b) => b.textContent);

@@ -19,6 +19,7 @@ afterEach(() => { document.body.replaceChildren(); });
 
 const mount = async (columns: Record<string, unknown>[], width = '900px') => {
   const el = document.createElement('u-rich-table') as unknown as Table;
+  el.setAttribute('layout', 'table'); // 표를 잰다 — 시험 창(414px)은 휴대폰 폭이라 layout="auto" 면 카드다
   el.setAttribute('filterable', '');
   el.columns = columns;
   el.data = [{ _id: 'a', id: 'G-1', customer: 'Aster', status: 'pending', total: '₩1,240,000' }];
