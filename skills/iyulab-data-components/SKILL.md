@@ -55,7 +55,7 @@ Every type the public API asks for is exported from the package root:
 
 ```ts
 import type {
-  ColumnDef, CellPosition, SortCriteria, FilterState, RichTableEventMap,
+  ColumnDef, CellPosition, SortCriteria, RichTableFilterModel, RichTableFilters, RichTableEventMap,
 } from '@iyulab/data-components';
 ```
 

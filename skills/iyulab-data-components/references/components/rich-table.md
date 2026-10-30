@@ -62,16 +62,22 @@ table.addEventListener('sort-change',   e => load({ sort: e.detail.criteria }));
 table.addEventListener('filter-change', e => load({ filters: e.detail.filters }));
 ```
 
-Sort (`criteria`) and page (zero-based) have the same shape as the data source in `@iyulab/flex-table/odata`
+Sort (`criteria`), page (zero-based) and filters have the same shape as the data source in `@iyulab/flex-table/odata`
 (`createODataSource`, or `ODataSourceController` in a Lit element), so the event details go straight in:
 
 ```ts
 const s = this.orders.state; // ODataSourceController
 html`<u-rich-table .data=${s.data} .totalCount=${s.totalCount} .loading=${s.loading} .error=${s.error}
-  .page=${s.page} .sortCriteria=${s.sortCriteria}
+  .page=${s.page} .sortCriteria=${s.sortCriteria} .filters=${s.filters}
   @page-change=${(e) => this.orders.source.setPage(e.detail.page)}
-  @sort-change=${(e) => this.orders.source.setSort(e.detail.criteria)}></u-rich-table>`;
+  @sort-change=${(e) => this.orders.source.setSort(e.detail.criteria)}
+  @filter-change=${(e) => this.orders.source.setFilters(e.detail.filters)}></u-rich-table>`;
 ```
+
+A filter is a model, the one `flex-table` uses: a text cell makes `{ type: 'text', mode: 'contains', value }`, a
+`select` cell `{ type: 'equals', value }`. `filters` (column key → model) is readable and settable — setting it fills
+the filter row without firing `filter-change`; a model of another kind (`number` conditions, `starts`) is warned about
+and left out.
 
 `totalCount` is what the pager counts — not `data.length`. Setting `data` alone
 produces a table that believes it holds every matching record.
@@ -300,6 +306,7 @@ Engines without `:state()` ignore the rule; the table looks as it does by defaul
 | Getter | Description |
 |---|---|
 | `selectedRowIds: ReadonlySet<string>` | Snapshot of every selected identifier, across pages |
+| `filters: RichTableFilters` | The active filters, column key → model — also settable (fills the filter row, no event) |
 | `filteredRowCount: number` | Rows that pass the filter row — the table's own count across pages in `data-mode="client"`, `totalCount` otherwise |
 
 ## Events
@@ -317,7 +324,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `selection-change` | `{ selectedRows, selectedIds }` | Selection changed by any route |
 | `select-all` | `{ checked, pageRowIds }` | The header checkbox was toggled |
 | `sort-change` | `{ criteria }` | A sortable header was clicked: `[{ key, direction }]`, or `[]` when cleared |
-| `filter-change` | `{ filters, filteredCount? }` | A column filter changed. `filteredCount` is present in `data-mode="client"` |
+| `filter-change` | `{ keys, filters, filteredCount? }` | A column filter changed. `filters` is every active filter as a model (`{ type: 'text', mode: 'contains', value }` · `{ type: 'equals', value }`), `keys` their columns — `flex-table`'s detail. `filteredCount` is present in `data-mode="client"` |
 | `page-change` | `{ page, pageSize }` | The pager or page-size selector moved (`page` zero-based) |
 | `row-update` | `{ row, field, value, oldValue }` | An inline edit was committed |
 | `row-create` | `{ row }` | The add-row control produced a row |
@@ -345,7 +352,7 @@ type SelectionChange = RichTableEventMap['selection-change'];
 | `editable` | `boolean \| ((row, col) => boolean)` | Opt-in, while the table is `editable`. A function decides per row — for cells that lock with the row's state (`(row) => row.status !== 'shipped'`). A non-editable cell opens no editor, is skipped by `Tab` while editing, and is `aria-readonly` |
 | `required` | `boolean` | Empty value fails validation |
 | `filterable` | `boolean` | Column appears in the filter row |
-| `filterType` | `'text'\|'select'` | Filter control |
+| `filterType` | `'text'\|'select'` | Filter control — `text` makes a `contains` model, `select` an `equals` model |
 | `validator` | `(value, row) => string \| null` | Returns an error message, or `null` when valid |
 | `render` | `(value, row) => string \| HTMLElement \| TemplateResult` | Custom cell rendering — a string, an element or a Lit template, the same three `detailRenderer` takes (template `0.53.0~`). In `URichTableReact` it may also return a `ReactNode` |
 | `clipboardParse` | `(text) => unknown` | Parses a pasted cell |

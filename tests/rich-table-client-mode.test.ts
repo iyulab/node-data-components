@@ -19,6 +19,7 @@ type Table = HTMLElement & {
   filteredRowCount: number;
   noMatchingMessage: string;
   emptyMessage: string;
+  filters: Record<string, unknown>;
 };
 
 const COLUMNS = [
@@ -83,7 +84,8 @@ describe('u-rich-table dataMode="client"', () => {
     const spy = vi.fn();
     el.addEventListener('filter-change', spy);
     await type(el, 0, 'ce');
-    expect(spy.mock.calls[0][0].detail.filters).toEqual({ name: 'ce' });
+    expect(spy.mock.calls[0][0].detail.filters).toEqual({ name: { type: 'text', mode: 'contains', value: 'ce' } });
+    expect(spy.mock.calls[0][0].detail.keys).toEqual(['name']);
   });
 
   it('🔴type:number 열은 수로 정렬한다(문자열 순서라면 10 < 100 < 2)', async () => {
@@ -164,5 +166,52 @@ describe('u-rich-table dataMode="client"', () => {
     expect(names(el)).toHaveLength(4);
     await sortBy(el, 1);
     expect(names(el)).toEqual(['Aster', 'Blue Harbor', 'Cedar', 'aster two']);
+  });
+});
+
+describe('u-rich-table filters — flex-table 의 필터 모델', () => {
+  it('🔴필터 행이 만드는 모델 — 글자 칸은 text(contains), 고르기 칸은 equals · 비우면 빠진다', async () => {
+    const el = await mount({ dataMode: 'client' });
+    const spy = vi.fn();
+    el.addEventListener('filter-change', spy);
+    await type(el, 0, 'aster');
+    await type(el, 1, 'done', 'change');
+    expect(el.filters).toEqual({
+      name: { type: 'text', mode: 'contains', value: 'aster' },
+      status: { type: 'equals', value: 'done' },
+    });
+    expect(spy.mock.calls[1][0].detail.keys).toEqual(['name', 'status']);
+    await type(el, 0, '');
+    expect(el.filters).toEqual({ status: { type: 'equals', value: 'done' } });
+  });
+
+  it('🔴filters 를 주면 필터 행이 그 값을 보이고 행이 걸러진다 — 이벤트는 내지 않는다(저장한 보기 · 소스의 필터 복원)', async () => {
+    const el = await mount({ dataMode: 'client' });
+    const spy = vi.fn();
+    el.addEventListener('filter-change', spy);
+    el.filters = { name: { type: 'text', mode: 'contains', value: 'aster' }, status: { type: 'equals', value: 'done' } };
+    await el.updateComplete;
+    expect(names(el)).toEqual(['aster two']);
+    expect(filterInput(el, 0).value).toBe('aster');
+    expect((filterInput(el, 1) as unknown as HTMLSelectElement).value).toBe('done');
+    expect(spy).not.toHaveBeenCalled();
+    el.filters = {};
+    await el.updateComplete;
+    expect(names(el)).toHaveLength(4);
+    expect(filterInput(el, 0).value).toBe('');
+  });
+
+  it('⚪NEGATIVE — 이 표가 만들지 않는 모델(number 조건 · starts)은 경고하고 뺀다', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const el = await mount({ dataMode: 'client' });
+    el.filters = {
+      qty: { type: 'number', conditions: [{ op: 'gt', value: 5 }] },
+      name: { type: 'text', mode: 'starts', value: 'a' },
+      status: { type: 'equals', value: 'open' },
+    };
+    await el.updateComplete;
+    expect(Object.keys(el.filters)).toEqual(['status']);
+    expect(warn).toHaveBeenCalledTimes(2);
+    expect(names(el)).toEqual(['Aster', 'Cedar']);
   });
 });

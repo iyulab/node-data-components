@@ -6,12 +6,12 @@ import { html, svg, LitElement, nothing, type PropertyValues, type TemplateResul
 import { property, state, customElement } from 'lit/decorators.js';
 import { isTemplateResult } from 'lit/directive-helpers.js';
 import { richTableStyles } from './styles.js';
-import type { ColumnDef, CellPosition, SortCriteria, FilterState, RowAction, RichTableEventMap, RowActionEventDetail } from './types.js';
+import type { ColumnDef, CellPosition, SortCriteria, RichTableFilters, RichTableFilterModel, RowAction, RichTableEventMap, RowActionEventDetail } from './types.js';
 import { effectiveAlign } from './types.js';
 
 import { columnLayout, headerWidth, type ColumnLayout } from './utils/column-layout.js';
 import { parseTSV, toTSV } from './utils/clipboard.js';
-import { applyFilters, sortRows } from './utils/client-data.js';
+import { applyFilters, isEmptyFilter, isRichTableFilterModel, sortRows } from './utils/client-data.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { CompositionTracker, replayInput } from '@iyulab/components/dist/utilities/composition.js';
 import { copyFromKey, isTextEntry, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
@@ -184,7 +184,28 @@ export class URichTable extends LitElement {
    * 정렬(소스의 `sortCriteria`)을 헤더에 보이려면 이것을 넘긴다.
    */
   @property({ attribute: false }) sortCriteria: SortCriteria[] = [];
-  @state() private filters: FilterState = {};
+  @state() private _filters: RichTableFilters = {};
+
+  /**
+   * The active filters, column key → model (`{ type: 'text', mode: 'contains', value }` · `{ type: 'equals', value }`) —
+   * the shape `flex-table` and its data sources use. Setting it fills the filter row (restoring a saved view, or the
+   * filters a source holds) and does not fire `filter-change`. A model of another kind, or for a column without a
+   * filter cell of that kind, is warned about and left out.
+   */
+  get filters(): RichTableFilters {
+    return { ...this._filters };
+  }
+  set filters(models: RichTableFilters) {
+    const next: RichTableFilters = {};
+    for (const [key, model] of Object.entries(models ?? {})) {
+      if (isRichTableFilterModel(model) && !isEmptyFilter(model)) next[key] = model;
+      else if (!isRichTableFilterModel(model)) {
+        console.warn(`[@iyulab/data-components] u-rich-table: the filter for "${key}" is not a text (contains) or equals model — left out.`);
+      }
+    }
+    this._filters = next;
+    if (this.dataMode === 'client') this.page = 0;
+  }
 
   /** 화면에 보이는 행 — server 모드는 `data` 그대로, client 모드는 걸러·정렬·페이지한 결과. */
   private _view: Record<string, unknown>[] = [];
@@ -200,7 +221,7 @@ export class URichTable extends LitElement {
    */
   get filteredRowCount(): number {
     return this.dataMode === 'client'
-      ? applyFilters(this.data, this.filters, this.columns).length
+      ? applyFilters(this.data, this._filters).length
       : this.totalCount;
   }
 
@@ -213,7 +234,7 @@ export class URichTable extends LitElement {
       return;
     }
     this._dataIndex = new Map(this.data.map((row, i) => [row, i]));
-    const filtered = applyFilters(this.data, this.filters, this.columns);
+    const filtered = applyFilters(this.data, this._filters);
     const sort = this.sortCriteria[0];
     const ordered = sort ? sortRows(filtered, sort, this.columns) : filtered;
     this._viewTotal = ordered.length;
@@ -633,20 +654,21 @@ export class URichTable extends LitElement {
               col.filterType === 'select' && col.options
                 ? html`<select tabindex="-1" aria-label=${messages.text('filterColumn', { col: col.label })}
                     @keydown=${this._onFilterControlKeyDown}
-                    @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value)}>
+                    @change=${(e: Event) => this._onFilterChange(col.key, (e.target as HTMLSelectElement).value, 'equals')}>
                     <option value="">${this.filterAllLabel || messages.text('filterAll')}</option>
-                    ${col.options.map(o => html`<option value=${o.value}>${o.label}</option>`)}
+                    ${col.options.map(o => html`<option value=${o.value} ?selected=${this._filterText(col.key) === String(o.value)}>${o.label}</option>`)}
                   </select>`
                 : html`<input tabindex="-1"
                     aria-label=${messages.text('filterColumn', { col: col.label })}
                     @keydown=${this._onFilterControlKeyDown}
                     placeholder=${this.filterPlaceholder || messages.text('filterPlaceholder')}
+                    .value=${this._filterText(col.key)}
                     @compositionstart=${this._filterIme}
                     @compositionupdate=${this._filterIme}
                     @compositionend=${this._filterIme}
                     @input=${(e: Event) => {
                       if (this._filterIme.composing) return;
-                      this._onFilterChange(col.key, (e.target as HTMLInputElement).value);
+                      this._onFilterChange(col.key, (e.target as HTMLInputElement).value, 'text');
                     }} />`
             ) : ''}
           </td>
@@ -956,18 +978,20 @@ export class URichTable extends LitElement {
    */
   private readonly _filterIme = new CompositionTracker(replayInput);
 
-  private _onFilterChange(field: string, value: string): void {
-    if (value) {
-      this.filters = { ...this.filters, [field]: value };
-    } else {
-      const { [field]: _, ...rest } = this.filters;
-      this.filters = rest;
-    }
+  /** 필터 칸이 보일 글자 — 모델의 값(없으면 빈 칸). */
+  private _filterText(field: string): string {
+    const value = this._filters[field]?.value;
+    return value === undefined || value === null ? '' : String(value);
+  }
+
+  private _onFilterChange(field: string, value: string, kind: 'text' | 'equals'): void {
+    const { [field]: _, ...rest } = this._filters;
+    const model: RichTableFilterModel = kind === 'text' ? { type: 'text', mode: 'contains', value } : { type: 'equals', value };
+    this._filters = value ? { ...rest, [field]: model } : rest;
     // 새 조건은 첫 페이지부터 — 결과가 줄었는데 4쪽에 남는 것이 이 자리의 흔한 버그다.
     if (this.dataMode === 'client') this.page = 0;
-    this._emit('filter-change', this.dataMode === 'client'
-        ? { filters: this.filters, filteredCount: this.filteredRowCount }
-        : { filters: this.filters });
+    const detail = { keys: Object.keys(this._filters), filters: this.filters };
+    this._emit('filter-change', this.dataMode === 'client' ? { ...detail, filteredCount: this.filteredRowCount } : detail);
   }
 
   /**

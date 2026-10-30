@@ -70,7 +70,7 @@ describe('u-rich-table — 열 필터는 조합이 끝날 때 거른다', () => 
     expect(filters).toEqual([]);
     await commit('서');
     await t.updateComplete;
-    expect(filters).toEqual([{ city: '서' }]);
+    expect(filters).toEqual([{ city: { type: 'text', mode: 'contains', value: '서' } }]);
   });
 });
 

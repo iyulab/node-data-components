@@ -11,6 +11,18 @@
 - **`u-record-picker` carries `:state(field)`** like the components controls that draw an input box, so a layout that
   stands fields on their bottom edge (`u-list-page` filters) finds it without naming the tag. The state needs
   `@iyulab/components` 2.37.0 or later; under an older one the picker simply does not carry it.
+- **`u-rich-table` `filters` is public** — read the active filters, or set them to fill the filter row (a saved view,
+  the filters a source holds) without firing `filter-change`. A model the filter row does not make (`number`
+  conditions, a `starts` text search) is warned about and left out.
+
+### Changed
+
+- **`u-rich-table` filters are models — the ones `@iyulab/flex-table` uses (breaking).** `filter-change.detail.filters`
+  was `{ [column]: string }`; it is now `{ [column]: model }`: a text cell makes `{ type: 'text', mode: 'contains', value }`,
+  a `select` cell `{ type: 'equals', value }`. The detail also carries `keys` (the filtered columns), as flex-table's does.
+  A data source that takes flex-table's filters — `createODataSource().setFilters` — now takes this detail unchanged;
+  before, the same name carried a different shape and the source dropped it. Read a value as `filters[key].value`.
+  The type `FilterState` is replaced by `RichTableFilterModel` and `RichTableFilters`.
 
 ### Fixed
 

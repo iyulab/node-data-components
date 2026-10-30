@@ -263,7 +263,7 @@ table.addEventListener('row-archive', (e) => archiveRow(e.detail.row));
 | `row-expand` | `{ row, expanded }` |
 | `row-activate` | `{ row, id, via }` — 행을 클릭했거나, 편집할 수 없는 셀에 포커스를 둔 채 `Enter` 를 눌렀다(`via` 는 `'click'` · `'keyboard'`). 셀이 그린 컨트롤(링크 · 버튼)을 누른 것은 그 컨트롤의 클릭이라 활성이 아니다. `selectable` 과 무관하다 — 선택은 «무엇에 작업할지», 활성은 «무엇을 볼지» |
 | `sort-change` | `{ criteria: SortCriteria[] }` — 해제하면 `[]` |
-| `filter-change` | `{ filters, filteredCount? }` — `filteredCount` 는 `data-mode="client"` 에서만 |
+| `filter-change` | `{ keys, filters, filteredCount? }` — `filters` 는 열 키 → 모델(`{ type: 'text', mode: 'contains', value }` · `{ type: 'equals', value }` — flex-table 의 필터 모델), `keys` 는 그 열들. `filteredCount` 는 `data-mode="client"` 에서만. 표의 `filters` 로 읽고 줄 수 있다(주면 필터 줄이 채워지고 이벤트는 없다) |
 | `page-change` | `{ page, pageSize }` — `page` 는 0 기준 |
 | `clipboard-paste` | `{ rows }` — `Ctrl`/`Cmd` + `V` 로 붙인 TSV 를 행으로 읽은 것(편집기 밖). 네이티브 `paste` 와 이름을 갈랐다 — 셀 편집기 안의 붙여넣기도 `paste` 로 버블되어 나온다 |
 | `clipboard-error` | `{ action: 'copy' \| 'paste', error }` — 브라우저의 클립보드 이벤트도 Clipboard API 도 텍스트를 받지/주지 못했다 |

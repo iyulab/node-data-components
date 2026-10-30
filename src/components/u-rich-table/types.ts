@@ -52,6 +52,7 @@ export interface ColumnDef {
   description?: string;
   /** Opt-in, like `sortable`: the column gets a filter cell only when this is `true` (and the table is `filterable`). */
   filterable?: boolean;
+  /** The filter cell: `text` (a «contains» search — a `text` model) or `select` (one of `options` — an `equals` model). */
   filterType?: 'text' | 'select';
   validator?: (value: unknown, row: Record<string, unknown>) => string | null;
   clipboardParse?: (text: string) => unknown;
@@ -91,9 +92,17 @@ export interface SortCriteria {
   direction: 'asc' | 'desc';
 }
 
-export interface FilterState {
-  [field: string]: string;
-}
+/**
+ * One column's filter — the same shape as `@iyulab/flex-table`'s `FilterModel` (the kinds this table's filter row makes),
+ * so a data source that takes flex-table's filters (`createODataSource().setFilters`) takes these unchanged.
+ * A text cell makes `{ type: 'text', mode: 'contains' }`; a select cell makes `{ type: 'equals' }`.
+ */
+export type RichTableFilterModel =
+  | { type: 'text'; mode: 'contains'; value: string }
+  | { type: 'equals'; value: string | number | boolean | null };
+
+/** Column key → its filter. `filter-change.detail.filters` and the table's `filters` are this shape. */
+export type RichTableFilters = Record<string, RichTableFilterModel>;
 
 export interface RichTableEventMap {
   /**
@@ -128,8 +137,11 @@ export interface RichTableEventMap {
    */
   'row-activate': CustomEvent<{ row: Record<string, unknown>; id: string; via: 'click' | 'keyboard' }>;
   'sort-change': CustomEvent<{ criteria: SortCriteria[] }>;
-  /** `filteredCount` is present in `data-mode="client"`: how many rows pass the filters, across all pages. */
-  'filter-change': CustomEvent<{ filters: FilterState; filteredCount?: number }>;
+  /**
+   * The filter row changed. `filters` is every active filter, `keys` their columns — the same detail as `flex-table`'s.
+   * `filteredCount` is present in `data-mode="client"`: how many rows pass the filters, across all pages.
+   */
+  'filter-change': CustomEvent<{ keys: string[]; filters: RichTableFilters; filteredCount?: number }>;
   'page-change': CustomEvent<{ page: number; pageSize: number }>;
   /**
    * TSV pasted onto the table (Ctrl/Cmd + V, not in an editor), parsed into rows for the app to insert.
