@@ -1,6 +1,9 @@
 # Changelog
 
-## [0.56.0] - 2026-10-31
+## [0.56.1] - 2026-10-31
+
+0.56.0 was tagged but not published — its build failed against the published `@iyulab/components` (an `override` of a
+member that version does not have). This release carries everything listed below.
 
 ### Added
 

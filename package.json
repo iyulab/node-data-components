@@ -1,7 +1,7 @@
 {
   "name": "@iyulab/data-components",
   "description": "iyulab data visualization components",
-  "version": "0.56.0",
+  "version": "0.56.1",
   "keywords": [
     "iyulab",
     "web-components",
@@ -93,7 +93,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@iyulab/components": "^2.36.0",
+    "@iyulab/components": "^2.37.0",
     "@lit/react": "^1.0.8",
     "@types/node": "^26.1.1",
     "@types/react": "^19.3.0",

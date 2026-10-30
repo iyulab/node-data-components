@@ -304,6 +304,10 @@ The pager is `u-pagination` (`@iyulab/components`) — the same pager a list use
 | `selection-bar` | The bar below the rows that carries the count and bulk actions when the toolbar has nothing else |
 | `selection-info` | The selection count ("3 selected") |
 | `bulk-actions` | The box around the `bulk-actions` slot |
+| `cards` | The list of cards that replaces the table on narrow screens (`layout`) |
+| `card` | One row's card |
+| `card-title` | The card's title (the `card: 'title'` column, or the first) |
+| `card-fields` | The label/value list under the title |
 
 ### Custom state
 
