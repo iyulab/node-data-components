@@ -15,7 +15,7 @@ const warnedFormats = new Set<string>();
 function warnUnsupported(code: string): void {
   if (warnedFormats.has(code)) return;
   warnedFormats.add(code);
-  console.warn(`[@iyulab/data-components] number format "${code}" uses syntax the sheet does not support (conditions, [Color N], scientific or fractions) — showing values unformatted.`);
+  console.warn(`[@iyulab/data-components] number format "${code}" uses syntax the sheet does not support (conditions, [Color N], scientific, fractions, or more than 21 integer / 100 fraction digits) — showing values unformatted.`);
 }
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { encodeTsv, decodeTsv } from '@iyulab/components/dist/utilities/tsv.js';
