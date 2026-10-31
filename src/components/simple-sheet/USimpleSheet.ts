@@ -20,6 +20,7 @@ function warnUnsupported(code: string): void {
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { encodeTsv, decodeTsv } from '@iyulab/components/dist/utilities/tsv.js';
 import { copyFromKey, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
+import { delegate } from '@iyulab/components/dist/utilities/listenInShadow.js';
 
 export interface SheetColumn {
   /** 데이터 키 (getDataAsObjects() 반환시 객체 키로 사용) */
@@ -358,25 +359,25 @@ export class USimpleSheet extends UElement {
             role="presentation"
             class="sheet-table"
             style="width:${this._tableWidth()}px"
-            @mousedown=${this._onTableMouseDown}
+            ${delegate('mousedown', this._onTableMouseDown)}
             @mouseover=${this._onTableMouseOver}
             @dblclick=${this._onTableDblClick}
           >
             <thead role="presentation">
               <tr role="row">
-                <th class="corner" role="columnheader" @click=${this._onSelectAll}></th>
+                <th class="corner" role="columnheader" ${delegate('click', this._onSelectAll)}></th>
                 ${Array.from({ length: this._colCount }, (_, c) => html`
                   <th
                     role="columnheader"
                     class="col-header ${this._isColSelected(c) ? 'col-selected' : ''}"
                     style=${this._colWidthStyle(c)}
-                    @mousedown=${(e: MouseEvent) => this._onColHeaderMouseDown(e, c)}
+                    ${delegate('mousedown', (e: MouseEvent) => this._onColHeaderMouseDown(e, c))}
                     @contextmenu=${(e: MouseEvent) => this._onColHeaderContextMenu(e, c)}
                   >
                     ${this._colLabel(c)}
                     <span
                       class="resize-handle"
-                      @mousedown=${(e: MouseEvent) => this._onResizeStart(e, c)}
+                      ${delegate('mousedown', (e: MouseEvent) => this._onResizeStart(e, c))}
                       @dblclick=${(e: MouseEvent) => this._onResizeAutofit(e, c)}
                     ></span>
                   </th>
@@ -389,7 +390,7 @@ export class USimpleSheet extends UElement {
                   <td
                     role="rowheader"
                     class="row-num ${this._isRowSelected(r) ? 'row-selected' : ''}"
-                    @mousedown=${(e: MouseEvent) => this._onRowHeaderMouseDown(e, r)}
+                    ${delegate('mousedown', (e: MouseEvent) => this._onRowHeaderMouseDown(e, r))}
                   >${r + 1}</td>
                   ${Array.from({ length: this._colCount }, (_, c) => this._renderCell(r, c))}
                 </tr>
@@ -465,7 +466,7 @@ export class USimpleSheet extends UElement {
                   role="option"
                   aria-selected=${i === this._dropdownIndex ? 'true' : 'false'}
                   class="dropdown-item ${i === this._dropdownIndex ? 'highlighted' : ''}"
-                  @mousedown=${(e: MouseEvent) => this._onDropdownItemMouseDown(e, item)}
+                  ${delegate('mousedown', (e: MouseEvent) => this._onDropdownItemMouseDown(e, item))}
                 >${item}</div>
               `)}
             </div>
@@ -1063,7 +1064,7 @@ export class USimpleSheet extends UElement {
     // 폭 조절 둘은 연달아 누르도록 메뉴를 열어 둔다(형제 flex-table 의 열 메뉴와 같은 동작).
     const item = (action: string, text: string, run: () => void, keepOpen: boolean) => html`
       <button type="button" role="menuitem" class="col-menu-item" data-action=${action}
-        @click=${() => { run(); if (!keepOpen) this._closeColMenu(true); }}>${text}</button>
+        ${delegate('click', () => { run(); if (!keepOpen) this._closeColMenu(true); })}>${text}</button>
     `;
     return html`
       <div class="col-menu" role="menu" aria-label=${messages.text('columnMenu', { col: label })}

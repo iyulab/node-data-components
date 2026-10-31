@@ -22,6 +22,7 @@ import '@iyulab/components/dist/components/date-picker/UDatePicker.js';
 import '@iyulab/components/dist/components/pagination/UPagination.js';
 import '@iyulab/components/dist/components/tooltip/UTooltip.js';
 import type { PageChangeDetail } from '@iyulab/components/dist/components/pagination/UPagination.js';
+import { delegate } from '@iyulab/components/dist/utilities/listenInShadow.js';
 
 /** 펼침 열의 셀 이동 번호 — 앞쪽 제어 열은 음수다(`_firstCol` 참조). 선택 열은 펼침 열이 있으면 그 앞(-2). */
 const EXPAND_COL = -1;
@@ -608,10 +609,12 @@ export class URichTable extends LitElement {
 
   /** The info icon beside a header label that carries `ColumnDef.description` — a glyph; the text is the `<th>`'s `aria-description`. */
   private _renderHeaderHint(col: ColumnDef): TemplateResult | typeof nothing {
+    // 이 아이콘의 click 은 요소에 둔다 — 정렬 버튼 «안» 에 있어 정렬보다 먼저 멈춰야 하고(섀도 루트에서 들으면 버튼의
+    // 정렬이 먼저 돈다), aria-hidden 이라 스크린리더가 «클릭 가능» 으로 읽지도 않는다.
     if (!col.description) return nothing;
     return html`<span class="header-hint" part="header-hint" aria-hidden="true"
       @pointerdown=${(e: PointerEvent) => { this._hintPointerType = e.pointerType; }}
-      @click=${this._onHeaderHintClick}>
+      @click=${(e: MouseEvent) => this._onHeaderHintClick(e, e.currentTarget as HTMLElement)}>
       <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" focusable="false">
         <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.9 10.5H7.1V7h1.8v4.5ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
       </svg>
@@ -632,10 +635,9 @@ export class URichTable extends LitElement {
    * arrives with the tooltip already open from the hover and must not close it. The click never reaches
    * the header's sort.
    */
-  private _onHeaderHintClick = (e: MouseEvent): void => {
+  private _onHeaderHintClick = (e: MouseEvent, icon: HTMLElement): void => {
     e.stopPropagation();
     if (this._hintPointerType !== 'touch' && this._hintPointerType !== 'pen') return;
-    const icon = e.currentTarget as HTMLElement;
     if (this._pinnedHint === icon) {
       this._unpinHint();
       void URichTable._tooltipOf(icon)?.hide();
@@ -777,7 +779,7 @@ export class URichTable extends LitElement {
         const isExpanded = this.expandedIds.has(rowId);
         const custom = this.renderCard?.(row, rowIdx);
         return html`<li class="card ${isSelected ? 'selected' : ''}" part="card" tabindex="0"
-            @click=${(e: MouseEvent) => this._onCardClick(e, rowIdx)}
+            ${delegate<MouseEvent>('click', (e, card) => this._onCardClick(e, rowIdx, card))}
             @keydown=${(e: KeyboardEvent) => this._onCardKeyDown(e, rowIdx)}>
           ${this.selectable ? html`<label class="checkbox-hit card-check">
             <input type="checkbox" .checked=${isSelected} ?disabled=${!this._canSelect(row)}
@@ -810,8 +812,7 @@ export class URichTable extends LitElement {
   }
 
   /** 카드 클릭 = 행 열기 — 카드 안의 컨트롤(체크박스 · 단추 · 링크)을 누른 것은 그 컨트롤의 일이다. */
-  private _onCardClick(e: MouseEvent, rowIdx: number): void {
-    const card = e.currentTarget as HTMLElement;
+  private _onCardClick(e: MouseEvent, rowIdx: number, card: HTMLElement): void {
     for (const el of e.composedPath()) {
       if (el === card) break;
       if (el instanceof HTMLElement && el.matches('a, button, input, select, textarea, label, [role="button"]')) return;
@@ -969,7 +970,7 @@ export class URichTable extends LitElement {
         tabindex=${this._isTabStop(rowIdx, colIdx) ? '0' : '-1'}
         style=${effectiveAlign(col) !== 'start' ? `text-align: ${effectiveAlign(col)}` : ''}
         @focus=${() => this._onCellFocus(rowIdx, colIdx)}
-        @click=${(e: MouseEvent) => this._onCellClick(e, rowIdx, colIdx)}
+        ${delegate<MouseEvent>('click', (e, td) => this._onCellClick(e, rowIdx, colIdx, td))}
         aria-readonly=${this._isCellEditable(col, row) ? nothing : 'true'}
         @dblclick=${() => this._isCellEditable(col, row) && this._onCellDblClick(rowIdx, colIdx, value)}>
         ${this._renderCellContent(col, value, row)}
@@ -1235,11 +1236,11 @@ export class URichTable extends LitElement {
     this.shadowRoot?.querySelector<HTMLElement>(`[data-cell][data-row="${f.rowIndex}"][data-col="${f.colIndex}"]`)?.focus();
   }
 
-  private _onCellClick(e: MouseEvent, rowIdx: number, colIdx: number): void {
+  private _onCellClick(e: MouseEvent, rowIdx: number, colIdx: number, cell: HTMLElement): void {
     this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
     this._lastSelectedIndex = rowIdx;
     // A control the cell renders (a link, a Delete button, a field) owns its own click — not "open this row".
-    if (isFromControl(e, e.currentTarget as EventTarget)) return;
+    if (isFromControl(e, cell)) return;
     this._fireRowActivate(rowIdx, 'click');
   }
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- **Screen readers no longer announce «clickable» on every cell, row, card and header.** Measured with NVDA in browse
+  mode, the cells and headers of `u-simple-sheet` and `u-rich-table`, `u-rich-table` cards, `u-data-view` items and
+  the icon buttons of `u-record-picker` and the view toolbar were each announced as «clickable»: they carried a click
+  or mousedown listener on the element. The handlers are now heard on the shadow root (`delegate` from
+  `@iyulab/components`); what a press does is unchanged.
+
 ### Changed
 
 - **A card leaves out the line of an empty value.** When `u-rich-table` draws its rows as cards, a column whose value is

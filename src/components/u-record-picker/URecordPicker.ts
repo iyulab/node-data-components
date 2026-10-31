@@ -23,6 +23,7 @@ import type { PickerItem } from './types.js';
 import { styles } from './styles.js';
 import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { CompositionTracker, replayInput } from '@iyulab/components/dist/utilities/composition.js';
+import { delegate } from '@iyulab/components/dist/utilities/listenInShadow.js';
 
 let pickerId = 0;
 
@@ -154,13 +155,13 @@ export class URecordPicker extends UFormControlElement<string> {
             tabindex="0"
             aria-label=${Locale.getValue('clear')}
             lib="internal" name="x"
-            @click=${this.handleClearClick}
+            ${delegate('click', this.handleClearClick)}
             @keydown=${this.handleClearKeydown}
           ></u-icon>
           <u-button class="suffix-item find-btn" appearance="plain"
             ?disabled=${this.effectivelyDisabled}
             aria-label=${messages.text('pickerFind')}
-            @click=${this.openDialog}
+            ${delegate('click', this.openDialog)}
           >
             <u-icon lib="internal" name="search"></u-icon>
           </u-button>
@@ -180,7 +181,7 @@ export class URecordPicker extends UFormControlElement<string> {
               ? html`<div class="no-results">${messages.text('noMatch')}</div>`
               : this.items.map((item, i) => html`
                 <u-option id=${`${this.listId}-${i}`} .value=${item.id} ?selected=${i === this.activeIndex}
-                  @click=${() => this.commitInline(item)}
+                  ${delegate('click', () => this.commitInline(item))}
                 >${item.label}</u-option>
               `)}
       </u-popover>
@@ -215,10 +216,10 @@ export class URecordPicker extends UFormControlElement<string> {
         </div>
         <slot name="footer">
           <div class="dialog-footer">
-            <u-button appearance="plain" @click=${() => this.dialogEl?.hide()}
+            <u-button appearance="plain" ${delegate('click', () => this.dialogEl?.hide())}
             >${messages.text('pickerCancel')}</u-button>
             <u-button color="primary" ?disabled=${!this.pendingId}
-              @click=${this.confirmDialogSelection}
+              ${delegate('click', this.confirmDialogSelection)}
             >${messages.text('pickerConfirm')}</u-button>
           </div>
         </slot>

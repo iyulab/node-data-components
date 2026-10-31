@@ -7,6 +7,7 @@ import { isFromControl } from '@iyulab/components/dist/utilities/elements.js';
 import { messages } from '../../utilities/messages.js';
 import { rowKeyOf, type RowKey } from '../../utilities/row-key.js';
 import { styles } from './UDataView.styles';
+import { delegate } from '@iyulab/components/dist/utilities/listenInShadow.js';
 
 export type ViewMode = 'grid' | 'list' | 'table';
 
@@ -130,20 +131,20 @@ export class UDataView extends UElement {
     return rowKeyOf(item, this.rowKey) ?? `#${index}`;
   }
 
-  private _itemIndexOf(e: Event): number | null {
+  private _itemIndexOf(e: Event, boundary: EventTarget | null = e.currentTarget): number | null {
     for (const node of e.composedPath()) {
-      if (node === e.currentTarget) return null;
+      if (node === boundary) return null;
       if (node instanceof HTMLElement && node.dataset.index !== undefined) return Number(node.dataset.index);
     }
     return null;
   }
 
-  private _onItemsClick = (e: MouseEvent) => {
-    const index = this._itemIndexOf(e);
+  private _onItemsClick = (e: MouseEvent, items: HTMLElement) => {
+    const index = this._itemIndexOf(e, items);
     if (index === null) return;
     this._activeIndex = index;
     // 항목이 그린 컨트롤(링크 · 버튼)을 누른 것은 그 컨트롤의 일 — «이 레코드를 연다» 가 아니다(두 표와 같은 판정).
-    if (isFromControl(e, e.currentTarget as EventTarget)) return;
+    if (isFromControl(e, items)) return;
     this._activate(index, 'click');
   };
 
@@ -278,7 +279,7 @@ export class UDataView extends UElement {
         title=${label}
         aria-label=${label}
         aria-pressed=${selected ? 'true' : 'false'}
-        @click=${() => { this.mode = mode; this._toolIndex = index; }}
+        ${delegate('click', () => { this.mode = mode; this._toolIndex = index; })}
       >
         <svg viewBox="0 0 16 16" width="1em" height="1em" fill="currentColor" aria-hidden="true">${icon}</svg>
       </u-button>
@@ -307,7 +308,7 @@ export class UDataView extends UElement {
   private renderGrid() {
     return html`
       <div class="grid" role="list" style="--min-width: ${this.gridMinWidth}; --gap: ${this.gap};"
-        @click=${this._onItemsClick} @keydown=${this._onItemsKeyDown}>
+        ${delegate('click', this._onItemsClick)} @keydown=${this._onItemsKeyDown}>
         ${this.data.map((item, index) => this.renderGridItem(item, index))}
       </div>
     `;
@@ -316,7 +317,7 @@ export class UDataView extends UElement {
   private renderList() {
     return html`
       <div class="list" role="list" style="--gap: ${this.gap};"
-        @click=${this._onItemsClick} @keydown=${this._onItemsKeyDown}>
+        ${delegate('click', this._onItemsClick)} @keydown=${this._onItemsKeyDown}>
         ${this.data.map((item, index) => this.renderListItem(item, index))}
       </div>
     `;
@@ -337,7 +338,7 @@ export class UDataView extends UElement {
               `)}
             </tr>
           </thead>
-          <tbody @click=${this._onItemsClick} @keydown=${this._onItemsKeyDown}>
+          <tbody ${delegate('click', this._onItemsClick)} @keydown=${this._onItemsKeyDown}>
             ${this.data.map((item, index) => html`
               <tr data-index=${index} tabindex=${this._itemTabIndex(index)}>
                 ${cols.map(col => html`
