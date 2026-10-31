@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `u-simple-sheet` filters a cell's option list with the `@iyulab/components` search match, as the select and the table
+  filters do — case and diacritics folded (`zoe` finds `Zoë`), Korean initials (`ㅂㅅ` finds `부산`), and a Korean syllable
+  still being typed matched by its keystrokes, so the list does not empty half way through a word. It was a
+  case-insensitive substring.
+
 ## [0.56.2] - 2026-10-31
 
 ### Fixed

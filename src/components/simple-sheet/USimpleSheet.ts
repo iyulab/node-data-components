@@ -453,6 +453,7 @@ export class USimpleSheet extends UElement {
             aria-activedescendant=${showDropdown && this._dropdownIndex >= 0 ? `cell-option-${this._dropdownIndex}` : nothing}
             .value=${this._editVal}
             @input=${this._onInputChange}
+            @compositionend=${this._onInputChange}
             @keydown=${this._onInputKeyDown}
             @blur=${this._onInputBlur}
           />
@@ -724,12 +725,14 @@ export class USimpleSheet extends UElement {
   // 입력 이벤트
   // ──────────────────────────────────────────
 
+  /** 조합 중 `input` 은 마지막 음절을 자모 앞부분으로 견주고(치는 도중의 «성» 이 «서울» 을 남긴다), 조합이 끝나면
+   *  (`compositionend` — 그 뒤에는 `input` 이 오지 않는다) 확정 글자로 다시 거른다. */
   private _onInputChange = (e: Event) => {
     this._editVal = (e.target as HTMLInputElement).value;
     if (this._editing) {
       const options = this._getColOptions(this._editing.row, this._editing.col);
       if (options) {
-        const filtered = this._filterOptions(options, this._editVal);
+        const filtered = this._filterOptions(options, this._editVal, !!(e as InputEvent).isComposing);
         this._dropdownItems = filtered;
         this._dropdownIndex = filtered.length > 0 ? 0 : -1;
       }
@@ -1481,10 +1484,10 @@ export class USimpleSheet extends UElement {
       : colDef.options;
   }
 
-  private _filterOptions(options: string[], query: string): string[] {
+  /** 선택지 거르기 — components 의 검색 일치(대소문자 · 발음 기호 접기 · 한글 초성 · 조합 중 음절), 선택기 · 표 필터와 같다. */
+  private _filterOptions(options: string[], query: string, composing = false): string[] {
     if (!query) return options;
-    const lower = query.toLowerCase();
-    return options.filter(o => o.toLowerCase().includes(lower));
+    return options.filter(o => Locale.matchesSearch(o, query, { composing }));
   }
 
   private _emitChange() {

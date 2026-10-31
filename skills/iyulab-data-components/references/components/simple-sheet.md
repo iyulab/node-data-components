@@ -109,7 +109,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `label` | `string` | Header text |
 | `width` | `number` | Column width in px |
 | `readonly` | `boolean \| ((rowIndex: number) => boolean)` | Column cannot be edited — either the whole column, or per row via a callback |
-| `options` | `string[] \| ((row, col) => string[])` | Dropdown choices, static or per cell |
+| `options` | `string[] \| ((row, col) => string[])` | Dropdown choices, static or per cell. Typing filters them with the `@iyulab/components` search match (case and diacritics folded, Korean initials, a syllable still being typed) |
 | `strict` | `boolean` | Only listed options may be entered (default: free text) |
 | `compute` | `(rowIndex, data) => string \| undefined` | Derived value; makes that cell read-only. Return `undefined` for a row to leave it as plain user input (e.g. input rows mixed with computed rows in one column). Evaluated left→right, top→bottom |
 | `format` | `NumberFormat \| ((value, rowIndex) => string)` | Display formatting only — the stored value is untouched. `NumberFormat` is a spreadsheet format code (`'#,##0;[Red](#,##0)'`) or `Intl.NumberFormatOptions` — the same vocabulary as components `applyNumberFormat`; a section color paints as the theme status tone |
