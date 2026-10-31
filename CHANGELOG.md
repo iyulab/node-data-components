@@ -12,6 +12,7 @@
 
 ### Changed
 
+- Requires `@iyulab/components` 2.39.0 or later: the click handlers above use its `delegate` directive.
 - **A card leaves out the line of an empty value.** When `u-rich-table` draws its rows as cards, a column whose value is
   `null`, `undefined` or blank text no longer stands as a label with nothing after it — a list with many optional
   columns had cards half made of such lines and fit fewer rows on a phone. `0` and `false` are values and stay. A column
