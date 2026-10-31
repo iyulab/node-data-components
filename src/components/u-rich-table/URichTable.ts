@@ -756,7 +756,7 @@ export class URichTable extends LitElement {
   }
 
   /**
-   * 카드 목록 — 좁은 폭의 행. 제목 열(`card: 'title'`, 없으면 첫 열) + 나머지 열의 라벨:값(`card: 'hidden'` 은 뺀다).
+   * 카드 목록 — 좁은 폭의 행. 제목 열(`card: 'title'`, 없으면 첫 열) + 나머지 열의 라벨:값(`card: 'hidden'` 은 뺀다 · 값이 빈 줄도 뺀다 — `cardFieldShown`).
    * 표의 계약은 그대로: 선택 체크박스 · 행 열기(카드 클릭 · 카드에서 Enter → `row-activate`) · 행 동작 · 펼침 상세.
    * 정렬 머리 · 필터 줄은 없다 — 질의는 소스(정렬 기준 · 필터 속성)로 그대로 선다.
    */
@@ -788,7 +788,9 @@ export class URichTable extends LitElement {
             ${custom !== undefined ? custom : html`
               ${title ? html`<div class="card-title" part="card-title">${this._renderCellContent(title, row[title.key], row)}</div>` : nothing}
               ${rest.length ? html`<dl class="card-fields" part="card-fields">
-                ${rest.map(col => html`<div class="card-field"><dt>${col.label}</dt><dd>${this._renderCellContent(col, row[col.key], row)}</dd></div>`)}
+                ${rest.map(col => cardFieldShown(col, row[col.key])
+                  ? html`<div class="card-field"><dt>${col.label}</dt><dd>${this._renderCellContent(col, row[col.key], row)}</dd></div>`
+                  : nothing)}
               </dl>` : nothing}`}
             ${isExpanded && this.detailRenderer ? html`<div class="card-detail">${this.detailRenderer(row)}</div>` : nothing}
             ${this.rowErrors.has(rowId) ? html`<div class="row-error-cell">${this.rowErrors.get(rowId)}</div>` : nothing}
@@ -1784,4 +1786,10 @@ declare global {
   interface HTMLElementTagNameMap {
     'u-rich-table': URichTable;
   }
+}
+
+/** 카드의 라벨:값 줄을 그리는가 — 값이 비면(`null` · `undefined` · 공백뿐인 글자) 빼되, `render` 를 가진 열(빈 값에 무엇을 보일지 스스로 정한다)과 `card: 'always'` 는 남긴다. */
+function cardFieldShown(col: Pick<ColumnDef, 'card' | 'render'>, value: unknown): boolean {
+  if (col.card === 'always' || col.render) return true;
+  return !(value === null || value === undefined || (typeof value === 'string' && value.trim() === ''));
 }

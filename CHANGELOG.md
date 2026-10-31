@@ -4,6 +4,11 @@
 
 ### Changed
 
+- **A card leaves out the line of an empty value.** When `u-rich-table` draws its rows as cards, a column whose value is
+  `null`, `undefined` or blank text no longer stands as a label with nothing after it — a list with many optional
+  columns had cards half made of such lines and fit fewer rows on a phone. `0` and `false` are values and stay. A column
+  with a `render` keeps its line (it decides what an empty value shows), and the new column role `card: 'always'`
+  keeps it too.
 - `u-simple-sheet` filters a cell's option list with the `@iyulab/components` search match, as the select and the table
   filters do — case and diacritics folded (`zoe` finds `Zoë`), Korean initials (`ㅂㅅ` finds `부산`), and a Korean syllable
   still being typed matched by its keystrokes, so the list does not empty half way through a word. It was a

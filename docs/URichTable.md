@@ -214,7 +214,7 @@ interface ColumnDef {
   editable?:   boolean | ((row, col) => boolean); // 이 열만 편집 허용 (표의 editable 이 켜져 있을 때). 함수면 행마다 — 행 상태로 잠기는 칸
   filterable?: boolean;                   // 이 열만 필터 칸을 받는다 (표의 filterable과 함께 필요)
   filterType?: 'text' | 'select';
-  card?:       'title' | 'hidden';       // 카드로 그릴 때(좁은 화면) — title 이 카드 제목(없으면 첫 열), hidden 은 뺀다
+  card?:       'title' | 'hidden' | 'always'; // 카드로 그릴 때(좁은 화면) — title 이 카드 제목(없으면 첫 열), hidden 은 뺀다, 값이 빈 줄은 빠진다(render 가 있거나 always 면 남는다)
   required?:   boolean;
 
   options?:     { value: string; label: string }[];   // type: 'select'

@@ -55,9 +55,11 @@ export interface ColumnDef {
   /**
    * The column's place in a card, when the table draws its rows as cards (`layout="cards"`, or a narrow `auto`):
    * `title` heads the card (the first column does when none says so), `hidden` leaves the column out of the card.
-   * Other columns are written under the title as label and value.
+   * Other columns are written under the title as label and value — a row whose value is empty (`null`, `undefined`,
+   * blank text) leaves that line out, unless the column has a `render` (it decides what an empty value shows) or says
+   * `always`.
    */
-  card?: 'title' | 'hidden';
+  card?: 'title' | 'hidden' | 'always';
   /** The filter cell: `text` (a «contains» search — a `text` model) or `select` (one of `options` — an `equals` model). */
   filterType?: 'text' | 'select';
   validator?: (value: unknown, row: Record<string, unknown>) => string | null;

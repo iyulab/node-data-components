@@ -233,7 +233,8 @@ forever.
 
 A table does not suit a phone — columns are squeezed or scroll sideways. Under `layout="auto"` (the default) the table
 draws its rows as **cards** there: the first column (or the one with `card: 'title'`) heads each card, the other columns
-follow as label and value (`card: 'hidden'` leaves one out).
+follow as label and value (`card: 'hidden'` leaves one out). A line whose value is empty (`null`, `undefined`, blank text)
+is left out — a card says what a row has, not what it lacks; a column with a `render`, or `card: 'always'`, keeps it.
 
 - **When**: the screen is narrower than `card-breakpoint` (600px by default), or the table sits in a narrower place on a
   wide screen and its columns do not fit. A table that fits a narrow place — a lookup dialog sized to its content —
