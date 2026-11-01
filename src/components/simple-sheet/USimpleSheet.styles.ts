@@ -210,7 +210,7 @@ const baseStyles = css`
     font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; /* ellipsis-ok: the column menu auto-fits or widens the column; the editor shows the value */
     white-space: nowrap;
     cursor: cell;
     /* ⚠height 는 «빈 셀»을 정한다 — 내용이 있는 셀의 높이는 line-height 가 만든다.
@@ -290,7 +290,7 @@ const baseStyles = css`
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; /* ellipsis-ok: the list follows the column width; widen the column to read it */
   }
 
   /* 열 머리 메뉴 — 열 너비의 단일 포인터 경로. 시트의 셀 드롭다운과 같은 면·글자 축. */
