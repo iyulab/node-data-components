@@ -50,6 +50,27 @@ export default defineConfig({
           isolate: true,
         },
       },
+      {
+        // WebKit 표본 — 엔진 차이가 알려진 축(키보드 · 포커스 · 선택)만. 편집 루프(`npm test`)가 아니라 게시 전 전체 검증에서
+        // `npm run test:webkit` 으로 돈다. 대상 밖: 접근성 트리 · 조합(IME) 시험은 CDP(Chromium 전용)를 쓴다.
+        test: {
+          name: 'webkit',
+          include: [
+            'data-view-toolbar-keyboard', 'rich-table-keyboard', 'rich-table-selection', 'rich-table-row-selectable',
+            'rich-table-edit-follows-row', 'rich-table-filter-row', 'rich-table-cards', 'simple-sheet-keyboard',
+            'simple-sheet-column-resize', 'u-record-picker-dialog', 'u-record-picker-form-enter', 'u-record-picker-clear-target',
+            'u-record-picker-dialog-search-name',
+          ].map((name) => `tests/browser/${name}.browser.test.ts`),
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            instances: [{ browser: 'webkit', headless: true }],
+          },
+          api: { host: '127.0.0.1', port: 41514 },
+          isolate: true,
+          fileParallelism: false,
+        },
+      },
     ],
   },
 });
