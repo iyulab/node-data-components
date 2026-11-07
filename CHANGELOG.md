@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Documentation
+
+- `u-rich-table` *Narrow screens*: a table in one pane of a wide, two-pane screen can fall back to cards under `layout="auto"`, and
+  cards have no cell grid (no arrow-key movement) — dense keyboard data entry should pin `layout="table"`.
+
 ### Fixed
 
 - **A click on a cell whose `render()` returns a node (an element, or a React node) opens the row again.** A real mouse

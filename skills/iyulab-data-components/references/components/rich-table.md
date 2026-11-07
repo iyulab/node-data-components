@@ -245,6 +245,10 @@ is left out — a card says what a row has, not what it lacks; a column with a `
 - **Decide for narrow screens**: `layout="table"` or `layout="cards"` draws that, and `renderCard` draws your own card.
   When `auto` falls back and the app has not chosen, the table says so once in the console
   (`[@iyulab/data-components] u-rich-table drew its rows as cards …`).
+- **Dense desktop screens usually pin `layout="table"`**: a table in one pane of a two-pane screen can be narrower than
+  `card-breakpoint` on a wide monitor, with columns that do not fit, so `auto` draws cards there. Cards are a list (Tab,
+  `Enter`, `Space` per card) — there is no grid, so the arrow keys that move between cells do not exist on them. Where the
+  user does keyboard-driven data entry, choose `table` (a sideways scroll is the cost) rather than rely on `auto`.
 
 ```html
 <u-rich-table layout="cards" .columns=${[
