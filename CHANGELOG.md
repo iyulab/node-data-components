@@ -4,6 +4,12 @@
 
 ### Fixed
 
+- **A click on a cell whose `render()` returns a node (an element, or a React node) opens the row again.** A real mouse
+  press focuses the `td`, which redrew the table; the node the press landed on was moved into a new wrapper, left the
+  document, and the browser did not send the `click`. Only strings and templates, which are updated in place, kept
+  working. The returned node is now placed as it is (no wrapper made per draw), and the cell focus a pointer press causes
+  is applied to the table's state after the press is released, so a node created fresh on every draw survives the press too.
+
 - **Screen readers no longer announce «clickable» on every cell, row, card and header.** Measured with NVDA in browse
   mode, the cells and headers of `u-simple-sheet` and `u-rich-table`, `u-rich-table` cards, `u-data-view` items and
   the icon buttons of `u-record-picker` and the view toolbar were each announced as «clickable»: they carried a click

@@ -983,11 +983,9 @@ export class URichTable extends LitElement {
       const result = col.render(value, row);
       if (typeof result === 'string') return result;
       // HTMLElement — ref 디렉티브로 삽입
-      if (result instanceof HTMLElement) {
-        const container = document.createElement('span');
-        container.appendChild(result);
-        return html`${container}`;
-      }
+      // 그 노드를 그대로 자식 자리에 둔다. 감싸개를 매번 새로 만들면 같은 노드가 다시 그릴 때마다 새 감싸개로 옮겨져 눌린 대상이
+      // 문서에서 떼어지고 브라우저가 그 `click` 을 내지 않는다(React 래퍼의 뿌리 컨테이너도 이 길이다).
+      if (result instanceof HTMLElement) return html`${result}`;
       if (isTemplateResult(result)) return result;
       return String(value ?? '');
     }
@@ -1224,8 +1222,34 @@ export class URichTable extends LitElement {
   /** Tab or a click put DOM focus on a cell — it is the focused cell. */
   private _onCellFocus(rowIdx: number, colIdx: number): void {
     if (this.focusedCell?.rowIndex === rowIdx && this.focusedCell.colIndex === colIdx) return;
+    // 포인터가 눌려 있는 동안의 포커스(누른 자리의 `td` 가 받는다)는 떼고 난 뒤에 상태로 옮긴다 — 지금 다시 그리면 셀이 돌려준
+    // 노드가 새로 만들어져 눌린 대상이 문서에서 떼어지고 브라우저가 `click` 을 내지 않는다(클릭이 행을 열지 못한다).
+    if (this._pointerDown) {
+      this._pendingFocus = { rowIndex: rowIdx, colIndex: colIdx };
+      return;
+    }
     this.focusedCell = { rowIndex: rowIdx, colIndex: colIdx };
   }
+
+  /** 포인터가 눌려 있는가(표 안에서 누르기 시작해 아직 떼지 않았다) · 그 사이 받은 셀 포커스. */
+  private _pointerDown = false;
+  private _pendingFocus: { rowIndex: number; colIndex: number } | null = null;
+
+  private _onPointerDown = (e: PointerEvent): void => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    this._pointerDown = true;
+  };
+
+  /** 뗀 뒤: `click` 은 같은 입력의 뒤에 오므로 한 틱 미루고, 그때까지 `click` 이 정하지 못한 포커스를 상태로 옮긴다. */
+  private _onPointerEnd = (): void => {
+    if (!this._pointerDown) return;
+    this._pointerDown = false;
+    setTimeout(() => {
+      const pending = this._pendingFocus;
+      this._pendingFocus = null;
+      if (pending && !this._pointerDown) this.focusedCell = pending;
+    }, 0);
+  };
 
   /** After the next render, move DOM focus to the focused cell (a key moved it, or an edit ended by key). */
   private _focusCellAfterUpdate = false;
@@ -1533,6 +1557,9 @@ export class URichTable extends LitElement {
       this._observeHost();
     }
     this.addEventListener('keydown', this._onGlobalKeyDown);
+    this.addEventListener('pointerdown', this._onPointerDown, true);
+    document.addEventListener('pointerup', this._onPointerEnd, true);
+    document.addEventListener('pointercancel', this._onPointerEnd, true);
     this.unsubscribeLocale = Locale.subscribe(() => this.requestUpdate());
     if (this.detachedLocaleRevision !== undefined && this.detachedLocaleRevision !== Locale.revision) this.requestUpdate();
     this.detachedLocaleRevision = undefined;
@@ -1595,6 +1622,9 @@ export class URichTable extends LitElement {
     window.removeEventListener('resize', this._onWindowResize);
     this._unpinHint();
     this.removeEventListener('keydown', this._onGlobalKeyDown);
+    this.removeEventListener('pointerdown', this._onPointerDown, true);
+    document.removeEventListener('pointerup', this._onPointerEnd, true);
+    document.removeEventListener('pointercancel', this._onPointerEnd, true);
     this.unsubscribeLocale?.();
     this.unsubscribeLocale = undefined;
     this.detachedLocaleRevision = Locale.revision;
