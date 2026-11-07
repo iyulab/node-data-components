@@ -47,7 +47,8 @@ describe('u-rich-table 머리글 배치', () => {
     expect(getComputedStyle(ths[1]).textAlign).toBe('end');
     // 정렬 가능한 열 — 머리글은 버튼이 칸을 채우므로 버튼 안의 배치를 본다
     const btn = ths[2].querySelector('.sort-button') as HTMLElement;
-    expect(getComputedStyle(btn).justifyContent).toBe('flex-end');
+    // 같은 값을 브라우저 판마다 다르게 적는다 — 새 Chromium 은 flex-end 를 flow-end 로 직렬화한다. 의미는 «끝에 붙는다» 하나
+    expect(getComputedStyle(btn).justifyContent).toMatch(/^(flex-end|flow-end|end)$/);
     // 좌표로도 — 머리글 글자의 오른쪽 끝이 첫 행 값의 오른쪽 끝과 몇 px 안에 있다
     const range = document.createRange();
     range.selectNodeContents(ths[1]);
