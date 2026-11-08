@@ -214,7 +214,8 @@ sheet.getValidationErrors(): { row: number; col: number; message: string }[]
 Ctrl+V 붙여넣기도 동일하게 검증됩니다 — 옵션에 없는 값이 붙여넣기로 들어오면 해당
 셀만 건너뛰고(기존 값 유지) `paste-rejected` 이벤트로 어떤 셀이 건너뛰어졌는지
 알립니다. 수동 편집에서 옵션에 없는 값을 입력하면 커밋이 거부되어 기존 값이
-남는 것과 동일한 규칙입니다.
+남는 것과 동일한 규칙입니다. Ctrl+D / Ctrl+R 채우기도 같습니다 — 옵션이 행마다 다를 때(`options`
+함수) 채우는 값이 그 행의 옵션에 없으면 그 셀은 건너뛰고 기존 값을 둡니다(이벤트는 없습니다).
 
 ```javascript
 sheet.addEventListener('paste-rejected', (e) => {

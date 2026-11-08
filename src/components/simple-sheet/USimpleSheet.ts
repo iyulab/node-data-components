@@ -1205,7 +1205,7 @@ export class USimpleSheet extends UElement {
   // Fill 기능
   // ──────────────────────────────────────────
 
-  /** Ctrl+D: 선택 영역 첫 행 값을 아래로 채우기 */
+  /** Ctrl+D: 선택 영역 첫 행 값을 아래로 채우기 — `strict`+`options` 열에서는 그 행의 옵션에 없는 값을 채우지 않고 기존 값을 둔다(붙여넣기와 같은 시맨틱). */
   private _fillDown() {
     if (!this._sel) return;
     const { minRow, maxRow, minCol, maxCol } = normalizeRange(this._sel);
@@ -1214,7 +1214,7 @@ export class USimpleSheet extends UElement {
     for (let c = minCol; c <= maxCol; c++) {
       const fillVal = newData[minRow]?.[c] ?? '';
       for (let r = minRow + 1; r <= maxRow; r++) {
-        if (newData[r] && c < newData[r].length && !this._isColReadonly(r, c)) {
+        if (newData[r] && c < newData[r].length && !this._isColReadonly(r, c) && this._isValidCellValue(r, c, fillVal)) {
           newData[r][c] = fillVal;
         }
       }
@@ -1226,7 +1226,7 @@ export class USimpleSheet extends UElement {
     this.requestUpdate();
   }
 
-  /** Ctrl+R: 선택 영역 첫 열 값을 오른쪽으로 채우기 */
+  /** Ctrl+R: 선택 영역 첫 열 값을 오른쪽으로 채우기 — Ctrl+D 와 같은 `strict` 규칙. */
   private _fillRight() {
     if (!this._sel) return;
     const { minRow, maxRow, minCol, maxCol } = normalizeRange(this._sel);
@@ -1235,7 +1235,7 @@ export class USimpleSheet extends UElement {
     for (let r = minRow; r <= maxRow; r++) {
       const fillVal = newData[r]?.[minCol] ?? '';
       for (let c = minCol + 1; c <= maxCol; c++) {
-        if (newData[r] && c < newData[r].length && !this._isColReadonly(r, c)) {
+        if (newData[r] && c < newData[r].length && !this._isColReadonly(r, c) && this._isValidCellValue(r, c, fillVal)) {
           newData[r][c] = fillVal;
         }
       }

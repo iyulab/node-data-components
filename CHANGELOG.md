@@ -9,6 +9,10 @@
 
 ### Fixed
 
+- **Fill down / fill right (Ctrl+D / Ctrl+R) keep a `strict` column's rule.** Typing and pasting already refused a value outside
+  the column's `options`, but the fill copied the source value into every cell, so with per-row options (`options(row, col)`) a value
+  valid on one row landed on rows where it is not in the list. The fill now skips such a cell and leaves its value, as a paste does.
+
 - **A click on a cell whose `render()` returns a node (an element, or a React node) opens the row again.** A real mouse
   press focuses the `td`, which redrew the table; the node the press landed on was moved into a new wrapper, left the
   document, and the browser did not send the `click`. Only strings and templates, which are updated in place, kept
