@@ -9,6 +9,9 @@
 
 ### Fixed
 
+- **`u-data-view` in table mode aligns its column headers to the start of the reading direction.** The header cells were
+  `text-align: left`, so in a right-to-left page the header text sat at the far end of its column while the cells below it
+  started at the right. Left-to-right rendering is unchanged. The spreadsheet grid (`u-simple-sheet`) is not mirrored yet.
 - **Fill down / fill right (Ctrl+D / Ctrl+R) keep a `strict` column's rule.** Typing and pasting already refused a value outside
   the column's `options`, but the fill copied the source value into every cell, so with per-row options (`options(row, col)`) a value
   valid on one row landed on rows where it is not in the list. The fill now skips such a cell and leaves its value, as a paste does.

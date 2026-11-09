@@ -185,7 +185,7 @@ const baseStyles = css`
 
   th {
     padding: 0.875rem 1rem;
-    text-align: left;
+    text-align: start;
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--dc-header-color);
