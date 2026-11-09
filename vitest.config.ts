@@ -59,7 +59,7 @@ export default defineConfig({
             'data-view-toolbar-keyboard', 'rich-table-keyboard', 'rich-table-selection', 'rich-table-row-selectable',
             'rich-table-edit-follows-row', 'rich-table-filter-row', 'rich-table-cards', 'simple-sheet-keyboard',
             'simple-sheet-column-resize', 'u-record-picker-dialog', 'u-record-picker-form-enter', 'u-record-picker-clear-target',
-            'u-record-picker-dialog-search-name',
+            'u-record-picker-dialog-search-name', 'u-simple-sheet-rtl', 'rich-table-rtl',
           ].map((name) => `tests/browser/${name}.browser.test.ts`),
           browser: {
             enabled: true,
