@@ -5,7 +5,7 @@ import type { UDataView } from '../../src/components/data-view/UDataView';
 /**
  * `u-data-view` 의 표 모드는 `dir="rtl"` 에서 머리글이 **읽는 방향의 시작**에 정렬된다 — 오라클은 «칸 시작 가장자리에서 글자까지의 거리»라
  * 방향 없이 같은 값을 단언한다(LTR 은 왼쪽 · RTL 은 오른쪽). 머리글 정렬이 `left` 로 고정이면 RTL 에서 글자가 칸의 끝에 붙는다.
- * (스프레드시트 격자 `u-simple-sheet` 는 화면 좌표 표면이라 이 시험의 시야 밖이다 — 계획: RTL 논리 속성 전환 «아직 아님».)
+ * (스프레드시트 격자 `u-simple-sheet` 는 `u-simple-sheet-rtl.browser.test.ts` 가 잰다.)
  */
 
 let view: UDataView;
