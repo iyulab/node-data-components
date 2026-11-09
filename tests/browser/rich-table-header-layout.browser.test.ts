@@ -59,9 +59,10 @@ describe('u-rich-table 머리글 배치', () => {
     expect(Math.abs(headRight - cellRight)).toBeLessThan(2);
   });
 
-  it('⚪NEGATIVE — align 이 없는 열의 머리글은 왼쪽 그대로', async () => {
+  it('⚪NEGATIVE — align 이 없는 열의 머리글은 읽는 방향의 시작(LTR 에서 왼쪽) 그대로', async () => {
     const el = await mount();
-    expect(getComputedStyle($$(el, 'thead th')[0]).textAlign).toBe('left');
+    // `start` — 논리 값이라 LTR 에서는 왼쪽(종전 `left` 와 같은 화면), RTL 에서는 오른쪽이다(`rich-table-rtl.browser.test.ts`).
+    expect(getComputedStyle($$(el, 'thead th')[0]).textAlign).toBe('start');
   });
 
   it('🔴전체 선택은 머리글 칸에 있고, 행 체크박스와 같은 x 에 있으며, 이름이 있다', async () => {

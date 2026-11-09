@@ -179,7 +179,7 @@ export const richTableStyles = css`
     padding: 8px;
     background: var(--u-bg-color-raised, #FAFAFA);
     font-weight: 600;
-    text-align: left;
+    text-align: start;
     user-select: none;\n    /* 호스트 하한(--u-target-size) — 표 칸의 height 는 최소 높이로 작동한다. 미설정이면 auto(종전). */\n    height: var(--u-target-size, auto);
 
     /* ⚠**아래 경계선을 «border-bottom» 으로 그리지 않는다.** «border-collapse: collapse» 에서
@@ -238,7 +238,7 @@ export const richTableStyles = css`
   .sort-indicator {
     font-size: 10px;
     color: var(--dc-icon-color);
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
 
   .filter-row td {
@@ -526,7 +526,7 @@ export const richTableStyles = css`
   }
 
   .row-action + .row-action {
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
 
   .row-error-cell {
