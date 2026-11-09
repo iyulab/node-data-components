@@ -12,6 +12,10 @@
 - **`u-data-view` in table mode aligns its column headers to the start of the reading direction.** The header cells were
   `text-align: left`, so in a right-to-left page the header text sat at the far end of its column while the cells below it
   started at the right. Left-to-right rendering is unchanged. The spreadsheet grid (`u-simple-sheet`) is not mirrored yet.
+- **Horizontal arrow keys follow the screen in a right-to-left page.** In the card grid and list of `u-data-view`, in its layout
+  toolbar, in the row-action buttons of `u-rich-table` and in its cell navigation, the left arrow now goes to the next record,
+  button or column (the right arrow to the previous one), as in a native radio group; the columns already ran from the right.
+  Vertical keys and left-to-right pages are unchanged.
 - **Fill down / fill right (Ctrl+D / Ctrl+R) keep a `strict` column's rule.** Typing and pasting already refused a value outside
   the column's `options`, but the fill copied the source value into every cell, so with per-row options (`options(row, col)`) a value
   valid on one row landed on rows where it is not in the list. The fill now skips such a cell and leaves its value, as a paste does.

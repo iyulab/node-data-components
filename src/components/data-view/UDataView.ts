@@ -148,6 +148,11 @@ export class UDataView extends UElement {
     this._activate(index, 'click');
   };
 
+  /** 읽는 방향이 오른쪽→왼쪽인가 — 가로 화살표 키를 «다음/이전» 으로 바꿀 때 읽는다(화면 방향: 네이티브 라디오 · APG 와 같다). */
+  private _isRtl(): boolean {
+    return getComputedStyle(this).direction === 'rtl';
+  }
+
   private _onItemsKeyDown = (e: KeyboardEvent) => {
     const index = this._itemIndexOf(e);
     if (index === null) return;
@@ -155,13 +160,15 @@ export class UDataView extends UElement {
     if (!(e.composedPath()[0] instanceof HTMLElement && (e.composedPath()[0] as HTMLElement).dataset.index !== undefined)) return;
     const last = this.data.length - 1;
     let next: number;
+    // 가로 키는 화면 방향이다 — RTL 은 시작이 오른쪽이라 왼쪽 키가 «다음».
+    const [fwdKey, backKey] = this._isRtl() ? ['ArrowLeft', 'ArrowRight'] : ['ArrowRight', 'ArrowLeft'];
     switch (e.key) {
       case 'Enter':
         e.preventDefault();
         this._activate(index, 'keyboard');
         return;
-      case 'ArrowDown': case 'ArrowRight': next = Math.min(index + 1, last); break;
-      case 'ArrowUp': case 'ArrowLeft': next = Math.max(index - 1, 0); break;
+      case 'ArrowDown': case fwdKey: next = Math.min(index + 1, last); break;
+      case 'ArrowUp': case backKey: next = Math.max(index - 1, 0); break;
       case 'Home': next = 0; break;
       case 'End': next = last; break;
       default: return;
@@ -232,9 +239,10 @@ export class UDataView extends UElement {
     const last = UDataView.MODES.length - 1;
     const at = this._toolStop();
     let next: number;
+    const [fwdKey, backKey] = this._isRtl() ? ['ArrowLeft', 'ArrowRight'] : ['ArrowRight', 'ArrowLeft'];
     switch (e.key) {
-      case 'ArrowRight': case 'ArrowDown': next = at === last ? 0 : at + 1; break;
-      case 'ArrowLeft': case 'ArrowUp': next = at === 0 ? last : at - 1; break;
+      case fwdKey: case 'ArrowDown': next = at === last ? 0 : at + 1; break;
+      case backKey: case 'ArrowUp': next = at === 0 ? last : at - 1; break;
       case 'Home': next = 0; break;
       case 'End': next = last; break;
       default: return;

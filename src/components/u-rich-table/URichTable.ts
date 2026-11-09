@@ -1209,7 +1209,9 @@ export class URichTable extends LitElement {
     const i = buttons.indexOf(origin);
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       e.preventDefault();
-      buttons[Math.max(0, Math.min(buttons.length - 1, i + (e.key === 'ArrowRight' ? 1 : -1)))]?.focus();
+      // 화면 방향 — RTL 은 왼쪽 키가 다음 단추.
+      const forward = (e.key === 'ArrowRight') !== this._isRtl();
+      buttons[Math.max(0, Math.min(buttons.length - 1, i + (forward ? 1 : -1)))]?.focus();
     } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       e.preventDefault();
       this._moveFocus(0, e.key === 'ArrowDown' ? 1 : -1);
@@ -1754,11 +1756,17 @@ export class URichTable extends LitElement {
     }
   }
 
+  /** 읽는 방향이 오른쪽→왼쪽인가 — 가로 화살표 키를 열 이동으로 바꿀 때 읽는다(화면 방향). */
+  private _isRtl(): boolean {
+    return getComputedStyle(this).direction === 'rtl';
+  }
+
   private _moveByArrow(key: string): void {
     if (key === 'ArrowUp') this._moveFocus(0, -1);
     else if (key === 'ArrowDown') this._moveFocus(0, 1);
-    else if (key === 'ArrowLeft') this._moveFocus(-1, 0);
-    else if (key === 'ArrowRight') this._moveFocus(1, 0);
+    // 열은 읽는 방향으로 놓인다 — RTL 은 왼쪽 키가 다음 열(화면 방향).
+    else if (key === 'ArrowLeft') this._moveFocus(this._isRtl() ? 1 : -1, 0);
+    else if (key === 'ArrowRight') this._moveFocus(this._isRtl() ? -1 : 1, 0);
   }
 
   private _moveFocus(dx: number, dy: number): void {
