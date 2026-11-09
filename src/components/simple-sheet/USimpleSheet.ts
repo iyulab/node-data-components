@@ -652,7 +652,9 @@ export class USimpleSheet extends UElement {
     if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
       e.preventDefault();
       const focus = this._sel?.focus ?? anchor;
-      const delta = e.key === 'ArrowRight' ? USimpleSheet.COL_RESIZE_STEP : -USimpleSheet.COL_RESIZE_STEP;
+      // 화면 방향 — «바깥쪽(끝 가장자리) 화살표» 가 넓힌다: LTR 은 오른쪽 · RTL 은 왼쪽(열 너비 끌기와 같은 방향).
+      const outward = (e.key === 'ArrowRight') !== this._isRtl();
+      const delta = outward ? USimpleSheet.COL_RESIZE_STEP : -USimpleSheet.COL_RESIZE_STEP;
       for (let c = Math.min(anchor.col, focus.col); c <= Math.max(anchor.col, focus.col); c++) {
         this._setColWidth(c, (this._colWidths[c] ?? USimpleSheet.DEFAULT_COL_WIDTH) + delta);
       }
@@ -663,8 +665,9 @@ export class USimpleSheet extends UElement {
     const arrowMoves: Record<string, [number, number]> = {
       ArrowUp: [-1, 0],
       ArrowDown: [1, 0],
-      ArrowLeft: [0, -1],
-      ArrowRight: [0, 1],
+      // 화면 방향 키 — 열은 읽는 방향으로 흐르므로 RTL 에서 왼쪽 키가 «다음 열» 이다(네이티브 라디오 · APG 와 같다).
+      ArrowLeft: [0, this._isRtl() ? 1 : -1],
+      ArrowRight: [0, this._isRtl() ? -1 : 1],
     };
 
     if (arrowMoves[e.key]) {
@@ -904,6 +907,11 @@ export class USimpleSheet extends UElement {
     this._isMouseSelecting = false;
   };
 
+  /** 읽는 방향이 오른쪽→왼쪽인가 — 화면 방향을 쓰는 가로 키 · 끌기가 읽는다(`UElement.isRtl` 는 components 하한 때문에 못 쓴다 — `u-data-view` 와 같은 자기 계산). */
+  private _isRtl(): boolean {
+    return getComputedStyle(this).direction === 'rtl';
+  }
+
   /** 열 너비 조절 시작 */
   private _onResizeStart = (e: MouseEvent, col: number) => {
     e.preventDefault();
@@ -920,7 +928,8 @@ export class USimpleSheet extends UElement {
 
   private _onResizeMove = (e: MouseEvent) => {
     if (!this._resizing) return;
-    const dx = e.clientX - this._resizing.startX;
+    // 손잡이는 열의 «끝 가장자리» 에 있다 — 끝 쪽으로 끌면 넓어진다(RTL 에서는 왼쪽으로 끌면 넓어진다).
+    const dx = (e.clientX - this._resizing.startX) * (this._isRtl() ? -1 : 1);
     const newWidth = Math.max(USimpleSheet.MIN_COL_WIDTH, this._resizing.startWidth + dx);
     this._resizing.current = newWidth;
     // 직접 DOM 업데이트로 부드러운 드래그 구현

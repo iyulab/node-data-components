@@ -94,7 +94,7 @@ const baseStyles = css`
   /* Corner cell (top-left) */
   .corner {
     position: sticky;
-    left: 0;
+    inset-inline-start: 0;
     top: 0;
     z-index: 4;
     width: 48px;
@@ -102,7 +102,7 @@ const baseStyles = css`
     /* 호스트 하한(--u-target-size) — 표 칸의 height 는 최소 높이로 작동한다. 미설정이면 auto(종전). */
     height: var(--u-target-size, auto);
     background: var(--u-neutral-100, #F5F5F5);
-    border-right: 1px solid var(--u-border-color, #E0E0E0);
+    border-inline-end: 1px solid var(--u-border-color, #E0E0E0);
     border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     cursor: pointer;
     user-select: none;
@@ -124,7 +124,7 @@ const baseStyles = css`
     font-size: var(--dc-header-font-size);
     font-weight: var(--dc-header-font-weight);
     color: var(--dc-header-color);
-    border-right: 1px solid var(--u-border-color, #E0E0E0);
+    border-inline-end: 1px solid var(--u-border-color, #E0E0E0);
     border-bottom: 2px solid var(--u-border-color, #E0E0E0);
     white-space: nowrap;
     /* 너비는 열마다 인라인으로 준다(기본 80px · 하한 30px) — 여기 min-width 를 두면 그 하한을 덮어 좁힐 수 없다. */
@@ -140,7 +140,7 @@ const baseStyles = css`
 
   .resize-handle {
     position: absolute;
-    right: 0;
+    inset-inline-end: 0;
     top: 0;
     bottom: 0;
     width: 5px;
@@ -151,7 +151,7 @@ const baseStyles = css`
   .resize-handle::after {
     content: '';
     position: absolute;
-    right: 1px;
+    inset-inline-end: 1px;
     top: 20%;
     bottom: 20%;
     width: 2px;
@@ -176,12 +176,12 @@ const baseStyles = css`
   /* Row number cells */
   .row-num {
     position: sticky;
-    left: 0;
+    inset-inline-start: 0;
     z-index: 1;
     width: 48px;
     min-width: 48px;
     height: var(--u-target-size, auto);
-    text-align: right;
+    text-align: end;
     padding: 0 6px;
     font-size: 11px;
     color: var(--dc-header-color);
@@ -189,7 +189,7 @@ const baseStyles = css`
        한 단 내려간 면이다. --u-bg-color-disabled 를 쓰면 다크에서 바탕(neutral-100)과
        같은 값이 되어 여백 구분이 사라진다 — 스냅샷이 그것을 잡았다. */
     background: var(--u-neutral-50, #FAFAFA);
-    border-right: 1px solid var(--u-border-color, #E0E0E0);
+    border-inline-end: 1px solid var(--u-border-color, #E0E0E0);
     border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
     cursor: pointer;
     user-select: none;
@@ -205,7 +205,7 @@ const baseStyles = css`
   /* Data cells */
   .cell {
     padding: var(--dc-cell-padding-block) var(--dc-cell-padding-inline);
-    border-right: 1px solid var(--u-border-color-weak, #EEEEEE);
+    border-inline-end: 1px solid var(--u-border-color-weak, #EEEEEE);
     border-bottom: 1px solid var(--u-border-color-weak, #EEEEEE);
     font-size: var(--dc-font-size);
     color: var(--u-txt-color, #212121);
@@ -267,7 +267,7 @@ const baseStyles = css`
   .cell-dropdown {
     position: absolute;
     top: 100%;
-    left: -1px;
+    inset-inline-start: -1px;
     width: calc(100% + 2px);
     min-width: 120px;
     max-height: 200px;
@@ -340,14 +340,14 @@ const baseStyles = css`
     font-style: italic;
   }
 
-  /* Numeric cell (right-aligned like Excel) */
+  /* Numeric cell (end-aligned like Excel — the right edge in LTR, mirrored in RTL) */
   .format-tone[data-tone='danger'] { color: var(--u-danger-color, #D32F2F); }
   .format-tone[data-tone='success'] { color: var(--u-success-color, #2E7D32); }
   .format-tone[data-tone='info'] { color: var(--u-info-color, #1976D2); }
   .format-tone[data-tone='warning'] { color: var(--u-warning-color-strong, #8A4A00); }
 
   .cell.cell-numeric {
-    text-align: right;
+    text-align: end;
   }
 
   /* Readonly column/cell */

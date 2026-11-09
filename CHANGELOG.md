@@ -11,7 +11,12 @@
 
 - **`u-data-view` in table mode aligns its column headers to the start of the reading direction.** The header cells were
   `text-align: left`, so in a right-to-left page the header text sat at the far end of its column while the cells below it
-  started at the right. Left-to-right rendering is unchanged. The spreadsheet grid (`u-simple-sheet`) is not mirrored yet.
+  started at the right. Left-to-right rendering is unchanged.
+- **`u-simple-sheet` mirrors in a right-to-left page.** Columns run from the right, the row-number column and the corner stay
+  pinned to the right edge while the sheet scrolls, the column borders, resize handle, numeric alignment and the option
+  dropdown follow the reading direction, and the keys follow the screen: the left arrow goes to the next column, Alt+Shift+left
+  widens the selected columns, and dragging the resize handle toward the end edge (to the left) widens the column. Left-to-right
+  rendering and keys are unchanged.
 - **`u-rich-table` header text, sort mark and adjacent row-action buttons are spaced by the reading direction.** The header
   cells were `text-align: left`, the sort indicator and the gap between two row-action buttons used `margin-left`, so in a
   right-to-left page the header text stuck to the far end and the gaps fell on the wrong side. They now use the logical start

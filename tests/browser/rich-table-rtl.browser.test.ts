@@ -4,7 +4,7 @@ import type { URichTable } from '../../src/components/u-rich-table/URichTable';
 
 /**
  * `u-rich-table` 은 `dir="rtl"` 에서 머리글 글자 · 정렬 표지 · 동작 단추 사이 간격이 **읽는 방향**을 따른다.
- * 계기: `sweep` 의 «물리 방향 선언» 게이트가 첫 실행에서 세 곳을 찾았다 — 머리 칸 `text-align: left`(RTL 에서 머리글이 칸의
+ * 계기: 물리 방향 선언 전수에서 세 곳이 남아 있었다 — 머리 칸 `text-align: left`(RTL 에서 머리글이 칸의
  * 왼쪽 끝에 붙는다) · `.sort-indicator` 의 `margin-left` · `.row-action + .row-action` 의 `margin-left`(RTL 에서 간격이
  * 글자의 «앞» 이 아니라 «뒤» 에 생긴다). 오라클은 방향 없이 같은 값을 단언한다 — 칸 시작 가장자리에서 글자까지의 거리 · 계산된
  * `margin-inline-start`(LTR 은 왼쪽 · RTL 은 오른쪽 여백으로 풀린다).
