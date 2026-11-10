@@ -459,7 +459,8 @@ export const richTableStyles = css`
   }
 
   .detail-row td {
-    padding: 8px 8px 8px 70px;
+    padding-block: 8px;
+    padding-inline: 70px 8px;
     background: var(--u-bg-color-raised, #FAFAFA);
     border-bottom: 2px solid var(--u-border-color, #E0E0E0);
   }

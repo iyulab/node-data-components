@@ -20,7 +20,8 @@
 - **`u-rich-table` header text, sort mark and adjacent row-action buttons are spaced by the reading direction.** The header
   cells were `text-align: left`, the sort indicator and the gap between two row-action buttons used `margin-left`, so in a
   right-to-left page the header text stuck to the far end and the gaps fell on the wrong side. They now use the logical start
-  side. Left-to-right rendering is unchanged.
+  side, and so does the indent of an expanded detail row (it sat on the left whichever way the page read).
+  Left-to-right rendering is unchanged.
 - **Horizontal arrow keys follow the screen in a right-to-left page.** In the card grid and list of `u-data-view`, in its layout
   toolbar, in the row-action buttons of `u-rich-table` and in its cell navigation, the left arrow now goes to the next record,
   button or column (the right arrow to the previous one), as in a native radio group; the columns already ran from the right.
