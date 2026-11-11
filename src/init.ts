@@ -12,8 +12,8 @@
  * ```
  *
  * This enables Shadow DOM style protection which prevents Vite HMR
- * from overwriting Lit component styles when DevExtreme CSS loads.
+ * from overwriting Lit component styles when another library's CSS loads.
  */
 
-// Only import Shadow DOM protection (no DevExtreme dependencies)
+// Only the Shadow DOM protection — nothing else is loaded
 import './utilities/shadowDomProtection';

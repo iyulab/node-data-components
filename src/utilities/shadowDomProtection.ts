@@ -2,13 +2,13 @@
  * Shadow DOM Style Protection
  *
  * Protects Lit component styles from being overwritten by Vite HMR.
- * When DevExtreme or other libraries load CSS, Vite HMR may clear/replace
+ * When a library loads CSS, Vite HMR may clear/replace
  * Shadow DOM's adoptedStyleSheets, causing Lit component styles to be lost.
  *
  * This module intercepts adoptedStyleSheets setter to:
  * 1. Detect and save Lit styles (identified by :host selector)
  * 2. Block HMR reset attempts that would clear Lit styles
- * 3. Merge Lit styles with other styles (like DevExtreme)
+ * 3. Merge Lit styles with the styles other libraries add
  * 4. Protect registered custom stylesheets from being lost during re-renders
  */
 
