@@ -7,4 +7,8 @@ on:
 
 jobs:
   cleanup:
+    # 재사용 워크플로는 부르는 쪽이 준 권한을 넘을 수 없다 — 조직 기본 GITHUB_TOKEN 이 read 로 바뀌면
+    # 이 선언이 없을 때 artifact 레코드 삭제가 실패한다. 최상위가 아니라 잡에 둔다(최소 권한).
+    permissions:
+      actions: write
     uses: iyulab/shared/.github/workflows/cleanup-expired-artifacts.yml@a2e48ce2d6e8f5819c0ca99025734f625ec75f8a
