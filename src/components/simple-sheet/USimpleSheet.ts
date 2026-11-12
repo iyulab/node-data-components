@@ -497,7 +497,7 @@ export class USimpleSheet extends UElement {
               <div class="dropdown-empty">${this.noMatchingMessage || messages.text('noMatch')}</div>
             </div>
           ` : ''}
-        ` : this._renderFormatted(this._formatValue(value, c, r))}
+        ` : html`<bdi>${this._renderFormatted(this._formatValue(value, c, r))}</bdi>`}
       </td>
     `;
   }

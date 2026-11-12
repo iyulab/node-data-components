@@ -4,11 +4,11 @@
 
 ### Fixed
 
-- **A `u-rich-table` cell value keeps its own direction in a right-to-left page.** The text of a cell is data the app put there. A
+- **A `u-rich-table` and a `u-simple-sheet` cell value keeps its own direction in a right-to-left page.** The text of a cell is data the app put there. A
   line of Latin letters in a right-to-left page (a company name, a part number) had the page as its paragraph direction, so its
   full stop and a leading sign jumped to the other end: «Blue Harbor Co.» read «.Blue Harbor Co». Each cell value — and each card
   value and title — is now isolated (`<bdi>`): it reads in its own direction and stands where the cell puts it (the start edge, as the
-  alignment says). A left-to-right page is drawn as before.
+  alignment says). The `u-simple-sheet` cells are isolated the same way. A left-to-right page is drawn as before.
 
 ### Added
 
