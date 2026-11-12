@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **`u-rich-table` `dataMode="client"` orders text columns by the app locale.** Digit runs inside text already compared as
+  numbers, but the locale was the browser's language, so one app put Hangul before Latin for one user and after it for
+  another. It now uses `compareText` from `@iyulab/components` — the locale is `Locale.get()` (`<html lang>`, then the
+  browser language, then `en`; `Locale.set('ko')` puts Hangul before Latin), the same order the other tables use. Needs
+  `@iyulab/components` 3.1.0 or newer (the peer range moves with it).
+
 ## [0.57.0] - 2026-11-11
 
 ### Documentation

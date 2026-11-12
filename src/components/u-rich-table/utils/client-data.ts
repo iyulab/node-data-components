@@ -1,4 +1,5 @@
 import { Locale } from '@iyulab/components/dist/utilities/Locale.js';
+import { compareText } from '@iyulab/components/dist/utilities/collation.js';
 import type { ColumnDef, RichTableFilterModel, RichTableFilters, SortCriteria } from '../types.js';
 
 type Row = Record<string, unknown>;
@@ -36,7 +37,7 @@ export function applyFilters(rows: Row[], filters: RichTableFilters): Row[] {
 
 /**
  * `dataMode="client"` 의 정렬 — 안정 정렬, 빈 값은 방향과 무관하게 뒤로.
- * `type: 'number'` 는 수로, `type: 'date'` 는 시각으로, 그 밖은 로케일 비교(숫자 구간은 수로).
+ * `type: 'number'` 는 수로, `type: 'date'` 는 시각으로, 그 밖은 앱 로캘(`Locale.get()`)의 글자 비교(숫자 구간은 수로 — components 의 `compareText`).
  */
 export function sortRows(rows: Row[], sort: SortCriteria, columns: ColumnDef[]): Row[] {
   const type = columns.find(c => c.key === sort.key)?.type;
@@ -53,7 +54,7 @@ export function sortRows(rows: Row[], sort: SortCriteria, columns: ColumnDef[]):
     const ka = key(va), kb = key(vb);
     const cmp = typeof ka === 'number' && typeof kb === 'number'
       ? ka - kb
-      : String(ka).localeCompare(String(kb), undefined, { numeric: true, sensitivity: 'base' });
+      : compareText(String(ka), String(kb));
     return cmp * sign;
   });
 }
