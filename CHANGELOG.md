@@ -9,6 +9,11 @@
   full stop and a leading sign jumped to the other end: «Blue Harbor Co.» read «.Blue Harbor Co». Each cell value — and each card
   value and title — is now isolated (`<bdi>`): it reads in its own direction and stands where the cell puts it (the start edge, as the
   alignment says). The `u-simple-sheet` cells are isolated the same way. A left-to-right page is drawn as before.
+- **A number typed into a `u-rich-table` number cell editor or the new-row input of a number column keeps its sign in front in a
+  right-to-left page.** The editor is the browser's number input, and the new-row input a text input that is read with `Number()`;
+  both took the page as their paragraph direction in a right-to-left page: `-1234.5` read `1234.5-`. They are now left-to-right;
+  the text still sits at the page's start edge. A left-to-right page is drawn as before, and the new-row input of any other column
+  is not touched.
 
 ### Added
 

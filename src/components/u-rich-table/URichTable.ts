@@ -1010,7 +1010,7 @@ export class URichTable extends LitElement {
         ${this.columns.map((col, colIdx) => html`
           <td>
             ${col.editable !== false ? html`
-              <input placeholder=${col.label} aria-label=${messages.text('newRowColumn', { col: col.label })}
+              <input class=${col.type === 'number' ? 'numeric' : nothing} placeholder=${col.label} aria-label=${messages.text('newRowColumn', { col: col.label })}
                 data-new-col=${colIdx}
                 @keydown=${this._onNewRowKeyDown}
                 @focus=${this._onNewRowFocus} />

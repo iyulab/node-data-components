@@ -377,6 +377,14 @@ export const richTableStyles = css`
     border-color: var(--u-danger-color, #D32F2F);
   }
 
+  /* 숫자 열의 편집기는 브라우저의 숫자 입력인데, 오른쪽에서 왼쪽으로 쓰는 페이지에서는 그것도 페이지의 문단 방향을 받아 부호가
+     줄 끝으로 가 «-1234.5» 가 «1234.5-» 로 읽힌다. 입력은 왼쪽에서 오른쪽으로 두고 자리는 그대로 둔다 — 입력의 방향이 ltr 이면
+     end 가 오른쪽(페이지의 시작 가장자리)이다. */
+  :host(:dir(rtl)) tbody td .cell-edit-input[type="number"] {
+    direction: ltr;
+    text-align: end;
+  }
+
   .validation-error {
     font-size: 10px;
     color: var(--u-danger-color, #D32F2F);
@@ -456,6 +464,14 @@ export const richTableStyles = css`
     border-color: var(--u-success-color, #2E7D32);
     background: var(--u-bg-color, #FFFFFF);
     opacity: 1;
+  }
+
+  /* 숫자 열의 새 행 입력(Enter 에서 Number() 로 읽는다)은 text 입력이라 오른쪽에서 왼쪽으로 쓰는 페이지의 문단 방향을 받으면 부호가
+     줄 끝으로 가 «-1234.5» 가 «1234.5-» 로 읽힌다. 입력은 왼쪽에서 오른쪽으로 두고 자리는 그대로 둔다 — 입력의 방향이 ltr 이면
+     end 가 오른쪽(페이지의 시작 가장자리)이다. 다른 열의 입력은 앱의 텍스트라 페이지를 따른다. */
+  :host(:dir(rtl)) .new-row input.numeric {
+    direction: ltr;
+    text-align: end;
   }
 
   .detail-row td {
