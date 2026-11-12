@@ -2,6 +2,7 @@ import { defineConfig } from 'eslint/config';
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 export default defineConfig([
   {
@@ -21,7 +22,10 @@ export default defineConfig([
       sourceType: 'module',
       globals: globals.browser
     },
+    // 게시되는 React 래퍼(`react.ts`)의 훅 규칙. 훅이 없는 파일에서는 발화하지 않으므로 대상을 열거하지 않고 src 전체에 건다.
+    plugins: { 'react-hooks': reactHooks },
     rules: {
+      ...reactHooks.configs['recommended-latest'].rules,
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
