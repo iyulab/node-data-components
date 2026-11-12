@@ -788,10 +788,10 @@ export class URichTable extends LitElement {
           </label>` : nothing}
           <div class="card-body">
             ${custom !== undefined ? custom : html`
-              ${title ? html`<div class="card-title" part="card-title">${this._renderCellContent(title, row[title.key], row)}</div>` : nothing}
+              ${title ? html`<div class="card-title" part="card-title"><bdi>${this._renderCellContent(title, row[title.key], row)}</bdi></div>` : nothing}
               ${rest.length ? html`<dl class="card-fields" part="card-fields">
                 ${rest.map(col => cardFieldShown(col, row[col.key])
-                  ? html`<div class="card-field"><dt>${col.label}</dt><dd>${this._renderCellContent(col, row[col.key], row)}</dd></div>`
+                  ? html`<div class="card-field"><dt>${col.label}</dt><dd><bdi>${this._renderCellContent(col, row[col.key], row)}</bdi></dd></div>`
                   : nothing)}
               </dl>` : nothing}`}
             ${isExpanded && this.detailRenderer ? html`<div class="card-detail">${this.detailRenderer(row)}</div>` : nothing}
@@ -973,7 +973,7 @@ export class URichTable extends LitElement {
         ${delegate<MouseEvent>('click', (e, td) => this._onCellClick(e, rowIdx, colIdx, td))}
         aria-readonly=${this._isCellEditable(col, row) ? nothing : 'true'}
         @dblclick=${() => this._isCellEditable(col, row) && this._onCellDblClick(rowIdx, colIdx, value)}>
-        ${this._renderCellContent(col, value, row)}
+        <bdi>${this._renderCellContent(col, value, row)}</bdi>
       </td>
     `;
   }
