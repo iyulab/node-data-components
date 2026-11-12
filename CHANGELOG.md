@@ -17,6 +17,11 @@
 
 ### Added
 
+- **`custom-elements.json` — a Custom Elements Manifest for every element.** The package ships `dist/custom-elements.json`
+  (`@iyulab/data-components/dist/custom-elements.json`, declared in the `customElements` field of `package.json`) so editors,
+  documentation tools and AI agents can read each element's attributes, properties, events, slots and CSS parts without
+  parsing the source. It is generated at build time (`npm run analyze`) and lists the events an element raises through
+  `this.fire()` or `dispatchEvent()` with the type of their `detail`.
 - **`u-simple-sheet` `enter-move` — where Enter moves the selection.** `down` (the default, unchanged) moves to the cell below;
   `next` moves to the next cell in reading order as Tab does (onto the start of the next row at the end of a row); `none` stays.
   It applies to Enter while editing (after the value is committed) and to Enter on a selected cell alike, Shift+Enter goes the other

@@ -23,6 +23,7 @@
   ],
   "type": "module",
   "types": "./dist/index.d.ts",
+  "customElements": "./dist/custom-elements.json",
   "engines": {
     "node": ">=20"
   },
@@ -63,7 +64,8 @@
   "scripts": {
     "preversion": "node -e \"if(require('fs').existsSync('../../scripts/preversion-check.mjs'))require('child_process').execFileSync('node',['../../scripts/preversion-check.mjs'],{stdio:'inherit'})\"",
     "start": "vite",
-    "build": "npm run typecheck && eslint && vite build",
+    "analyze": "cem analyze",
+    "build": "npm run typecheck && eslint && vite build && npm run analyze",
     "pretest": "node -e \"if(require('fs').existsSync('../../scripts/sibling-dist-check.js'))require('child_process').execFileSync('node',['../../scripts/sibling-dist-check.js'],{stdio:'inherit'})\"",
     "test": "vitest run --project=unit --project=browser",
     "test:webkit": "vitest run --project=webkit",
@@ -93,6 +95,7 @@
     }
   },
   "devDependencies": {
+    "@custom-elements-manifest/analyzer": "^0.11.0",
     "@eslint/js": "^10.0.1",
     "@iyulab/components": "^3.0.0",
     "@lit/react": "^1.0.8",
