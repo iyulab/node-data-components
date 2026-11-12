@@ -54,6 +54,7 @@ from a server, use [`u-rich-table`](./rich-table.md) instead.
 | `rows` | `number` | `20` | | Row count when `data` is shorter |
 | `cols` | `number` | `10` | | Column count when neither `data` nor `columns` says otherwise |
 | `readonly` | `boolean` | `false` | | Blocks editing, paste and fill |
+| `enterMove` | `'down' \| 'next' \| 'none'` | `'down'` | | Where `Enter` moves the selection (editing or not): the cell below, the next cell in reading order as `Tab` goes, or nowhere. `Shift`+`Enter` goes the other way. Attribute `enter-move` |
 | `label` | `string` | `''` | | The sheet's accessible name (falls back to the locale string, "Spreadsheet") |
 | `noMatchingMessage` | `string` | `''` | | Text shown when a `strict` dropdown has no match (falls back to the locale string) |
 | `theme` | `'light'\|'dark'` | — | ✓ | Forces a theme. Unset follows the ancestor `theme`/`data-theme` context (`:host-context`, Chromium only) |

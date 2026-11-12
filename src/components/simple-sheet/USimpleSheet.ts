@@ -98,7 +98,7 @@ export interface SimpleSheetEventMap {
  * 편집 편의 기능:
  * - Undo/Redo: Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z
  * - Ctrl+Enter: 편집 확정 후 현재 셀 유지
- * - Shift+Enter: 위로 이동
+ * - Shift+Enter: 위로 이동(`enter-move` 가 `next` 면 이전 칸 · `none` 이면 제자리)
  * - Home/End: 행 처음/끝 (Ctrl+Home/End: 시트 처음/끝)
  * - Page Up/Down: 10행 단위 이동
  * - Ctrl+A: 전체 선택
@@ -131,6 +131,13 @@ export class USimpleSheet extends UElement {
   /** 읽기 전용 모드 */
   @property({ type: Boolean }) readonly = false;
 
+  /**
+   * Enter 가 선택을 어디로 옮기는가: `down`(기본 — 아래 칸, 스프레드시트 관례) · `next`(읽는 순서의 다음 칸 — Tab 과 같다: 줄 끝에서는
+   * 다음 줄 첫 칸) · `none`(제자리). Shift+Enter 는 반대 방향, Ctrl+Enter(편집 중)는 항상 제자리. 마지막 칸에서는 멈춘다.
+   * 이 밖의 값은 `down` 으로 읽는다. 편집 중의 Enter(확정)와 편집 중이 아닌 Enter 가 같은 방향을 쓴다.
+   */
+  @property({ attribute: 'enter-move' }) enterMove: 'down' | 'next' | 'none' = 'down';
+
   /** 시트(그리드)의 접근성 이름. 비우면 로캘 기본값(«Spreadsheet» · «스프레드시트»). */
   @property({ type: String }) label = '';
   /** 드롭다운에 일치 항목이 없을 때 문구 */
@@ -152,6 +159,21 @@ export class USimpleSheet extends UElement {
   @state() private _colMenu: { cols: [number, number]; x: number; y: number } | null = null;
 
   private _isDropdownClick = false;
+
+  /** Enter(Shift 면 반대 방향)가 옮기는 칸 — `enterMove` 가 정한다. 끝에서는 멈춘다. */
+  private _enterTarget(from: { row: number; col: number }, backwards: boolean): { row: number; col: number } {
+    const { row, col } = from;
+    if (this.enterMove === 'none') return { row, col };
+    if (this.enterMove === 'next') {
+      if (!backwards) {
+        if (col < this._colCount - 1) return { row, col: col + 1 };
+        return row < this._rowCount - 1 ? { row: row + 1, col: 0 } : { row, col };
+      }
+      if (col > 0) return { row, col: col - 1 };
+      return row > 0 ? { row: row - 1, col: this._colCount - 1 } : { row, col };
+    }
+    return backwards ? { row: Math.max(0, row - 1), col } : { row: Math.min(this._rowCount - 1, row + 1), col };
+  }
 
   // @state() 없음 — 직접 requestUpdate() 호출
   private _data: string[][] = [];
@@ -613,11 +635,8 @@ export class USimpleSheet extends UElement {
     // ── Enter: 아래 이동 / Shift+Enter: 위 이동 ──
     if (e.key === 'Enter' && !isImeComposing(e)) {
       e.preventDefault();
-      if (e.shiftKey) {
-        this._select(Math.max(0, anchor.row - 1), anchor.col);
-      } else {
-        this._select(Math.min(this._rowCount - 1, anchor.row + 1), anchor.col);
-      }
+      const to = this._enterTarget(anchor, e.shiftKey);
+      this._select(to.row, to.col);
       return;
     }
 
@@ -788,13 +807,8 @@ export class USimpleSheet extends UElement {
       e.preventDefault();
       const pos = this._editing!;
       this._commitEdit();
-      if (e.ctrlKey) {
-        this._select(pos.row, pos.col);
-      } else if (e.shiftKey) {
-        this._select(Math.max(0, pos.row - 1), pos.col);
-      } else {
-        this._select(Math.min(this._rowCount - 1, pos.row + 1), pos.col);
-      }
+      const to = e.ctrlKey ? pos : this._enterTarget(pos, e.shiftKey);
+      this._select(to.row, to.col);
       return;
     }
 

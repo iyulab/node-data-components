@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Added
+
+- **`u-simple-sheet` `enter-move` — where Enter moves the selection.** `down` (the default, unchanged) moves to the cell below;
+  `next` moves to the next cell in reading order as Tab does (onto the start of the next row at the end of a row); `none` stays.
+  It applies to Enter while editing (after the value is committed) and to Enter on a selected cell alike, Shift+Enter goes the other
+  way, Ctrl+Enter still commits and stays, and the last cell stays selected. A value that is not one of the three reads as `down`.
+  Property `enterMove`, attribute `enter-move` — the same setting `flex-table` has.
+
 ### Changed
 
 - **`u-rich-table` `dataMode="client"` orders text columns by the app locale.** Digit runs inside text already compared as
