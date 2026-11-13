@@ -1,4 +1,4 @@
-import { describe, it, afterEach, expect, vi } from 'vitest';
+import { describe, it, afterEach, beforeEach, expect, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import '../../src/components/u-rich-table/URichTable';
 
@@ -10,7 +10,7 @@ import '../../src/components/u-rich-table/URichTable';
  * «scheduled an update after an update completed» 를 낸다 — 그 경고 자신이 «다음 갱신이 이전 갱신의 부수 효과로만 예약될 수 있으면
  * 예외» 라고 적은 바로 그 경우다. 소비자는 개발 중 이 요소가 들어간 화면마다 자기 콘솔에서 이 경고를 보게 된다.
  *
- * ⚠Lit 은 같은 경고를 페이지당 한 번만 낸다 — 이 파일의 첫 사례여야 하므로 시험은 하나의 요소로 시작한다.
+ * ⚠Lit 은 같은 경고를 페이지당 한 번만 낸다(`globalThis.litIssuedWarnings` 로 글을 중복 제거) — 시험마다 그 집합을 비운다.
  */
 
 type Table = HTMLElement & {
@@ -18,6 +18,8 @@ type Table = HTMLElement & {
   data: Record<string, unknown>[];
   updateComplete: Promise<unknown>;
 };
+
+beforeEach(() => { (globalThis as unknown as { litIssuedWarnings?: Set<string> }).litIssuedWarnings?.clear(); });
 
 afterEach(async () => {
   document.body.replaceChildren();
@@ -54,5 +56,36 @@ describe('u-rich-table — Lit 개발 모드 경고', () => {
 
     const lit = warn.mock.calls.filter(([m]) => String(m).includes('scheduled an update'));
     expect(lit, `Lit 경고: ${lit.map(([m]) => String(m).slice(0, 80)).join(' | ')}`).toEqual([]);
+  });
+
+  it('🔴넓은 창의 일반 표 마운트 · 행 선택에도 경고가 없다', async () => {
+    await page.viewport(1100, 800);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const el = document.createElement('u-rich-table') as unknown as Table & { selectable: boolean };
+    el.columns = ['a', 'b', 'c'].map((k) => ({ key: k, label: k.toUpperCase() }));
+    el.data = [{ _id: '1', a: 'x', b: 'y', c: 'z' }, { _id: '2', a: 'p', b: 'q', c: 'r' }];
+    el.selectable = true;
+    el.style.display = 'block';
+    el.style.width = '100%';
+    document.body.appendChild(el);
+    await settle(el);
+    el.shadowRoot!.querySelector<HTMLInputElement>('tbody input[type="checkbox"], tbody u-checkbox')?.click();
+    await settle(el);
+    const lit = warn.mock.calls.filter(([m]) => String(m).includes('scheduled an update'));
+    expect(lit.map(([m]) => String(m).slice(0, 60))).toEqual([]);
+  });
+
+  it('🔴휴대폰 폭에서 카드로 그려도 경고가 없다', async () => {
+    await page.viewport(390, 844);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const el = document.createElement('u-rich-table') as unknown as Table;
+    el.columns = ['a', 'b', 'c'].map((k) => ({ key: k, label: k.toUpperCase(), width: 200 }));
+    el.data = [{ _id: '1', a: 'x', b: 'y', c: 'z' }];
+    el.style.display = 'block';
+    el.style.width = '100%';
+    document.body.appendChild(el);
+    await settle(el);
+    const lit = warn.mock.calls.filter(([m]) => String(m).includes('scheduled an update'));
+    expect(lit.map(([m]) => String(m).slice(0, 60))).toEqual([]);
   });
 });
