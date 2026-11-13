@@ -4,6 +4,11 @@
 
 ### Fixed
 
+- **A `u-rich-table` no longer draws a second time when the width its columns need changes but the table-or-cards choice does not.**
+  With `layout="auto"` the table measures after it is drawn whether its columns overflow, and kept that width as reactive state, so
+  every change of the measured width drew the table again — and in a development build of Lit each one logged «scheduled an update
+  after an update completed» in the console of the app (for example when a preview pane opened beside a list). The measured width now
+  asks for another draw only when it flips the choice to cards.
 - **A `u-rich-table` and a `u-simple-sheet` cell value keeps its own direction in a right-to-left page.** The text of a cell is data the app put there. A
   line of Latin letters in a right-to-left page (a company name, a part number) had the page as its paragraph direction, so its
   full stop and a leading sign jumped to the other end: «Blue Harbor Co.» read «.Blue Harbor Co». Each cell value — and each card

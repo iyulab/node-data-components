@@ -207,8 +207,12 @@ export class URichTable extends LitElement {
   /**
    * 표가 마지막으로 그려졌을 때 가로로 넘쳤다면 그때 필요했던 폭 — 카드로 물러난 동안 «표로 돌아가도 들어가는가» 의 기준
    * (카드에서는 표의 넘침을 잴 수 없다). 넘치지 않았으면 `undefined`.
+   *
+   * 반응형 상태가 아니다 — 값이 바뀌어도 «카드로 그리는가»(`_cardsActive`)의 답이 그대로면 다시 그릴 이유가 없다.
+   * 그 답이 뒤집힐 때만 `_measureTableNeed` 가 갱신을 요청한다(Lit 개발 모드의 «갱신 뒤 갱신» 경고도 그때만 남는다 —
+   * 그 갱신은 그린 결과로만 정해지는 부수 효과라 경고가 스스로 적은 예외다).
    */
-  @state() private _tableNeed?: number;
+  private _tableNeed?: number;
   private _hostObserver?: ResizeObserver;
   /** 폴백 안내는 표마다 한 번. */
   private _warnedCards = false;
@@ -230,7 +234,10 @@ export class URichTable extends LitElement {
     const wrap = this.renderRoot.querySelector<HTMLElement>('.table-wrap');
     if (!wrap) return;
     const need = wrap.scrollWidth > wrap.clientWidth + 1 ? wrap.scrollWidth : undefined;
-    if (need !== this._tableNeed) this._tableNeed = need;
+    if (need === this._tableNeed) return;
+    this._tableNeed = need;
+    // 넘침 값은 호스트가 `card-breakpoint` 보다 좁을 때만 판정에 든다 — 판정이 그대로면 그리지 않는다.
+    if (this._cardsActive) this.requestUpdate();
   }
 
   /** `auto` 가 카드로 물러났고 앱이 `layout` 을 정하지 않았으면 표마다 한 번 알린다. */
