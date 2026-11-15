@@ -21,6 +21,7 @@ import { isImeComposing } from '@iyulab/components/dist/utilities/keyboard.js';
 import { encodeTsv, decodeTsv } from '@iyulab/components/dist/utilities/tsv.js';
 import { copyFromKey, pasteFromKey } from '@iyulab/components/dist/utilities/clipboard.js';
 import { delegate } from '@iyulab/components/dist/utilities/listenInShadow.js';
+import { enumeratedValues } from "@iyulab/components/dist/utilities/enumerated.js";
 
 export interface SheetColumn {
   /** 데이터 키 (getDataAsObjects() 반환시 객체 키로 사용) */
@@ -114,6 +115,12 @@ export interface SimpleSheetEventMap {
 @customElement('u-simple-sheet')
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
 export class USimpleSheet extends UElement {
+  /** 목록 밖의 값은 어떤 규칙에도 안 걸려 조용히 기본 모양이 된다 — 개발 모드에서 한 번 알린다(`UElement.enumerated`). */
+  static override enumerated = {
+    ...super.enumerated,
+    theme: enumeratedValues<'light' | 'dark'>()(['light', 'dark']),
+  };
+
   static styles = [super.styles, styles];
 
   /** 초기 데이터 (2D 문자열 배열) */

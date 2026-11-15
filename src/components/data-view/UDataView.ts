@@ -8,6 +8,7 @@ import { messages } from '../../utilities/messages.js';
 import { rowKeyOf, type RowKey } from '../../utilities/row-key.js';
 import { styles } from './UDataView.styles';
 import { delegate } from '@iyulab/components/dist/utilities/listenInShadow.js';
+import { enumeratedValues } from "@iyulab/components/dist/utilities/enumerated.js";
 
 export type ViewMode = 'grid' | 'list' | 'table';
 
@@ -62,6 +63,12 @@ const VIEW_ICONS = {
 @customElement('u-data-view')
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging -- typed event listeners (the DOM's own `HTMLMediaElementEventMap` pattern): the merged addEventListener/removeEventListener overloads are implemented by EventTarget
 export class UDataView extends UElement {
+  /** 목록 밖의 값은 어떤 규칙에도 안 걸려 조용히 기본 모양이 된다 — 개발 모드에서 한 번 알린다(`UElement.enumerated`). */
+  static override enumerated = {
+    ...super.enumerated,
+    mode: enumeratedValues<ViewMode>()(['grid', 'list', 'table']),
+  };
+
   static styles = [super.styles, styles];
 
   /** 표시할 레코드 — 두 표의 `data` 와 같은 이름·같은 뜻(서버 페이지 목록이면 지금 페이지). */

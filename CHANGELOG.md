@@ -22,6 +22,11 @@
 
 ### Added
 
+- **Development-mode warning for an unknown value of an enumerated attribute** (`mode`, `theme`). A template attribute string is not
+  type-checked, and a value outside the list matches no style rule, so the element silently rendered as if the attribute were
+  unset — nothing in the console. It now logs one `console.warn` per element, attribute and value in development builds,
+  naming the values that are accepted; rendering is unchanged and production builds do nothing. Built on `UElement.enumerated`
+  of `@iyulab/components`.
 - **`custom-elements.json` — a Custom Elements Manifest for every element.** The package ships `dist/custom-elements.json`
   (`@iyulab/data-components/dist/custom-elements.json`, declared in the `customElements` field of `package.json`) so editors,
   documentation tools and AI agents can read each element's attributes, properties, events, slots and CSS parts without
@@ -35,6 +40,8 @@
 
 ### Changed
 
+- **Requires `@iyulab/components` ≥ 3.2.0** (the peer range was `>=3.1.0`). The enumerated-attribute lists above use
+  `enumeratedValues` from that release; with an older components the module fails to load.
 - **`u-rich-table` `dataMode="client"` orders text columns by the app locale.** Digit runs inside text already compared as
   numbers, but the locale was the browser's language, so one app put Hangul before Latin for one user and after it for
   another. It now uses `compareText` from `@iyulab/components` — the locale is `Locale.get()` (`<html lang>`, then the
