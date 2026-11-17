@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import '../../src/components/simple-sheet/USimpleSheet';
 import '../../src/components/u-rich-table/URichTable';
+import { MOD } from './modifier';
 
 /**
  * Ctrl+C / Ctrl+V on `u-simple-sheet` and `u-rich-table`, pressed with real keys.
@@ -62,7 +63,7 @@ describe('u-simple-sheet clipboard', () => {
     clipboard.writeText = refuse;
     const copies = recordCopies();
     await sheet();
-    await userEvent.keyboard('{Control>}c{/Control}');
+    await userEvent.keyboard(`{${MOD}>}c{/${MOD}}`);
     await tick();
     expect(copies).toEqual([{ text: 'a\tb\nc\td', prevented: true }]);
   });
@@ -71,9 +72,9 @@ describe('u-simple-sheet clipboard', () => {
     clipboard.writeText = refuse;
     clipboard.readText = refuse;
     const { el, cell } = await sheet();
-    await userEvent.keyboard('{Control>}c{/Control}');
+    await userEvent.keyboard(`{${MOD}>}c{/${MOD}}`);
     await userEvent.click(cell(2, 0));
-    await userEvent.keyboard('{Control>}v{/Control}');
+    await userEvent.keyboard(`{${MOD}>}v{/${MOD}}`);
     await tick();
     await el.updateComplete;
     expect(el.getData().slice(2)).toEqual([['a', 'b'], ['c', 'd']]);
@@ -84,7 +85,7 @@ describe('u-simple-sheet clipboard', () => {
     clipboard.writeText = async (text: string) => { written.push(text); };
     withoutCopyEvent();
     await sheet();
-    await userEvent.keyboard('{Control>}c{/Control}');
+    await userEvent.keyboard(`{${MOD}>}c{/${MOD}}`);
     await tick();
     expect(written).toEqual(['a\tb\nc\td']);
   });
@@ -95,7 +96,7 @@ describe('u-simple-sheet clipboard', () => {
     const { el } = await sheet();
     const errors: string[] = [];
     el.addEventListener('clipboard-error', (e) => errors.push((e as CustomEvent).detail.action));
-    await userEvent.keyboard('{Control>}c{/Control}');
+    await userEvent.keyboard(`{${MOD}>}c{/${MOD}}`);
     await tick();
     expect(errors).toEqual(['copy']);
   });
@@ -132,7 +133,7 @@ describe('u-rich-table clipboard', () => {
     await el.updateComplete;
     // Keys reach the table through a focused control inside it — today the row checkbox.
     rowCheckbox(el, 0).focus();
-    await userEvent.keyboard('{Control>}c{/Control}');
+    await userEvent.keyboard(`{${MOD}>}c{/${MOD}}`);
     await tick();
     expect(copies).toEqual([{ text: 'Name\tNote\nfirst\tone', prevented: true }]);
   });
@@ -146,7 +147,7 @@ describe('u-rich-table clipboard', () => {
     await el.updateComplete;
     // Keys reach the table through a focused control inside it — today the row checkbox.
     rowCheckbox(el, 0).focus();
-    await userEvent.keyboard('{Control>}c{/Control}{Control>}v{/Control}');
+    await userEvent.keyboard(`{${MOD}>}c{/${MOD}}{${MOD}>}v{/${MOD}}`);
     await tick();
     expect(pasted).toEqual([[{ name: 'first', note: 'one' }]]);
   });
@@ -161,7 +162,7 @@ describe('u-rich-table clipboard', () => {
     cell(1, 0).dispatchEvent(new MouseEvent('dblclick', { bubbles: true, composed: true }));
     await el.updateComplete;
     await tick();
-    await userEvent.keyboard('{Control>}a{/Control}{Control>}c{/Control}');
+    await userEvent.keyboard(`{${MOD}>}a{/${MOD}}{${MOD}>}c{/${MOD}}`);
     await tick();
     expect(copies.map((c) => c.prevented)).toEqual([false]);
     expect(written, 'the selected rows must not overwrite what the editor copied').toEqual([]);

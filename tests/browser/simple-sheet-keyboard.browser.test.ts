@@ -1,6 +1,7 @@
 import { describe, it, afterEach, expect } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import '../../src/components/simple-sheet/USimpleSheet';
+import { MOD } from './modifier';
 
 /**
  * `u-simple-sheet` 키보드 계약 — 게시 문서(`docs/USimpleSheet.md` · 스킬 `simple-sheet.md`)의 키 표.
@@ -193,7 +194,7 @@ describe('u-simple-sheet 키보드 — 편집', () => {
   it('Ctrl+Enter 는 확정하고 그 셀에 남는다', async () => {
     const el = await start(1, 1);
     await press(el, '{F2}');
-    await userEvent.keyboard('{Control>}a{/Control}x');
+    await userEvent.keyboard(`{${MOD}>}a{/${MOD}}x`);
     await press(el, '{Control>}{Enter}{/Control}');
     expect(el.getData()[1][1]).toBe('x');
     expect(active(el)).toEqual([1, 1]);
@@ -203,9 +204,9 @@ describe('u-simple-sheet 키보드 — 편집', () => {
     const el = await start(1, 1);
     await press(el, '{Shift>}{ArrowRight}{/Shift}{Delete}');
     expect([el.getData()[1][1], el.getData()[1][2]]).toEqual(['', '']);
-    await press(el, '{Control>}z{/Control}');
+    await press(el, `{${MOD}>}z{/${MOD}}`);
     expect([el.getData()[1][1], el.getData()[1][2]]).toEqual(['r1c1', 'r1c2']);
-    await press(el, '{Control>}y{/Control}');
+    await press(el, `{${MOD}>}y{/${MOD}}`);
     expect([el.getData()[1][1], el.getData()[1][2]]).toEqual(['', '']);
   });
 

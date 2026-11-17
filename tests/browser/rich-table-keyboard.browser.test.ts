@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import '../../src/components/u-rich-table/URichTable';
+import { MOD } from './modifier';
 
 /**
  * `u-rich-table` keyboard model, pressed with real keys.
@@ -198,7 +199,7 @@ describe('u-rich-table keyboard — keys in a filter box are the box’s', () =>
     await press('xy{Home}{Delete}');
     expect(filterInput().value).toBe('y');
     expect(deleted).toEqual([]);
-    await press('{Control>}a{/Control}');
+    await press(`{${MOD}>}a{/${MOD}}`);
     expect([...table.selectedRowIds]).toEqual(['r0']);
   });
 });
@@ -312,7 +313,7 @@ describe('u-rich-table keyboard — Tab while editing leaves the table at its en
     table.addEventListener('row-update', (e) => updates.push((e as CustomEvent).detail.value));
     await startEdit(1, 1);
     expect(editor()).not.toBeNull();
-    await userEvent.keyboard('{Control>}a{/Control}changed');
+    await userEvent.keyboard(`{${MOD}>}a{/${MOD}}changed`);
     await press('{Tab}');
     expect(updates).toEqual(['changed']);
     expect(editor(), 'no editor re-opened').toBeNull();
